@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>Saving file</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  :root { color-scheme: dark }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; color: #eef3f8; font: 15px/1.5 "IBM Plex Sans", system-ui, sans-serif;
+    background: radial-gradient(700px 400px at 80% 0%, rgba(31,143,179,.2), transparent 65%), linear-gradient(180deg, #071426, #040c17) }
+  .c { max-width: 420px; width: 100%; text-align: center; background: rgba(11,31,56,.85); border: 1px solid #1d3a5c; border-radius: 18px; padding: 26px 20px }
+  h1 { margin: 10px 0 6px; font: 700 26px/1.05 "Barlow Condensed", system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase }
+  p { margin: 6px 0; color: #c3d0dd } b { color: #ffd9a8; overflow-wrap: anywhere }
+  .ic { width: 54px; height: 54px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(90deg, #ff3d00, #ff7a1a 45%, #ffc23d); color: #2a1200; font-size: 26px; font-weight: 700 }
+  .ic.bad { background: #ff5a4a }
+</style>
+</head>
+<body>
+<div class="c"><div class="ic" id="ic">⤓</div><h1 id="h">Saving…</h1><p id="m">Preparing the file.</p><p style="margin-top:14px;color:#93a6ba;font-size:13px">Press the phone's Back button to return to the page you came from.</p></div>
+<script>
+/* Helper for the BF Model screen, which cannot write files: the page puts the file in localStorage ('im.save') and opens
+   this screen, which has the save-to-Downloads bridge. */
+(function () {
+  var h = document.getElementById('h'), m = document.getElementById('m'), ic = document.getElementById('ic');
+  function done(ok, txt) { h.textContent = ok ? 'Saved' : 'Not saved'; m.innerHTML = txt; ic.textContent = ok ? '✓' : '!'; if (!ok) ic.className = 'ic bad'; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function b64(u8) { var s = '', ch = 0x8000; for (var i = 0; i < u8.length; i += ch) s += String.fromCharCode.apply(null, u8.subarray(i, i + ch)); return btoa(s); }
+  var job = null; try { job = JSON.parse(localStorage.getItem('im.save') || 'null'); localStorage.removeItem('im.save'); } catch (e) { }
+  window.appBack = function () { return false; };
+  if (!job || Date.now() - job.t > 5 * 60 * 1000) { done(false, 'Nothing to save. Go back and tap the download again.'); return; }
+  function write(data) {
+    if (!(window.AndroidBridge && AndroidBridge.saveFile)) { done(false, 'Saving is not available here.'); return; }
+    var r = '';
+    try { r = AndroidBridge.saveFile(job.name, data, job.mime || 'application/octet-stream') || ''; } catch (e) { r = 'ERROR ' + e.message; }
+    if (/^ERROR/.test(r)) done(false, esc(r)); else if (/cancel/i.test(r)) done(false, 'Cancelled.');
+    else done(true, '<b>' + esc(job.name) + '</b><br>is in your Downloads folder.');
+  }
+  if (job.asset) {
+    var x = new XMLHttpRequest(); x.open('GET', job.asset, true); x.responseType = 'arraybuffer';
+    x.onload = function () { if (x.response) write(b64(new Uint8Array(x.response))); else done(false, 'Could not open ' + esc(job.asset)); };
+    x.onerror = function () { done(false, 'Could not open ' + esc(job.asset)); }; x.send();
+  } else write(job.b64);
+})();
+</script>
+<script src="nk-logo.js" data-img="img/nk-logo.png" defer></script>
+</body>
+</html>

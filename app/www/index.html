@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>Iron Making</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="im.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32"><defs><linearGradient id="st" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3e9f0"/><stop offset="1" stop-color="#8697a9"/></linearGradient><linearGradient id="hm" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff3d00"/><stop offset="1" stop-color="#ffc23d"/></linearGradient></defs><path d="M13 3h6v4l5 12v2l-2 5v1H10v-1l-2-5v-2l5-12z" fill="url(#st)"/><path d="M11.5 11h9M10 15h12M9.2 19h13.6" stroke="#46576b" stroke-width=".8"/><path d="M10 26h12v3H10z" fill="url(#hm)"/><path d="M22 27c3 0 4 1 5 3" stroke="#ffc23d" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span>
+    <span class="who" id="who"></span>
+  </div>
+
+  <header class="ihero">
+    <div class="glow" aria-hidden="true"></div>
+    <span class="kick">Integrated plant suite</span>
+    <h1>Iron <span class="hot">Making</span></h1>
+    <p>Raw material to liquid pig iron</p>
+    <div class="rule" aria-hidden="true"></div>
+    <section class="flow-mini" aria-label="Iron making process: raw material yard, then sinter, pellet and coke plants, then the blast furnace, giving liquid pig iron">
+      <figure class="fm"><img src="img/process/rmhs.webp" alt="Raw material yard" width="64" height="34"><figcaption>RMHS</figcaption></figure><span class="fa" aria-hidden="true">›</span>
+      <div class="fm3"><figure class="fm"><img src="img/process/sinter.webp" alt="Sinter plant" width="64" height="34"><figcaption>Sinter</figcaption></figure><figure class="fm"><img src="img/process/pellet.webp" alt="Pellet plant" width="64" height="34"><figcaption>Pellet</figcaption></figure><figure class="fm"><img src="img/process/coke.webp" alt="Coke ovens" width="64" height="34"><figcaption>Coke</figcaption></figure></div><span class="fa" aria-hidden="true">›</span>
+      <figure class="fm"><img src="img/process/bf.webp" alt="Blast furnace" width="64" height="34"><figcaption>BF</figcaption></figure><span class="fa" aria-hidden="true">›</span>
+      <span class="fhm">Hot<br>metal</span>
+    </section>
+  </header>
+
+  <a class="co2" href="carbon.html" aria-labelledby="co2h">
+    <div class="co2-h"><span class="co2-i" aria-hidden="true">CO<sub>2</sub></span><div><h2 id="co2h">Carbon footprint · CBAM</h2><p id="co2s">Mass balance, per tonne of product</p></div><span class="btn">Open ›</span></div>
+    <div class="co2-big"><small>Overall · per t pig iron</small><b id="co2-pig">—</b><span>tCO<sub>2</sub>/t</span></div>
+    <div class="co2-g">
+      <div style="--c:var(--bf)"><small>Blast furnace</small><b id="co2-bf">—</b><span>per t hot metal</span></div>
+      <div style="--c:var(--coke)"><small>Coke oven</small><b id="co2-coke">—</b><span>per t coke</span></div>
+      <div style="--c:var(--sin)"><small>Sinter plant</small><b id="co2-sinter">—</b><span>per t sinter</span></div>
+      <div style="--c:var(--pel)"><small>Pellet plant</small><b id="co2-pellet">—</b><span>per t pellet</span></div>
+    </div>
+  </a>
+
+  <section aria-labelledby="pickh">
+    <div class="sec"><h2 id="pickh">Choose a section</h2><em>Tap to open</em></div>
+    <nav class="pick">
+      <a class="card" style="--c:var(--bf)" href="section.html#bf">
+        <img src="img/process/bf.webp" alt="" loading="lazy">
+        <span class="t"><b>Blast furnace</b><span>Burden chemistry, charging, 3D distribution, furnace inside</span><span class="go">Open ›</span></span>
+      </a>
+      <a class="card" style="--c:var(--sin)" href="section.html#sinter">
+        <img src="img/process/sinter.webp" alt="" loading="lazy">
+        <span class="t"><b>Sinter plant</b><span>Sinter quality prediction, blend and machine settings</span><span class="go">Open ›</span></span>
+      </a>
+      <a class="card" style="--c:var(--coke)" href="section.html#coke">
+        <img src="img/process/coke.webp" alt="" loading="lazy">
+        <span class="t"><b>Coke oven</b><span>Coke quality, mass &amp; heat balance, Excel or manual input</span><span class="go">Open ›</span></span>
+      </a>
+      <a class="card" style="--c:var(--pel)" href="section.html#pellet">
+        <span class="badge">Under progress</span>
+        <img src="img/process/pellet.webp" alt="" loading="lazy">
+        <span class="t"><b>Pellet plant</b><span>Section being prepared</span><span class="go">Open ›</span></span>
+      </a>
+    </nav>
+  </section>
+
+  <section aria-labelledby="toolh">
+    <div class="sec"><h2 id="toolh">Plant tools</h2><em>All plants</em></div>
+  <section class="kyi" aria-labelledby="kyih">
+    <div class="kyi-h"><span class="kyi-i" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><div><h2 id="kyih">Know your inputs · all plants</h2><p>Every input of every module in plain words: meaning, unit, where to get it, typical value.</p></div></div>
+    <nav class="kyi-p">
+      <a href="know-inputs.html#bf" style="--c:var(--bf)"><i></i>Blast furnace</a>
+      <a href="know-inputs.html#sinter" style="--c:var(--sin)"><i></i>Sinter plant</a>
+      <a href="know-inputs.html#coke" style="--c:var(--coke)"><i></i>Coke oven</a>
+      <a href="know-inputs.html#pellet" style="--c:var(--pel)"><i></i>Pellet plant</a>
+    </nav>
+  </section>
+
+  </section>
+
+  <footer class="sig">
+    <div class="sig-l" aria-hidden="true"></div>
+    <img src="img/nk-logo.png" alt="" width="56" height="56">
+    <small>Designed &amp; developed by</small>
+    <span class="sig-n">Niteen Kumar</span>
+    <div class="foot"><span>Iron Making 5.8</span><span>Plant data stays on this device</span><button type="button" id="logout">Log out</button></div>
+  </footer>
+</div>
+<script src="engine.js"></script>
+<script src="carbon-engine.js"></script>
+<script>
+(function () {
+  try {
+    var E = window.CarbonEngine, S = E.load(), R = E.compute(S, E.linkBF()), P = R.plants;
+    var put = function (id, v) { var el = document.getElementById(id); if (el && v != null && isFinite(v)) el.textContent = v.toFixed(id === 'co2-pig' ? 2 : 3); };
+    ['bf', 'coke', 'sinter', 'pellet'].forEach(function (k) { if (!P[k].need.length) put('co2-' + k, P[k].total); });
+    if (R.pig) put('co2-pig', R.pig.total);
+    var own = Object.keys(S.v || {}).length, lk = Object.keys(E.linkBF()).length;
+    document.getElementById('co2s').textContent = own ? 'Your plant data' + (S.file ? ' · ' + S.file : '') : lk ? 'BF Model data + reference values' : 'Reference plant · tap to enter or upload your data';
+  } catch (e) { }
+})();
+</script>
+<script src="auth-config.js"></script>
+<script src="auth-api.js"></script>
+<script>
+(function () {
+  var u = window.BFAuth && BFAuth.user();
+  var who = document.getElementById('who'), out = document.getElementById('logout');
+  if (u && u.guest) { who.textContent = 'Using without an account'; out.textContent = 'Register / log in'; }
+  else if (u) { who.textContent = 'Signed in: ' + (u.name || u.loginId) + (u.company ? ' · ' + u.company : ''); }
+  out.addEventListener('click', function () {
+    if (u && !u.guest && !confirm('Log out of Iron Making on this device? Your saved inputs stay; you need internet to log in again.')) return;
+    BFAuth.signOut(); location.replace('auth.html');
+  });
+  if (window.BFAuth && BFAuth.dailyCheck) BFAuth.dailyCheck();
+})();
+</script>
+
+</body>
+</html>

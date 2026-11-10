@@ -9,7 +9,7 @@ Iron Making is the update of the *BF Model* app. It works offline, keeps plant d
 
 | Where | How |
 |---|---|
-| **In the browser (no install)** | Open the web app: `https://varunnifft.github.io/iron-making/` (works in Edge or Chrome on any PC, laptop or phone) |
+| **In the browser (no install)** | Open the web app: `https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/` (works in Edge or Chrome on any PC, laptop or phone) |
 | **Android phone** | Download `IronMaking-5.8-v127-PHONE-INSTALL.apk` from [Releases](../../releases) and install it, or get *BF Model* on Google Play |
 | **Office PC that blocks installs** | Download `IronMaking-5.8-Browser-NoInstall.zip` from [Releases](../../releases), extract it and open **Start Iron Making.html** |
 | **Windows 10 / 11** | `IronMaking-5.8-Windows-x64.zip` from [Releases](../../releases): extract and run **Iron Making.exe** |

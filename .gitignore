@@ -3,4 +3,5 @@
 *.p12
 *.pem
 *.aab
+!downloads/*.apk
 keys/

@@ -9,11 +9,10 @@ Iron Making is the update of the *BF Model* app. It works offline, keeps plant d
 
 | Where | How |
 |---|---|
-| **In the browser (no install)** | Open the web app: `https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/` (works in Edge or Chrome on any PC, laptop or phone) |
-| **Android phone** | Download `IronMaking-5.8-v127-PHONE-INSTALL.apk` from [Releases](../../releases) and install it, or get *BF Model* on Google Play |
-| **Office PC that blocks installs** | Download `IronMaking-5.8-Browser-NoInstall.zip` from [Releases](../../releases), extract it and open **Start Iron Making.html** |
-| **Windows 10 / 11** | `IronMaking-5.8-Windows-x64.zip` from [Releases](../../releases): extract and run **Iron Making.exe** |
-| **Mac** | `IronMaking-5.8-Mac-AppleSilicon.zip` (M1–M4) or `IronMaking-5.8-Mac-Intel.zip`: unzip, drag to Applications, first time use *System Settings → Privacy & Security → Open Anyway* |
+| **In the browser (no install)** | Open the web app: **https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/** · works in Edge or Chrome on any PC, laptop or phone |
+| **Android phone** | [Download the APK](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.8-v127-PHONE-INSTALL.apk) and install it, or get *BF Model* on Google Play |
+| **Office PC that blocks installs** | [Download the browser zip](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.8-Browser-NoInstall.zip), extract it and open **Start Iron Making.html** |
+| **Windows 10 / 11, Mac** | Desktop builds (Windows .exe, Mac Apple Silicon / Intel) are listed under [Releases](../../releases) when published |
 
 Log in with your BF Model account, or choose **Continue without an account**.
 
@@ -40,6 +39,7 @@ Log in with your BF Model account, or choose **Continue without an account**.
 
 ```
 index.html        opens the app (GitHub Pages entry)
+downloads/        Android APK and the no-install browser zip
 app/www/          Iron Making and BF Model pages
 app/index.html    Sinter Predict
 app/xco/          Coke Making

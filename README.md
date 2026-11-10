@@ -12,7 +12,7 @@ Iron Making is the update of the *BF Model* app. It works offline, keeps plant d
 | **In the browser (no install)** | Open the web app: **https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/** · works in Edge or Chrome on any PC, laptop or phone |
 | **Android phone** | [Download the APK](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.8-v127-PHONE-INSTALL.apk) and install it, or get *BF Model* on Google Play |
 | **Office PC that blocks installs** | [Download the browser zip](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.8-Browser-NoInstall.zip), extract it and open **Start Iron Making.html** |
-| **Windows 10 / 11, Mac** | Desktop builds (Windows .exe, Mac Apple Silicon / Intel) are listed under [Releases](../../releases) when published |
+| **Windows 10 / 11, Mac** | Download from the [latest release](../../releases/latest): `Windows-x64.zip` (extract, run **Iron Making.exe**), `Mac-AppleSilicon.zip` or `Mac-Intel.zip` |
 
 Log in with your BF Model account, or choose **Continue without an account**.
 
@@ -40,6 +40,9 @@ Log in with your BF Model account, or choose **Continue without an account**.
 ```
 index.html        opens the app (GitHub Pages entry)
 downloads/        Android APK and the no-install browser zip
+desktop/          Windows / Mac shell (Electron) and icons
+tools/            package_desktop.sh builds the desktop packages
+.github/workflows release.yml publishes every package as a GitHub release
 app/www/          Iron Making and BF Model pages
 app/index.html    Sinter Predict
 app/xco/          Coke Making

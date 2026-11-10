@@ -1,0 +1,14 @@
+IRON MAKING 5.8 for Windows (10 / 11, 64-bit)
+Designed & developed by Niteen Kumar
+
+1. Right-click the downloaded zip > Extract All... (choose e.g. C:\Iron Making or Documents).
+   Do not run it from inside the zip.
+2. Open the extracted "Iron Making" folder and double-click  Iron Making.exe
+3. If Windows shows "Windows protected your PC": click  More info  >  Run anyway.
+   (The app is not code-signed with a paid certificate; this message is normal.)
+4. On the first start the app adds "Iron Making" to the Start menu and the Desktop.
+
+Log in with your BF Model account, or choose Continue without an account.
+Your inputs are saved on this computer (not shared with the phone app).
+Files you export are saved where you choose (Downloads by default).
+Menu: Go > Iron Making home / BF Model / Sinter / Coke / Carbon;  File > Print / Save page as PDF.

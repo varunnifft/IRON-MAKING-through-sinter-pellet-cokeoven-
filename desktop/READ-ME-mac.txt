@@ -1,0 +1,20 @@
+IRON MAKING 5.8 for Mac
+Designed & developed by Niteen Kumar
+Needs macOS 11 Big Sur or newer.
+
+1. Double-click the downloaded zip: you get "Iron Making.app".
+2. Drag "Iron Making.app" into your Applications folder.
+3. First start: double-click it. macOS says it cannot verify the developer
+   (the app is not notarised with a paid Apple certificate).
+   - macOS 15 Sequoia / 14 Sonoma / 13 Ventura: click Done, then open
+     System Settings > Privacy & Security, scroll down, click "Open Anyway",
+     enter your password, and click Open.
+   - macOS 12 and older: right-click (Control-click) the app > Open > Open.
+   If it says the app "is damaged", open Terminal and run:
+       xattr -dr com.apple.quarantine "/Applications/Iron Making.app"
+   then open it again.
+4. After the first time it opens normally from Launchpad or the Dock.
+
+Log in with your BF Model account, or choose Continue without an account.
+Your inputs are saved on this Mac (not shared with the phone app).
+Menu: Go > Iron Making home / BF Model / Sinter / Coke / Carbon;  File > Print / Save page as PDF.

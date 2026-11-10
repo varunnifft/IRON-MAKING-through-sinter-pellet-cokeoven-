@@ -5,3 +5,5 @@
 *.aab
 !downloads/*.apk
 keys/
+work/
+dist/

@@ -1,0 +1,52 @@
+name: Publish app packages
+
+# Builds the Windows and Mac desktop apps on GitHub and publishes a release with
+# every package: Windows, Mac (Apple Silicon and Intel), Android APK and the no-install browser zip.
+# Runs when a version tag is pushed (for example v5.8), or by hand from the Actions tab.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version, for example 5.8'
+        required: true
+        default: '5.8'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tools
+        run: pip install pillow
+      - name: Version
+        id: v
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then V="${{ inputs.version }}"; else V="${GITHUB_REF_NAME#v}"; fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"; echo "tag=v$V" >> "$GITHUB_OUTPUT"
+      - name: Build Windows and Mac packages
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: bash tools/package_desktop.sh
+      - name: Add Android APK and browser zip
+        run: cp downloads/*.apk downloads/*.zip dist/ && ls -la dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          V: ${{ steps.v.outputs.version }}
+        run: |
+          sed "s/{V}/$V/g" .github/release-notes.md > notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+            gh release edit "$TAG" --title "Iron Making $V" --notes-file notes.md --latest
+          else
+            gh release create "$TAG" dist/* --title "Iron Making $V" --notes-file notes.md --target "$GITHUB_SHA" --latest
+          fi

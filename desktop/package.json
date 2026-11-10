@@ -1,0 +1,9 @@
+{
+  "name": "iron-making",
+  "productName": "Iron Making",
+  "version": "5.8.0",
+  "description": "Iron Making: blast furnace, sinter, coke and pellet tools. Designed & developed by Niteen Kumar.",
+  "author": "Niteen Kumar",
+  "main": "main.js",
+  "license": "UNLICENSED"
+}

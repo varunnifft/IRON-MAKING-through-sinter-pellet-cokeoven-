@@ -3,18 +3,20 @@
 **Blast furnace, sinter plant, coke oven and pellet plant tools in one app.**
 Designed & developed by **Niteen Kumar**.
 
-Iron Making is the update of the *BF Model* app. It works offline, keeps plant data on the device, and needs no subscription.
+Iron Making is the update of the *BF Model* app. It works offline and needs no subscription. Logins, files uploaded in the app, saved inputs and suggestions are backed up online to the app owner's Google Drive.
 
 ## Use it
 
 | Where | How |
 |---|---|
 | **In the browser (no install)** | Open the web app: **https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/** · works in Edge or Chrome on any PC, laptop or phone |
-| **Android phone** | [Download the APK](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.8-v127-PHONE-INSTALL.apk) and install it, or get *BF Model* on Google Play |
-| **Office PC that blocks installs** | [Download the browser zip](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.8-Browser-NoInstall.zip), extract it and open **Start Iron Making.html** |
+| **Android phone** | [Download the APK](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9-v128-PHONE-INSTALL.apk) and install it, or get *BF Model* on Google Play |
+| **Office PC that blocks installs** | [Download the browser zip](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9-Browser-NoInstall.zip), extract it and open **Start Iron Making.html** |
 | **Windows 10 / 11, Mac** | Download from the [latest release](../../releases/latest): `Windows-x64.zip` (extract, run **Iron Making.exe**), `Mac-AppleSilicon.zip` or `Mac-Intel.zip` |
 
-Log in with your BF Model account, or choose **Continue without an account**.
+**Download page for every device and version:** `https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/download.html`
+
+An account is needed: create one in the app or log in with your BF Model account. The Android APK installs as an update over BF Model / Iron Making 5.2 and later.
 
 ## What is inside
 
@@ -52,6 +54,6 @@ The browser version leaves out the Coke coal-blend optimiser (Python engine); us
 
 ## Note
 
-Values and limits are typical published ranges, not your plant's or OEM's design. Check them against your plant SOP. Plant data you enter stays on your device.
+Values and limits are typical published ranges, not your plant's or OEM's design. Check them against your plant SOP. Plant data is kept on your device and backed up to the app owner's Google Drive.
 
 © Niteen Kumar. All rights reserved.

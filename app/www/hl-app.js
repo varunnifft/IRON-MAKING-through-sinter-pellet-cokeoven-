@@ -170,7 +170,7 @@
       '<li><b>Level</b> = liquid volume above the taphole ÷ (hearth area × deadman porosity). The sump below the taphole always holds ' + f(D.M_sump_t, 0) + ' t of iron.</li>' +
       '<li><b>Tap flow</b> Q = Cd · A · √(2ΔP/ρ), ΔP = blast pressure + liquid head. The flow factor Cd is back-calculated from your taps that ended in Blow (≥ 20 min).</li>' +
       '<li><b>Tapping</b>: a taphole opens after the gap (or at once if the level passes the force-open limit), metal flows first, slag follows at first slag, and the tap closes on blow or at the maximum duration. Tapholes rotate.</li></ul></div>' +
-      '<p class="foot">Hearth liquid prediction · BF Model 5.8</p>';
+      '<p class="foot">Hearth liquid prediction · BF Model 5.9</p>';
     el.innerHTML = h; bindGo(el); $('#dExp').onclick = exportReport;
     $('#lvNow').onchange = function () { S.liveNow = this.value; save(); compute(); renderDash(); };
     $('#lvOpen').onchange = function () { S.liveOpen = this.value === '1'; save(); compute(); renderDash(); };
@@ -400,7 +400,7 @@
   $('#file').addEventListener('change', function () { var fl = this.files && this.files[0]; if (!fl) return; var fr = new FileReader(); fr.onload = function () { try { readXlsx(new Uint8Array(fr.result), fl.name); renderInput(); } catch (e) { toast(e.message || 'Could not read the file'); } }; fr.readAsArrayBuffer(fl); });
   function exportReport() {
     compute(); if (!M) return toast('Inputs missing'); var wb = XLSX.utils.book_new(), I = M.I, D = M.D, R = M.res, DB = M.dash, lv = LV;
-    addSheet(wb, 'Dashboard', [['HEARTH LIQUID PREDICTION – ' + (I.name || '')], ['BF Model · Iron Making 5.8 · from BF_Hearth_Liquid_Module_1.xlsx'], ['Taphole flow factor', fp(D.Cd, 3), D.Cd_n >= 3 ? 'auto, from ' + D.Cd_n + ' taps' : 'default'], ['Capacity check', D.Cap_check, fp(D.Cap_ratio, 3)], [],
+    addSheet(wb, 'Dashboard', [['HEARTH LIQUID PREDICTION – ' + (I.name || '')], ['BF Model · Iron Making 5.9 · from BF_Hearth_Liquid_Module_1.xlsx'], ['Taphole flow factor', fp(D.Cd, 3), D.Cd_n >= 3 ? 'auto, from ' + D.Cd_n + ' taps' : 'default'], ['Capacity check', D.Cap_check, fp(D.Cap_ratio, 3)], [],
       ['Predicted vs actual', 'Predicted', 'Actual', 'Deviation'], ['Average tap duration (min)'].concat(DB.dur.map(function (x) { return fp(x); })), ['Average gap between taps (min)'].concat(DB.gap.map(function (x) { return fp(x); })), ['Average HM per tap (t)'].concat(DB.hm.map(function (x) { return fp(x); })),
       ['Average slag per tap (t)'].concat(DB.slag.map(function (x) { return fp(x); })), ['Average tap rate (t/min)'].concat(DB.rate.map(function (x) { return fp(x); })), ['Average first slag (min)'].concat(DB.first.map(function (x) { return fp(x); })), ['Taps per day'].concat(DB.perDay.map(function (x) { return fp(x); })), ['Casting ratio'].concat(DB.castRatio.map(function (x) { return fp(x); })), [],
       ['48 h simulation', 'Value'], ['Dead iron below taphole (t)', fp(R.sump, 1)], ['Retained slag after blow (t)', fp(R.retained, 1)], ['Level rise rate, all closed (mm/min)', fp(R.rise, 2)], ['Maximum level above taphole (m)', fp(R.maxLevel, 3)], ['Maximum level % of tt', fp(R.maxPct, 4)], ['Time of maximum level', clk(D.SimStart + R.tMax)],

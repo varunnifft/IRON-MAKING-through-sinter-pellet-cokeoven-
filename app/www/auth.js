@@ -27,21 +27,19 @@
     return job().then(function (r) { b.disabled = false; b.textContent = old; return r; },
       function (e) { b.disabled = false; b.textContent = old; say(e.message); throw e; });
   }
-  function enter(user) {
+  function enter(user, event) {
     BFAuth.signIn(user); clearReg();
-    location.replace('index.html');
+    // tell the admin's Google Drive register (waits at most 2.5 s; never blocks the login)
+    var done = false, go = function () { if (!done) { done = true; location.replace('index.html'); } };
+    if (window.IMCloud && IMCloud.configured() && !user.cloudAdmin) { IMCloud.seen(event || 'login').then(go, go); setTimeout(go, 2500); } else go();
   }
+  function isAdminId(id) { return String(id).toLowerCase() === String(window.BF_CLOUD_ADMIN_ID || 'nitikyash').toLowerCase(); }
   function samePasswords(form) {
     if (form.elements.password.value !== form.elements.password2.value) { say('The two passwords are not the same.'); return false; }
     var p = form.elements.password.value;
     if (p.length < 8 || !/[A-Za-z]/.test(p) || !/\d/.test(p)) { say('Password: at least 8 characters, with letters and digits.'); return false; }
     return true;
   }
-
-  // no server or no internet: use the app offline without an account (BF Model 3.6)
-  document.getElementById('guest').addEventListener('click', function () {
-    enter({ loginId: 'guest-' + Date.now().toString(36), name: 'Guest', email: '', company: '', mobile: '', guest: true });
-  });
 
   document.addEventListener('click', function (e) {
     var go = e.target.closest('[data-go]');
@@ -117,7 +115,7 @@
     if (!/^[A-Za-z0-9._-]{4,30}$/.test(id)) return say('Login ID: 4 to 30 letters, digits, dot, dash or underscore, no spaces.');
     if (!samePasswords(f)) return;
     busy(f, 'Creating login…', function () { return BFAuth.call('create', { email: r.email, token: r.token, loginId: id, password: f.elements.password.value }); })
-      .then(function (v) { enter(v.user); }, function () { });
+      .then(function (v) { enter(v.user, 'signup'); }, function () { });
   });
 
   // log in
@@ -125,8 +123,14 @@
     e.preventDefault();
     var f = e.target, id = field(f, 'loginId'), pw = f.elements.password.value;
     if (!id || !pw) return say('Please enter your login ID and password.');
+    if (isAdminId(id)) {
+      if (!window.IMCloud) return say('Please wait a second and try again.');
+      busy(f, 'Logging in as admin…', function () { return IMCloud.adminLogin(id, pw); })
+        .then(function (r) { var u = r.user; u.admin = true; u.cloudAdmin = true; enter(u, 'login'); }, function () { });
+      return;
+    }
     busy(f, 'Logging in…', function () { return BFAuth.call('login', { loginId: id, password: pw }); })
-      .then(function (v) { enter(v.user); }, function () { });
+      .then(function (v) { enter(v.user, 'login'); }, function () { });
   });
 
   // forgot password -> OTP -> new password

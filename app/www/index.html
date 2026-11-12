@@ -78,12 +78,20 @@
 
   </section>
 
+  <a class="kyi" id="getApp" href="https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/download.html" target="_blank" rel="noopener" style="display:block;text-decoration:none;border-color:rgba(25,179,177,.55);background:linear-gradient(160deg,rgba(25,179,177,.16),rgba(11,31,56,.85) 55%)">
+    <div class="kyi-h"><span class="kyi-i" aria-hidden="true" style="background:var(--horizon)"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span><div><h2>Download the app</h2><p>Every version: Android phone, Windows, Mac (Apple Silicon and Intel), office PC without install, and the browser link.</p></div></div>
+  </a>
+
+  <a class="kyi" id="adminCard" href="admin.html" hidden style="text-decoration:none">
+    <div class="kyi-h"><span class="kyi-i" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 15a4 4 0 0 1 3-6.5A5.5 5.5 0 0 1 17.6 9 3.8 3.8 0 0 1 19 16.5H7"/><path d="M12 12v8M9 17l3 3 3-3"/></svg></span><div><h2>Admin · Online storage</h2><p>Google Drive link, users, uploaded files, backups, suggestions and the upload box. Admin only.</p></div></div>
+  </a>
+
   <footer class="sig">
     <div class="sig-l" aria-hidden="true"></div>
     <img src="img/nk-logo.png" alt="" width="56" height="56">
     <small>Designed &amp; developed by</small>
     <span class="sig-n">Niteen Kumar</span>
-    <div class="foot"><span>Iron Making 5.8</span><span>Plant data stays on this device</span><button type="button" id="logout">Log out</button></div>
+    <div class="foot"><span>Iron Making 5.9</span><span>Your work is backed up online</span><button type="button" id="logout">Log out</button></div>
   </footer>
 </div>
 <script src="engine.js"></script>
@@ -106,10 +114,11 @@
 (function () {
   var u = window.BFAuth && BFAuth.user();
   var who = document.getElementById('who'), out = document.getElementById('logout');
-  if (u && u.guest) { who.textContent = 'Using without an account'; out.textContent = 'Register / log in'; }
-  else if (u) { who.textContent = 'Signed in: ' + (u.name || u.loginId) + (u.company ? ' · ' + u.company : ''); }
+  if (u) { who.textContent = 'Signed in: ' + (u.cloudAdmin ? 'Admin' : (u.name || u.loginId) + (u.company ? ' · ' + u.company : '')); }
+  document.getElementById('getApp').addEventListener('click', function (e) { if (window.Android && window.Android.openUrl) { e.preventDefault(); window.Android.openUrl(this.href); } });
+  if (u && u.cloudAdmin) { var ac = document.getElementById('adminCard'); ac.hidden = false; ac.style.display = "block"; }
   out.addEventListener('click', function () {
-    if (u && !u.guest && !confirm('Log out of Iron Making on this device? Your saved inputs stay; you need internet to log in again.')) return;
+    if (u && !confirm('Log out of Iron Making on this device? Your saved inputs stay; you need internet to log in again.')) return;
     BFAuth.signOut(); location.replace('auth.html');
   });
   if (window.BFAuth && BFAuth.dailyCheck) BFAuth.dailyCheck();

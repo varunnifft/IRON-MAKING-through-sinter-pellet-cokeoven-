@@ -19,9 +19,9 @@
     return 'Browser ' + v;
   }
 
-  var waits = {}, seq = 0;
-  window.__bfPostDone = function (id, ok, text) {        // called by the Android shell
-    var w = waits[id]; if (!w) return; delete waits[id];
+  var waits = {}, seq = 0, prevDone = window.__bfPostDone;
+  window.__bfPostDone = function (id, ok, text) {        // called by the Android shell (shared with im-cloud.js)
+    var w = waits[id]; if (!w) return prevDone && prevDone(id, ok, text); delete waits[id];
     ok ? w.ok(text) : w.no(new Error(text || 'request failed'));
   };
   function post(url, body) {
@@ -59,17 +59,17 @@
   function signIn(u) {
     // token: signed by the server, sent with suggestions (logins made before 2.8 have none, which the server accepts since 3.0)
     try { localStorage.setItem(USER, JSON.stringify({ loginId: u.loginId, name: u.name, email: u.email, company: u.company, mobile: u.mobile,
-                                                       token: u.token || '', admin: !!u.admin, guest: !!u.guest, since: new Date().toISOString() })); } catch (e) { }
+                                                       token: u.token || '', admin: !!u.admin, cloudAdmin: !!u.cloudAdmin, guest: !!u.guest, since: new Date().toISOString() })); } catch (e) { }
     try { localStorage.setItem(SEEN, String(Date.now())); } catch (e) { }
   }
   function signOut() {
-    try { localStorage.removeItem(USER); localStorage.removeItem(SEEN); localStorage.removeItem('bf-quiz-cache'); } catch (e) { }
+    try { localStorage.removeItem(USER); localStorage.removeItem(SEEN); localStorage.removeItem('bf-quiz-cache'); localStorage.removeItem('im.admin'); localStorage.removeItem('im.cloud.tok'); localStorage.removeItem('im.cloud.seen'); } catch (e) { }
     try { if (window.Android && window.Android.quizAlerts) window.Android.quizAlerts(''); } catch (e) { }
   }
 
   /** Once a day, when online: if the owner blocked or removed this login, sign out. Network trouble never signs out. */
   function dailyCheck() {
-    var u = user(); if (!u || u.guest || !configured()) return;
+    var u = user(); if (!u || u.guest || u.cloudAdmin || !configured()) return;
     var last = 0; try { last = Number(localStorage.getItem(SEEN) || 0); } catch (e) { }
     if (Date.now() - last < 20 * 3600 * 1000) return;
     call('status', { loginId: u.loginId }).then(function (r) {

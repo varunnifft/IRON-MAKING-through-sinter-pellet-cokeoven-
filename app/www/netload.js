@@ -36,9 +36,9 @@
     return /^\s*(<!doctype html|<html)/i.test(s);
   }
 
-  var waits = {}, seq = 0;
-  window.__bfLinkDone = function (id, ok, data, name) {      // called by the Android shell
-    var w = waits[id]; if (!w) return; delete waits[id];
+  var waits = {}, seq = 0, prevLink = window.__bfLinkDone;
+  window.__bfLinkDone = function (id, ok, data, name) {      // called by the Android shell (shared with im-cloud.js)
+    var w = waits[id]; if (!w) return prevLink && prevLink.apply(this, arguments); delete waits[id];
     if (!ok) return w.no(new Error(data || 'download failed'));
     var bin = atob(data), b = new Uint8Array(bin.length);
     for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);

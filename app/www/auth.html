@@ -104,8 +104,7 @@ input.otp { font: 600 28px var(--f-mono); letter-spacing: .45em; text-align: cen
     <p class="lead">Register once to use Iron Making. You will need internet for this step only; after that the app works offline.</p>
     <button class="btn" type="button" data-go="signup">Create an account</button>
     <button class="btn alt" type="button" data-go="login">I already have a login</button>
-    <button class="btn alt" type="button" id="guest">Continue without an account</button>
-    <p class="lead" style="font-size:13px;margin-top:10px">No internet, or the account server is not answering? Continue without an account: every calculation works offline. You can register later from Log out on the home page.</p>
+    <p class="lead" style="font-size:13px;margin-top:10px">An account is needed to use the app.</p>
   </section>
 
   <!-- 1. details -->
@@ -188,11 +187,13 @@ input.otp { font: 600 28px var(--f-mono); letter-spacing: .45em; text-align: cen
     <div class="links"><button class="link" type="button" data-go="welcome">Back</button></div>
   </form>
 
-  <p class="note">Your name, mobile, email and company are saved by the Iron Making app owner to manage access. Your password is stored only as a secure hash. Your plant data never leaves this device.</p>
-  <div class="foot"><span>IRON MAKING 5.0</span><button class="link" type="button" data-go="server">Server link</button></div>
+  <p class="note">Your name, mobile, email and company are saved by the Iron Making app owner to manage access. Your password is stored only as a secure hash. Files you upload in the app, your saved inputs and suggestions are backed up online to the app owner's Google Drive.</p>
+  <div class="foot"><span>IRON MAKING 5.9</span><button class="link" type="button" data-go="server">Server link</button></div>
 </div>
 <script src="auth-config.js"></script>
 <script src="auth-api.js"></script>
+<script src="cloud-config.js"></script>
+<script src="im-cloud.js"></script>
 <script src="auth.js"></script>
 <script>window.PM_CFG = window.PM_CFG || { app: 'BF Model' };</script>
 <script src="premium.js"></script>

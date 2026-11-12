@@ -10,6 +10,9 @@
 
 Or use it in the browser with nothing to install: https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/
 
+Download page for every device: https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/download.html
+
 **Inside:** BF Model (burden, 3D distribution, furnace 3D view, cohesive & melting zone, hearth liquid, cost optimiser, critical situation plan, taphole check with 3D, tuyere watch, water cooling requirement) · Sinter Predict with critical decisions and How sinter is made (3D) · Coke Making with critical decisions and How coke is made (3D) · Carbon footprint (CBAM).
 
-Plant data stays on your device. Values are typical published ranges: check them against your plant SOP.
+An account is needed (no guest use). Logins, uploaded files, saved inputs and suggestions are backed up to the app owner's Google Drive.
+The Android APK installs as an update over BF Model / Iron Making 5.2 and later. Values are typical published ranges: check them against your plant SOP.

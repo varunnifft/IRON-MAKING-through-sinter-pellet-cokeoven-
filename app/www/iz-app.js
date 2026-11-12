@@ -120,7 +120,7 @@
     DEFS.forEach(function (d) { var v = S.final[k(d)]; if (d.kind === 'opt' && v == null) return; inp.push([d.l, v === 'NaN' || v == null ? '' : v, d.u, d.kind === 'matrix' ? (S.src.matrix === 'link' ? 'BF Model · Burden calculator' : srcOf('matrix') || srcOf(k(d))) : srcOf(k(d))]); });
     OVR.forEach(function (o) { var v = S.final[k(o)]; if (v != null) inp.push(['Estimator override · ' + o.l, v, o.u, 'Your data']); });
     var add = function (nm, aoa, w) { var ws = XLSX.utils.aoa_to_sheet(aoa); if (w) ws['!cols'] = w.map(function (x) { return { wch: x }; }); XLSX.utils.book_append_sheet(wb, ws, nm); };
-    var dash = [['COHESIVE & MELTING ZONE PREDICTION'], ['BF Model · Iron Making 5.8 · calculations follow ' + REF_FILE], ['Data', S.mode === 'reference' ? 'Reference (example furnace)' : S.inputMode === 'upload' ? 'Uploaded: ' + S.fileName : 'Entered manually'], ['Run at', new Date().toLocaleString()], [],
+    var dash = [['COHESIVE & MELTING ZONE PREDICTION'], ['BF Model · Iron Making 5.9 · calculations follow ' + REF_FILE], ['Data', S.mode === 'reference' ? 'Reference (example furnace)' : S.inputMode === 'upload' ? 'Uploaded: ' + S.fileName : 'Entered manually'], ['Run at', new Date().toLocaleString()], [],
       ['Key result', 'Value', 'Unit', 'Low', 'High', 'Status', 'Meaning / action']];
     DASH.forEach(function (x) { var v = G('Dashboard', 'B' + x.r); dash.push([x.l, typeof v === 'number' && isFinite(v) ? +v.toPrecision(6) : v, x.u, G('Dashboard', 'D' + x.r), G('Dashboard', 'E' + x.r), G('Dashboard', 'F' + x.r), x.m]); });
     dash.push([], ['Zone', 'From (m)', 'To (m)', 'Thickness (m)', 'Gas T bottom (°C)', 'Solid T top (°C)', 'What happens here']);
@@ -241,7 +241,7 @@
       h += '<div class="zone"><i style="--c:' + ZC[r - 49] + '"></i><div><b>' + esc(raw('Dashboard', 'A' + r)) + '</b><div class="h">' + cell('Dashboard', 'B' + r) + ' → ' + cell('Dashboard', 'C' + r) + ' m · ' + cell('Dashboard', 'D' + r) + ' m thick · gas ' + fmtv(G('Dashboard', 'E' + r), '0') + ' °C · solid ' + fmtv(G('Dashboard', 'F' + r), '0') + ' °C</div><p>' + txt('Dashboard', 'G' + r) + '</p></div></div>';
     }
     h += '</div><div class="row2"><button class="btn" id="dExp">' + ic('<path d="M12 3v12M7 10l5 5 5-5M4 19h16"/>') + 'Export results (.xlsx)</button><button class="btn" data-go="v3d">3D furnace view ›</button></div>' +
-      '<div class="note warn">' + esc(raw('Guide', 'B16')) + '</div><p class="foot">Cohesive &amp; melting zone prediction · BF Model 5.8 · ' + REF_FILE + '</p>';
+      '<div class="note warn">' + esc(raw('Guide', 'B16')) + '</div><p class="foot">Cohesive &amp; melting zone prediction · BF Model 5.9 · ' + REF_FILE + '</p>';
     $('#p-dash').innerHTML = h;
     $$('#p-dash [data-go]').forEach(function (b) { b.onclick = function () { go(b.getAttribute('data-go')); }; });
     $('#dExp').onclick = exportReport;

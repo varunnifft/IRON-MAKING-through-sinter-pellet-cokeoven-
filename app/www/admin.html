@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>Admin · Online storage</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="im.css">
+<style>
+/* Admin only: the Google Drive storage of the app (users, uploads, backups, suggestions) and an upload box. */
+[hidden] { display: none !important }
+.ah { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin: 6px 0 4px }
+.ah h1 { margin: 0; font: 700 32px/1.05 var(--f-display); letter-spacing: .04em; text-transform: uppercase }
+.ah a.back { text-decoration: none; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(11,31,56,.8); font-weight: 600 }
+.lead { color: var(--ink-2); margin: 4px 0 14px; max-width: 80ch }
+.box { margin: 12px 0; padding: 14px; border-radius: 16px; border: 1px solid var(--line); background: rgba(11,31,56,.72) }
+.box h2 { margin: 0 0 10px; font: 700 20px/1.1 var(--f-display); letter-spacing: .08em; text-transform: uppercase }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px }
+.links a, .btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 8px 12px; border-radius: 12px; text-decoration: none; font-weight: 600; text-align: center;
+  border: 1px solid rgba(255,181,71,.5); background: linear-gradient(160deg, rgba(255,122,26,.2), rgba(11,31,56,.9)); color: #fff; cursor: pointer; font-family: inherit; font-size: 15px }
+.btn.main { background: var(--molten); color: #2a1200; border: 0 }
+.btn:disabled { opacity: .55 }
+.url { margin-top: 10px; font: 12px/1.45 var(--f-mono); color: var(--muted); word-break: break-all }
+.url button { margin-left: 6px; font: inherit; color: #ffd9a8; background: none; border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; cursor: pointer }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px }
+.stat { padding: 10px; border-radius: 12px; background: rgba(4,12,23,.6); border: 1px solid var(--line) }
+.stat small { display: block; color: var(--muted); font-size: 12px }
+.stat b { font: 700 26px/1.1 var(--f-display) }
+.tw { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line) }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 520px }
+th, td { padding: 7px 9px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top }
+th { font: 600 11.5px/1.2 var(--f-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; background: rgba(4,12,23,.6); position: sticky; top: 0 }
+td a { color: #ffd9a8 }
+.msg { margin: 10px 0; padding: 10px 12px; border-radius: 12px; display: none }
+.msg.on { display: block } .msg.err { background: rgba(179,38,30,.25); border: 1px solid #ff8a80 } .msg.ok { background: rgba(35,112,58,.25); border: 1px solid #72c784 }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px }
+.tabs button { padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: none; color: var(--ink-2); font: 600 13px var(--f-body); cursor: pointer }
+.tabs button.on { background: var(--molten); color: #2a1200; border-color: transparent }
+.drop { border: 2px dashed rgba(255,181,71,.5); border-radius: 14px; padding: 16px; text-align: center; color: var(--ink-2) }
+.no { padding: 30px 14px; text-align: center }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ah"><h1>Online storage</h1><a class="back" href="index.html">‹ Home</a></div>
+  <p class="lead">Admin only. Everything the app saves online is in your Google Drive folder <b>Iron Making Cloud</b>: the user register, files users upload, their saved inputs and suggestions.</p>
+  <p class="msg" id="msg" role="alert"></p>
+
+  <div id="notAdmin" class="box no" hidden>
+    <h2>Admin only</h2>
+    <p class="lead" id="naText">This page is for the app admin. Log out and log in with the admin login ID.</p>
+    <a class="btn" href="index.html">‹ Home</a>
+  </div>
+
+  <div id="main" hidden>
+    <section class="box">
+      <h2>Open in Google Drive</h2>
+      <div class="links" id="links"></div>
+      <div class="url" id="urls"></div>
+    </section>
+
+    <section class="box">
+      <h2>Storage used</h2>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="box">
+      <h2>Upload to online storage</h2>
+      <p class="lead" style="margin-top:0">Files go to the Drive folder <b>Admin uploads</b>. Up to 15 MB per file.</p>
+      <div class="drop">
+        <input type="file" id="file" multiple data-no-cloud hidden>
+        <button class="btn main" type="button" id="pick">Choose files to upload</button>
+        <div id="upState" class="url" style="text-align:center"></div>
+      </div>
+      <div class="tw" style="margin-top:10px"><table><thead><tr><th>Admin file</th><th>Size</th><th>Date</th></tr></thead><tbody id="adminFiles"></tbody></table></div>
+    </section>
+
+    <section class="box">
+      <h2>Records</h2>
+      <div class="tabs" id="tabs">
+        <button type="button" data-t="users" class="on">Users</button>
+        <button type="button" data-t="uploadsList">Uploaded files</button>
+        <button type="button" data-t="suggestions">Suggestions</button>
+        <button type="button" data-t="activity">Activity</button>
+      </div>
+      <div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+      <p class="url">Newest first. The full lists are in the register sheet.</p>
+    </section>
+    <button class="btn" type="button" id="refresh" style="width:100%">Refresh</button>
+  </div>
+</div>
+<script src="auth-config.js"></script>
+<script src="auth-api.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var data = null, tab = 'users';
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function say(t, ok) { var m = $('msg'); m.textContent = t || ''; m.className = 'msg' + (t ? ' on ' + (ok ? 'ok' : 'err') : ''); }
+  function size(b) { b = +b || 0; return b > 1073741824 ? (b / 1073741824).toFixed(2) + ' GB' : b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : (b / 1024).toFixed(b < 102400 ? 1 : 0) + ' KB'; }
+  function open(u) { if (window.Android && window.Android.openUrl) window.Android.openUrl(u); else window.open(u, '_blank', 'noopener'); }
+  function link(u, t) { return u && /^https:\/\//.test(u) ? '<a href="' + esc(u) + '" data-ext>' + esc(t) + '</a>' : esc(t); }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[data-ext]'); if (a) { e.preventDefault(); open(a.getAttribute('href')); return; }
+    var c = e.target.closest('[data-copy]'); if (c) { var v = c.getAttribute('data-copy'); (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function () { say('Link copied.', true); }, function () { prompt('Copy this link', v); }); }
+  });
+
+  var COLS = {
+    users: [['Login ID', 0], ['Name', 1], ['Email', 2], ['Company', 3], ['Mobile', 4], ['First seen', 6], ['Last seen', 7], ['Visits', 8], ['Uploads', 9], ['Last backup', 10], ['App', 5]],
+    uploadsList: [['When', 0], ['Login ID', 1], ['Name', 2], ['File', 4, 6], ['Size KB', 5], ['Page', 3]],
+    suggestions: [['When', 0], ['Login ID', 1], ['Name', 2], ['Email', 3], ['Page', 4], ['Suggestion', 5]],
+    activity: [['When', 0], ['Login ID', 1], ['Name', 2], ['Event', 3], ['Detail', 4, 5]]
+  };
+  function table() {
+    var cols = COLS[tab], rows = (data && data[tab]) || [];
+    $('th').innerHTML = '<tr>' + cols.map(function (c) { return '<th>' + c[0] + '</th>'; }).join('') + '</tr>';
+    $('tb').innerHTML = rows.length ? rows.map(function (r) { return '<tr>' + cols.map(function (c) { return '<td>' + (c[2] != null ? link(r[c[2]], r[c[1]]) : esc(r[c[1]])) + '</td>'; }).join('') + '</tr>'; }).join('')
+      : '<tr><td colspan="' + cols.length + '">Nothing yet.</td></tr>';
+  }
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; tab = b.getAttribute('data-t'); Array.prototype.forEach.call($('tabs').children, function (x) { x.classList.toggle('on', x === b); }); table(); });
+
+  function render(r) {
+    data = r; var L = r.links || {}, S = r.storage || {}, N = r.counts || {};
+    $('links').innerHTML = [['Main folder (all data)', L.folder], ['User register (sheet)', L.book], ['User uploads', L.uploads], ['Saved inputs (backups)', L.backups], ['Admin uploads', L.admin]]
+      .filter(function (x) { return x[1]; }).map(function (x) { return '<a href="' + esc(x[1]) + '" data-ext>' + esc(x[0]) + ' ›</a>'; }).join('');
+    $('urls').innerHTML = 'Drive folder link: ' + esc(L.folder || '') + (L.folder ? '<button type="button" data-copy="' + esc(L.folder) + '">Copy</button>' : '') +
+      '<br>Register sheet link: ' + esc(L.book || '') + (L.book ? '<button type="button" data-copy="' + esc(L.book) + '">Copy</button>' : '');
+    $('stats').innerHTML = [['Users', N.users], ['Uploaded files', N.uploads], ['Suggestions', N.suggestions], ['Total storage', size(S.totalBytes)],
+      ['User uploads', size(S.uploads && S.uploads.bytes)], ['Backups', size(S.backups && S.backups.bytes)], ['Admin uploads', size(S.admin && S.admin.bytes)]]
+      .map(function (x) { return '<div class="stat"><small>' + x[0] + '</small><b>' + esc(x[1] == null ? '0' : x[1]) + '</b></div>'; }).join('');
+    var af = r.adminFiles || [];
+    $('adminFiles').innerHTML = af.length ? af.map(function (f) { return '<tr><td>' + link(f[3], f[0]) + '</td><td>' + esc(f[1]) + ' KB</td><td>' + esc(f[2]) + '</td></tr>'; }).join('') : '<tr><td colspan="3">No admin files yet.</td></tr>';
+    table();
+  }
+  function load() {
+    say(''); $('refresh').disabled = true; $('refresh').textContent = 'Loading…';
+    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); }, function (e) { say(e.message); })
+      .then(function () { $('refresh').disabled = false; $('refresh').textContent = 'Refresh'; });
+  }
+  $('refresh').addEventListener('click', load);
+  $('pick').addEventListener('click', function () { $('file').click(); });
+  $('file').addEventListener('change', function () {
+    var files = Array.prototype.slice.call(this.files); this.value = '';
+    var i = 0, ok = 0;
+    (function next() {
+      if (i >= files.length) { $('upState').textContent = ok + ' of ' + files.length + ' uploaded.'; if (ok) say(ok + ' file(s) saved to Google Drive › Admin uploads.', true); $('pick').disabled = false; return load(); }
+      var f = files[i++]; $('pick').disabled = true;
+      if (f.size > 15 * 1048576) { say(f.name + ' is larger than 15 MB. Put it in the Drive folder directly.'); return next(); }
+      $('upState').textContent = 'Uploading ' + f.name + ' (' + i + ' of ' + files.length + ')…';
+      IMCloud.b64of(f).then(function (b64) { return IMCloud.adminCall('adminUpload', { fileName: f.name, mime: f.type || '', b64: b64 }); })
+        .then(function () { ok++; }, function (e) { say(f.name + ': ' + e.message); }).then(next);
+    })();
+  });
+
+  function start() {
+    if (!window.IMCloud) return setTimeout(start, 50);
+    if (!IMCloud.admin()) { $('notAdmin').hidden = false; return; }
+    IMCloud.refreshUrl(false).then(function () {
+      if (!IMCloud.configured()) { $('notAdmin').hidden = false; $('naText').textContent = 'The online storage link is not set up yet, or there is no internet.'; return; }
+      $('main').hidden = false; load();
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>

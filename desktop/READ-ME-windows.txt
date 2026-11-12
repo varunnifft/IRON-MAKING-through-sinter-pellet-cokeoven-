@@ -8,7 +8,7 @@ Designed & developed by Niteen Kumar
    (The app is not code-signed with a paid certificate; this message is normal.)
 4. On the first start the app adds "Iron Making" to the Start menu and the Desktop.
 
-Log in with your BF Model account, or choose Continue without an account.
+Log in with your Iron Making / BF Model account (internet needed the first time).
 Your inputs are saved on this computer (not shared with the phone app).
 Files you export are saved where you choose (Downloads by default).
 Menu: Go > Iron Making home / BF Model / Sinter / Coke / Carbon;  File > Print / Save page as PDF.

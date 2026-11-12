@@ -208,7 +208,7 @@
       '<tr><td><b>2 · Review &amp; fill missing</b><br><small>Every blank input is listed with its reference value. Choose <b style="color:var(--ref)">Take reference</b> or <b>Don\'t take</b> for each one.</small></td></tr>' +
       '<tr><td><b>3 · Results</b><br><small>CSR, CRI, M40, M10, coke chemistry, yield and production, mass &amp; heat balance, deviations and corrective actions. Export the report to Excel.</small></td></tr></table></div>' +
       '<div class="card"><h2>' + ic('mix') + 'Coal blend optimiser</h2><p class="sub">The earlier Coke Optimiser (Python engine). The first start downloads about 40 MB, so keep internet on.</p><p class="sub" style="margin:8px 0 0"><b>Not in the browser version.</b> Use the Android app for the coal blend optimiser.</p></div>' +
-      '<p class="foot">Coke Making · part of Iron Making 5.8 · calculations follow ' + REF_FILE + '</p>';
+      '<p class="foot">Coke Making · part of Iron Making 5.9 · calculations follow ' + REF_FILE + '</p>';
     $$('#p-home [data-go]').forEach(function (b) { b.onclick = function () { go(b.getAttribute('data-go')); }; });
     $('#hRef').onclick = function () { downloadAsset(REF_FILE); };
   }
@@ -431,7 +431,7 @@
   }
   function exportReport() {
     run(); var Q = RES.Q, MB = RES.MB, B = RES.B, H = RES.H, n = function (v, d) { return fx(v, d); };
-    var res = [['COKE MAKING REPORT'], ['Iron Making 5.8 · Coke Making · calculations follow ' + REF_FILE], ['Data', S.mode === 'reference' ? 'Reference data' : (S.inputMode === 'upload' ? 'Uploaded: ' + S.fileName : 'Entered manually')],
+    var res = [['COKE MAKING REPORT'], ['Iron Making 5.9 · Coke Making · calculations follow ' + REF_FILE], ['Data', S.mode === 'reference' ? 'Reference data' : (S.inputMode === 'upload' ? 'Uploaded: ' + S.fileName : 'Entered manually')],
       ['Coefficient set', RES.coefSet + (RES.coefSet === 'Fitted' ? ' (' + RES.fit.n + ' lab batches)' : '')], ['Run at', new Date().toLocaleString()], [],
       ['Parameter', 'Value', 'Unit', 'Band ±', 'Target', 'Status']];
     [['CSR', Q.CSR, '%', Q.band.CSR, 'CSR'], ['CRI', Q.CRI, '%', Q.band.CRI, 'CRI'], ['M40', Q.M40, '%', Q.band.M40, 'M40'], ['M10', Q.M10, '%', Q.band.M10, 'M10'], ['Coke ash', MB.cAsh, '% db', null, 'cAsh'], ['Coke sulphur', MB.cS, '% db', null, 'cS'],

@@ -145,7 +145,7 @@
       }).join('') + '</table></div></div>';
     h += '<div class="card"><h3>Your trial</h3><p class="sub">Change any lever and see the result in the last column.</p><div class="gis">' + TRIAL.map(function (t) { var v = S.trial[t.k]; return '<label class="gi"><span>' + esc(t.l) + '<small>' + esc(t.u) + '</small></span><input inputmode="decimal" data-tr="' + t.k + '" placeholder="' + esc(t.ref) + '" value="' + esc(v == null ? '' : v) + '"></label>'; }).join('') +
       '</div><div class="row2" style="margin-top:10px"><button class="btn pri" id="trRun">▶ Run trial</button><button class="btn" id="trOpt">Copy the optimum</button><button class="btn" id="trClr">Reset</button></div></div>' +
-      '<div class="row2"><button class="btn" id="dExp">⤓ Export results (.xlsx)</button><a class="btn" href="bf-home.html">BF Model ›</a></div><p class="foot">BF cost optimiser · Iron Making 5.8</p>';
+      '<div class="row2"><button class="btn" id="dExp">⤓ Export results (.xlsx)</button><a class="btn" href="bf-home.html">BF Model ›</a></div><p class="foot">BF cost optimiser · Iron Making 5.9</p>';
     el.innerHTML = h; bindGo(el); $('#dExp').onclick = exportReport;
     $('#trRun').onclick = function () { $$('#p-dash [data-tr]').forEach(function (i) { var v = i.value.trim(); if (v === '') delete S.trial[i.getAttribute('data-tr')]; else if (isFinite(+v)) S.trial[i.getAttribute('data-tr')] = +v; }); save(); go('dash', true); toast('Trial calculated'); };
     $('#trOpt').onclick = function () { var map = { G7: 'F9', G8: 'F10', G9: 'F5', G10: 'F6', G11: 'F7', G12: 'F8', G14: 'F13' }; Object.keys(map).forEach(function (g) { var v = G('Dashboard', map[g]); if (num(v)) S.trial['Scenarios!' + g] = +v.toFixed(2); }); save(); go('dash', true); };
@@ -334,7 +334,7 @@
   function exportReport() {
     compute(); if (!R) return toast('Inputs missing'); var wb = XLSX.utils.book_new(), add = function (nm, aoa, w) { var ws = XLSX.utils.aoa_to_sheet(aoa); if (w) ws['!cols'] = w.map(function (x) { return { wch: x }; }); XLSX.utils.book_append_sheet(wb, ws, nm); };
     var grab = function (sh, r0, r1, cols) { var out = []; for (var r = r0; r <= r1; r++) out.push(cols.split('').map(function (c) { var v = G(sh, c + r); return v === 0 && !G(sh, 'A' + r) ? '' : v; })); return out; };
-    add('Dashboard', [['BF COST OPTIMISER – Iron Making 5.8'], ['Run ' + new Date().toLocaleString()]].concat(grab('Dashboard', 4, 34, 'ABCDEFG')), [34, 12, 14, 14, 14, 14, 14]);
+    add('Dashboard', [['BF COST OPTIMISER – Iron Making 5.9'], ['Run ' + new Date().toLocaleString()]].concat(grab('Dashboard', 4, 34, 'ABCDEFG')), [34, 12, 14, 14, 14, 14, 14]);
     add('Recommendations', grab('Recommendations', 4, 16, 'ABCDE'), [4, 28, 12, 12, 90]);
     add('Optimiser', grab('Optimiser', 4, 40, 'ABCDEFGHIJK'), [40, 16, 12, 12, 12, 12, 12, 12, 14, 14, 14]);
     add('Tapping_Distribution', grab('Tapping_Distribution', 4, 19, 'ABCDE'), [44, 10, 12, 12, 60]);

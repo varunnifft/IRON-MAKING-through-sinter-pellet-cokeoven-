@@ -15,6 +15,6 @@ Needs macOS 11 Big Sur or newer.
    then open it again.
 4. After the first time it opens normally from Launchpad or the Dock.
 
-Log in with your BF Model account, or choose Continue without an account.
+Log in with your Iron Making / BF Model account (internet needed the first time).
 Your inputs are saved on this Mac (not shared with the phone app).
 Menu: Go > Iron Making home / BF Model / Sinter / Coke / Carbon;  File > Print / Save page as PDF.

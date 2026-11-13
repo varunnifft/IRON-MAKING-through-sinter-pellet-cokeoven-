@@ -10,7 +10,7 @@ Iron Making is the update of the *BF Model* app. It works offline. Logins, files
 | Device | How |
 |---|---|
 | **Android phone (free)** | [Download the APK](../../releases/latest) (`IronMaking-…-PHONE-INSTALL.apk`) and install it. It updates BF Model / Iron Making 5.2 and later. |
-| **Windows 10 / 11, Mac, Office PC (no install)** | Paid, in rupees by UPI: open the Android app → **App for win/mac/pc/laptop user** → choose the version → pay → send the UPI reference number. After the payment is checked, the download link appears in the app. A paid copy opens only with the buyer's own login, on up to 2 computers. |
+| **Windows 10 / 11, Mac, Office PC (no install)** | Paid, in rupees by UPI: open the Android app → **App for win/mac/pc/laptop user** → choose the version → pay → send the UPI reference number. After the payment is checked, the download link appears in the app, and later updates are free. A paid copy opens only with the buyer's own login, on up to 2 computers. |
 
 An account is needed: create one in the app or log in with your BF Model account.
 

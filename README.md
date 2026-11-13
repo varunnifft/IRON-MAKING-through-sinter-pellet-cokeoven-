@@ -10,8 +10,8 @@ Iron Making is the update of the *BF Model* app. It works offline and needs no s
 | Where | How |
 |---|---|
 | **In the browser (no install)** | Open the web app: **https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/** · works in Edge or Chrome on any PC, laptop or phone |
-| **Android phone** | [Download the APK](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9-v128-PHONE-INSTALL.apk) and install it, or get *BF Model* on Google Play |
-| **Office PC that blocks installs** | [Download the browser zip](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9-Browser-NoInstall.zip), extract it and open **Start Iron Making.html** |
+| **Android phone** | [Download the APK](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9.1-v129-PHONE-INSTALL.apk) and install it, or get *BF Model* on Google Play |
+| **Office PC that blocks installs** | [Download the browser zip](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9.1-Browser-NoInstall.zip), extract it and open **Start Iron Making.html** |
 | **Windows 10 / 11, Mac** | Download from the [latest release](../../releases/latest): `Windows-x64.zip` (extract, run **Iron Making.exe**), `Mac-AppleSilicon.zip` or `Mac-Intel.zip` |
 
 **Download page for every device and version:** `https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/download.html`

@@ -3,20 +3,16 @@
 **Blast furnace, sinter plant, coke oven and pellet plant tools in one app.**
 Designed & developed by **Niteen Kumar**.
 
-Iron Making is the update of the *BF Model* app. It works offline and needs no subscription. Logins, files uploaded in the app, saved inputs and suggestions are backed up online to the app owner's Google Drive.
+Iron Making is the update of the *BF Model* app. It works offline. Logins, files uploaded in the app, saved inputs and suggestions are backed up online to the app owner's Google Drive.
 
-## Use it
+## Get it
 
-| Where | How |
+| Device | How |
 |---|---|
-| **In the browser (no install)** | Open the web app: **https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/** · works in Edge or Chrome on any PC, laptop or phone |
-| **Android phone** | [Download the APK](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9.1-v129-PHONE-INSTALL.apk) and install it, or get *BF Model* on Google Play |
-| **Office PC that blocks installs** | [Download the browser zip](https://github.com/varunnifft/IRON-MAKING-through-sinter-pellet-cokeoven-/raw/main/downloads/IronMaking-5.9.1-Browser-NoInstall.zip), extract it and open **Start Iron Making.html** |
-| **Windows 10 / 11, Mac** | Download from the [latest release](../../releases/latest): `Windows-x64.zip` (extract, run **Iron Making.exe**), `Mac-AppleSilicon.zip` or `Mac-Intel.zip` |
+| **Android phone (free)** | [Download the APK](../../releases/latest) (`IronMaking-…-PHONE-INSTALL.apk`) and install it. It updates BF Model / Iron Making 5.2 and later. |
+| **Windows 10 / 11, Mac, Office PC (no install)** | Paid, in rupees by UPI: open the Android app → **Download the app** → choose the version → pay → send the UPI reference number. After the payment is checked, the download is shared with your Google account. |
 
-**Download page for every device and version:** `https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/download.html`
-
-An account is needed: create one in the app or log in with your BF Model account. The Android APK installs as an update over BF Model / Iron Making 5.2 and later.
+An account is needed: create one in the app or log in with your BF Model account.
 
 ## What is inside
 
@@ -40,17 +36,10 @@ An account is needed: create one in the app or log in with your BF Model account
 ## Repository layout
 
 ```
-index.html        opens the app (GitHub Pages entry)
-downloads/        Android APK and the no-install browser zip
-desktop/          Windows / Mac shell (Electron) and icons
-tools/            package_desktop.sh builds the desktop packages
-.github/workflows release.yml publishes every package as a GitHub release
-app/www/          Iron Making and BF Model pages
-app/index.html    Sinter Predict
-app/xco/          Coke Making
+downloads/        Android APK
+desktop/, tools/  Windows / Mac shell (Electron) and packaging script
+.github/workflows release.yml publishes the Android APK as a GitHub release
 ```
-
-The browser version leaves out the Coke coal-blend optimiser (Python engine); use the Android app for it.
 
 ## Note
 

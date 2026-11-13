@@ -1,17 +1,18 @@
-name: Publish app packages
+name: Publish Android app
 
-# Builds the Windows and Mac desktop apps on GitHub and publishes a release with
-# every package: Windows, Mac (Apple Silicon and Intel), Android APK and the no-install browser zip.
-# Runs when a version tag is pushed (for example v5.8), or by hand from the Actions tab.
+# Publishes the free Android APK as a GitHub release.
+# The Windows, Mac and Office PC versions are paid: they are sold in the app (Download the app → pay by UPI)
+# and shared from the owner's Google Drive after the payment is approved, so they are not published here.
+# This also removes Windows / Mac / browser-zip files from older releases.
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version, for example 5.9'
+        description: 'Version, for example 5.9.2'
         required: true
-        default: '5.9.1'
+        default: '5.9.2'
 
 permissions:
   contents: write
@@ -21,28 +22,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Tools
-        run: pip install pillow
       - name: Version
         id: v
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then V="${{ inputs.version }}"; else V="${GITHUB_REF_NAME#v}"; fi
           echo "version=$V" >> "$GITHUB_OUTPUT"; echo "tag=v$V" >> "$GITHUB_OUTPUT"
-      - name: Build Windows and Mac packages
+      - name: Remove paid versions from all releases
         env:
-          VERSION: ${{ steps.v.outputs.version }}
-        run: bash tools/package_desktop.sh
-      - name: Add Android APK and browser zip
-        run: cp downloads/*.apk downloads/*.zip dist/ && ls -la dist
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for t in $(gh release list --limit 100 --json tagName --jq '.[].tagName'); do
+            for a in $(gh release view "$t" --json assets --jq '.assets[].name' | grep -E 'Windows|Mac-|Browser-NoInstall' || true); do
+              echo "delete $t/$a"; gh release delete-asset "$t" "$a" --yes
+            done
+          done
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.v.outputs.tag }}
           V: ${{ steps.v.outputs.version }}
         run: |
+          mkdir -p dist && cp downloads/*.apk dist/
           sed "s/{V}/$V/g" .github/release-notes.md > notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber

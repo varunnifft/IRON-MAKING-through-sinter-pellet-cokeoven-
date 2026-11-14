@@ -31,7 +31,22 @@
     BFAuth.signIn(user); clearReg();
     // tell the admin's Google Drive register (waits at most 2.5 s; never blocks the login)
     var done = false, go = function () { if (!done) { done = true; location.replace('index.html'); } };
-    if (window.IMCloud && IMCloud.configured() && !user.cloudAdmin) { IMCloud.seen(event || 'login').then(go, go); setTimeout(go, 2500); } else go();
+    if (window.IMCloud && IMCloud.configured() && !user.cloudAdmin) {
+      IMCloud.seen(event || 'login').then(go, function (err) {
+        if (err && err.pending) {
+          // Account is pending admin approval: stay on auth page and show the message, don't open the app.
+          try { localStorage.removeItem('bf-user'); } catch (e) { }
+          var m = document.getElementById('msg') || document.createElement('p');
+          m.id = 'msg'; m.className = 'msg err on';
+          m.textContent = err.message || 'Your account is waiting for the admin to approve it.';
+          var p = document.querySelector('.panel:not([hidden])') || document.body;
+          if (!m.parentNode) p.insertBefore(m, p.firstChild);
+          return;
+        }
+        go();
+      });
+      setTimeout(function () { if (!done) go(); }, 4000);
+    } else go();
   }
   function isAdminId(id) { return String(id).toLowerCase() === String(window.BF_CLOUD_ADMIN_ID || 'nitikyash').toLowerCase(); }
   function samePasswords(form) {

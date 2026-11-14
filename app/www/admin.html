@@ -80,6 +80,12 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       <div class="stats" id="stats"></div>
     </section>
 
+    <section class="box" id="pendBox" hidden>
+      <h2>Pending user approvals <span id="pendNum" style="color:#ffd9a8"></span></h2>
+      <p class="url" style="margin:0 0 10px">New sign-ups wait here until you approve them. You also get an email for each new sign-up. Approve lets them log in; Block keeps the row but denies log-in; Reject deletes the row (they can sign up again later).</p>
+      <div id="pendList"></div>
+    </section>
+
     <section class="box" id="shop">
       <h2>App for Win / Mac / PC / Laptop</h2>
       <p class="lead" style="margin-top:0">Every version is <b style="color:#72c784">free for all users</b>. Upload the zip to Google Drive (or OneDrive / GitHub), set the share to <b>Anyone with the link</b>, and paste that link here. Users then see a Download button for it. Change a link any time: users always get the current one.</p>
@@ -160,7 +166,7 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       .map(function (x) { return '<div class="stat"><small>' + x[0] + '</small><b>' + esc(x[1] == null ? '0' : x[1]) + '</b></div>'; }).join('');
     var af = r.adminFiles || [];
     $('adminFiles').innerHTML = af.length ? af.map(function (f) { return '<tr><td>' + link(f[3], f[0]) + '</td><td>' + esc(f[1]) + ' KB</td><td>' + esc(f[2]) + '</td></tr>'; }).join('') : '<tr><td colspan="3">No admin files yet.</td></tr>';
-    table(); renderShop(r); renderLic(r);
+    table(); renderShop(r); renderLic(r); renderPending(r);
   }
   // ---- computer versions: download links only (payment is switched off in the script)
   function renderShop(r) {
@@ -177,6 +183,34 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
            : '<span class="url" style="margin:0">No link yet, so users see "Not uploaded yet" for this version</span>') + '</fieldset>';
     }).join('');
   }
+
+  function renderPending(r) {
+    var pend = (r.users || []).filter(function (u) { return String(u[12] || '').trim() === 'Pending'; });
+    $('pendBox').hidden = pend.length === 0;
+    $('pendNum').textContent = pend.length ? '· ' + pend.length + ' waiting' : '';
+    if (!pend.length) { $('pendList').innerHTML = ''; return; }
+    $('pendList').innerHTML = pend.map(function (u) {
+      var id = esc(u[0]), name = esc(u[1] || '-'), email = esc(u[2] || '-'), company = esc(u[3] || '-'), mobile = esc(u[4] || '-'), app = esc(u[5] || '-'), first = esc(u[6] || '-');
+      return '<div class="pay"><div><b>' + id + '</b> · ' + name + ' <span class="pill Pending">waiting</span></div>' +
+        '<div class="url" style="margin:0">Email ' + email + ' · ' + company + ' · ' + mobile + ' · App ' + app + ' · Signed up ' + first + '</div>' +
+        '<div class="acts"><button class="btn main" type="button" data-user="approve" data-id="' + id + '">Approve</button>' +
+        '<button class="btn" type="button" data-user="block" data-id="' + id + '">Block</button>' +
+        '<button class="btn no2" type="button" data-user="reject" data-id="' + id + '">Reject (delete)</button></div></div>';
+    }).join('');
+  }
+  var userActAt = {};
+  $('pendList').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-user]'); if (!b) return;
+    var op = b.getAttribute('data-user'), id = b.getAttribute('data-id'), key = op + '|' + id;
+    if (op !== 'approve' && (!userActAt[key] || Date.now() - userActAt[key] > 6000)) {
+      userActAt[key] = Date.now(); b.textContent = 'Tap again to ' + op; return;
+    }
+    b.disabled = true;
+    IMCloud.adminCall('adminApproveUser', { loginId: id, decision: op })
+      .then(function () { return load().then(function () { say(op === 'approve' ? 'Approved. The user can log in now (and gets an email if they entered one).' : op === 'block' ? 'Blocked. They cannot log in; they still show up in the list.' : 'Rejected and deleted. They can sign up again later.', true); }); },
+            function (er) { say(er.message); b.disabled = false; });
+  });
+
   function renderLic(r) {
     var Lr = r.licences || [];
     $('maxDev').textContent = r.maxDevices || 2;
@@ -207,10 +241,10 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       .then(function () { $('sSave').disabled = false; });
   });
   var codeOk = true;
-  var OLDCODE = 'Your Google Apps Script still has old code (needs 6.3), so the download links cannot be saved yet. On a computer: script.google.com > Iron Making Cloud > paste the new code > Save > Deploy > Manage deployments > pencil > Version: New version > Deploy.';
+  var OLDCODE = 'Your Google Apps Script still has old code (needs 6.3.1), so the download links cannot be saved yet. On a computer: script.google.com > Iron Making Cloud > paste the new code > Save > Deploy > Manage deployments > pencil > Version: New version > Deploy.';
   function load() {
     say(''); $('refresh').disabled = true; $('refresh').textContent = 'Loading…';
-    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = r.codeVersion === '6.3'; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); } catch (x) { } })
+    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = r.codeVersion === '6.3.1' || r.codeVersion === '6.3'; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); } catch (x) { } })
       .then(function () { $('refresh').disabled = false; $('refresh').textContent = 'Refresh'; });
   }
   $('refresh').addEventListener('click', load);

@@ -1,9 +1,16 @@
 **Iron Making {V}** · Designed & developed by Niteen Kumar
 
-**Android phone (free):** download `IronMaking-*-PHONE-INSTALL.apk` below and install it. It installs as an update over BF Model / Iron Making 5.2 and later; saved data stays.
+**All versions are free.**
 
-**Windows, Mac (Apple Silicon and Intel) and Office PC (no install):** open the Android app → **App for win/mac/pc/laptop user**, pay in rupees by UPI, and the download link appears in the app after the payment is checked. A paid copy opens only with the buyer's own login, on up to 2 computers.
+**Android phone:** download `IronMaking-*-PHONE-INSTALL.apk` below and install it. It installs as an update over BF Model / Iron Making 5.2 and later; saved data stays.
 
-**Inside:** BF Model (burden, 3D distribution, furnace 3D view, cohesive & melting zone, hearth liquid, cost optimiser, critical situation plan, taphole check with 3D, tuyere watch, water cooling requirement) · Sinter Predict with critical decisions and How sinter is made (3D) · Coke Making with critical decisions and How coke is made (3D) · Carbon footprint (CBAM).
+**Windows:** download `IronMaking-{V}-Windows-x64.zip`, unzip it, and open `Iron Making.exe`.
+**Mac (Apple Silicon, M1–M4):** download `IronMaking-{V}-Mac-AppleSilicon.zip`, unzip it, drag the app to Applications, then right-click it the first time and choose Open.
+**Mac (Intel):** download `IronMaking-{V}-Mac-Intel.zip`, same steps as above.
+**Office PC (no install):** download `IronMaking-{V}-Browser-NoInstall.zip`, unzip it and open `READ ME - how to start.txt`. Nothing is installed.
 
-An account is needed. Logins, uploaded files, saved inputs, suggestions and payments are recorded in the app owner's Google Drive. Values are typical published ranges: check them against your plant SOP.
+Every computer copy opens with your Iron Making login, on up to 2 computers.
+
+**Inside:** BF Model (burden, 3D distribution, furnace 3D view, cohesive & melting zone, hearth liquid, cost optimiser, critical situation plan, taphole check with 3D, tuyere watch, water cooling requirement) · Sinter quality prediction with critical decisions and How sinter is made (3D) · Coke quality prediction with critical decisions and How coke is made (3D) · Carbon footprint (CBAM).
+
+An account is needed. Logins, uploaded files, saved inputs, and suggestions are recorded in the app owner's Google Drive. Values are typical published ranges: check them against your plant SOP.

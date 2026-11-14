@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>App for Win / Mac / PC / Laptop</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="im.css">
+<style>
+/* Iron Making for computers. Free for every logged-in user: the admin sets a download link for each version. */
+[hidden] { display: none !important }
+.ah { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin: 6px 0 4px }
+.ah h1 { margin: 0; font: 700 32px/1.05 var(--f-display); letter-spacing: .04em; text-transform: uppercase }
+.ah a.back { text-decoration: none; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(11,31,56,.8); font-weight: 600 }
+.lead { color: var(--ink-2); margin: 4px 0 14px; max-width: 70ch }
+.box { margin: 12px 0; padding: 14px; border-radius: 16px; border: 1px solid var(--line); background: rgba(11,31,56,.72) }
+.box h2 { margin: 0 0 8px; font: 700 20px/1.1 var(--f-display); letter-spacing: .08em; text-transform: uppercase }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line) }
+.row:first-of-type { border-top: 0 }
+.row > div { min-width: 0 }
+.row b { display: block; font-size: 16px }
+.row small { color: var(--muted) }
+.free { color: #72c784; font-weight: 600 }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 8px 14px; border-radius: 12px; text-decoration: none; font: 700 15px var(--f-body); text-align: center; cursor: pointer;
+  border: 1px solid rgba(255,181,71,.5); background: none; color: #fff }
+.btn.main { background: var(--molten); color: #2a1200; border: 0 }
+.btn:disabled { opacity: .5 }
+.btn:focus-visible { outline: 3px solid #3cc6c4; outline-offset: 2px }
+.pick { min-width: 120px }
+.msg { margin: 10px 0; padding: 10px 12px; border-radius: 12px; display: none }
+.msg.on { display: block } .msg.err { background: rgba(179,38,30,.25); border: 1px solid #ff8a80 } .msg.ok { background: rgba(35,112,58,.25); border: 1px solid #72c784 }
+.mono { font: 12.5px var(--f-mono); color: var(--muted); overflow-wrap: anywhere }
+.steps { margin: 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; display: grid; gap: 6px }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ah"><h1>App for Win / Mac / PC / Laptop</h1><a class="back" href="index.html">‹ Home</a></div>
+  <p class="lead" id="storeLead">Iron Making for your computer: Windows, Mac and office PC or laptop. <b class="free">Free for every user.</b> Choose your version below and download it.</p>
+  <p class="msg" id="msg" role="alert"></p>
+
+  <section class="box">
+    <h2>Choose your version</h2>
+    <div id="items"><p class="mono">Loading…</p></div>
+    <button class="btn" type="button" id="refresh" style="width:100%;margin-top:12px">Refresh</button>
+  </section>
+
+  <section class="box">
+    <h2>How to install</h2>
+    <ol class="steps">
+      <li>Tap <b>Download</b> for your computer. The file opens in your browser or Google Drive: choose <b>Download</b> there.</li>
+      <li><b>Windows:</b> unzip the folder, then open <b>Iron Making.exe</b>. <b>Mac:</b> unzip, drag the app to Applications, then right-click it and choose Open the first time.</li>
+      <li><b>Office PC (no install):</b> unzip the folder and open <b>READ ME - how to start.txt</b>. Nothing is installed.</li>
+      <li>Open the app and log in with <b id="meId">your login</b> — the same login you use here.</li>
+    </ol>
+  </section>
+</div>
+<script src="auth-config.js"></script>
+<script src="auth-api.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var info = null;
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function say(t, ok) { var m = $('msg'); m.textContent = t || ''; m.className = 'msg' + (t ? ' on ' + (ok ? 'ok' : 'err') : ''); if (t) m.scrollIntoView({ block: 'nearest' }); }
+  function open(u) { if (window.Android && window.Android.openUrl && /^https?:/.test(u)) window.Android.openUrl(u); else if (/^https?:/.test(u)) window.open(u, '_blank', 'noopener'); else location.href = u; }
+  document.addEventListener('click', function (e) { var a = e.target.closest('a[data-ext]'); if (a) { e.preventDefault(); var h = a.getAttribute('href'); if (h && h !== '#') open(h); } });
+  function user() { try { return JSON.parse(localStorage.getItem('bf-user') || 'null'); } catch (e) { return null; } }
+  function send(action, data) {
+    var u = user(); if (!u) return Promise.reject(new Error('Please log in again.'));
+    function go(tok) { return IMCloud.call(action, Object.assign({ loginId: u.loginId, token: tok, name: u.name, email: u.email }, data || {})); }
+    var t = null; try { t = JSON.parse(localStorage.getItem('im.cloud.tok') || 'null'); } catch (e) { }
+    return (t && t.id === u.loginId ? Promise.resolve(t.tok) : IMCloud.seen('open')).then(go).catch(function (e) {
+      if (/Not signed in to the cloud/.test(e.message)) return IMCloud.seen('open').then(go); throw e; });
+  }
+  function renderItems() {
+    var list = info.items || [];
+    if (!list.length) { $('items').innerHTML = '<p class="mono">No versions yet. Please check again later.</p>'; return; }
+    $('items').innerHTML = list.map(function (i) {
+      if (i.link) {
+        return '<div class="row"><div><b>' + esc(i.name) + '</b><small class="free">Free download</small></div>' +
+          '<a class="btn main pick" data-ext href="' + esc(i.link) + '">Download</a></div>';
+      }
+      return '<div class="row"><div><b>' + esc(i.name) + '</b><small>Not uploaded yet. Please check again later.</small></div></div>';
+    }).join('') + (info.note ? '<p class="mono" style="margin-top:10px">' + esc(info.note) + '</p>' : '');
+  }
+  function load() {
+    $('refresh').disabled = true;
+    return send('store').then(function (r) { info = r; renderItems(); say(''); },
+      function (e) { $('items').innerHTML = '<p class="mono">Could not load the downloads: ' + esc(e.message) + ' Check the internet and try again.</p>'; })
+      .then(function () { $('refresh').disabled = false; });
+  }
+  $('refresh').addEventListener('click', load);
+  (function start() {
+    var u = user(); if (u && u.loginId) $('meId').textContent = u.loginId;
+    if (!window.IMCloud) return setTimeout(start, 50);
+    load();
+  })();
+})();
+</script>
+</body>
+</html>

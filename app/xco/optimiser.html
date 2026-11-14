@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<script src="../www/licence-gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>Coke Optimiser</title>
+<link rel="stylesheet" href="./stlite/stlite.css" />
+<style>
+  body { margin: 0; background: #fff; font-family: sans-serif; }
+  #boot { padding: 24px; color: #1F3864; }
+  #boot small { color: #666; display: block; margin-top: 8px; line-height: 1.4; }
+</style>
+<script>
+  // Save files from st.download_button to the phone's Downloads folder.
+  function guessExt(t) {
+    if (!t) return "";
+    if (t.indexOf("spreadsheet") >= 0) return ".xlsx";
+    if (t.indexOf("csv") >= 0) return ".csv";
+    if (t.indexOf("pdf") >= 0) return ".pdf";
+    return "";
+  }
+  async function androidSave(href, name) {
+    const r = await fetch(href);
+    const b = await r.blob();
+    const fr = new FileReader();
+    fr.onload = () => AndroidBridge.saveFile(String(fr.result).split(",")[1], name || ("download_" + Date.now() + guessExt(b.type)), b.type);
+    fr.readAsDataURL(b);
+  }
+  if (window.AndroidBridge) {
+    const origClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      if (this.hasAttribute("download") && this.href) { androidSave(this.href, this.getAttribute("download")); return; }
+      return origClick.call(this);
+    };
+    document.addEventListener("click", (e) => {
+      const a = e.target && e.target.closest ? e.target.closest("a[download]") : null;
+      if (a && a.href) { e.preventDefault(); e.stopPropagation(); androidSave(a.href, a.getAttribute("download")); }
+    }, true);
+  }
+</script>
+</head>
+<body>
+<div id="boot">Starting Coke Optimiser...
+  <small>The first start downloads the Python engine (about 40 MB), so keep mobile data or Wi-Fi on.
+  Later starts are faster. All calculations run on this phone.</small></div>
+<div id="root"></div>
+<script type="module">
+  import { mount } from "./stlite/stlite.js";
+  document.getElementById("boot").style.display = "none";
+  mount({
+    entrypoint: "app.py",
+    requirements: ["openpyxl", "scipy", "python-docx", "beautifulsoup4", "pdfminer.six"],
+    files: {
+      "app.py": { url: "./py/app.py" },
+      "engine.py": { url: "./py/engine.py" },
+      "ingest.py": { url: "./py/ingest.py" },
+      "master.py": { url: "./py/master.py" },
+      "optimise.py": { url: "./py/optimise.py" },
+      ".streamlit/config.toml": 'theme.base = "light"\ntheme.primaryColor = "#E0482D"\nclient.toolbarMode = "minimal"\n'
+    }
+  }, document.getElementById("root"));
+</script>
+<script src="nk-logo.js" data-img="nk-logo.png" defer></script>
+<script src="im-out.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<script src="www/licence-gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101317">
+<title>Sinter Plant Improvement Plan</title>
+<link rel="stylesheet" href="www/fonts.css">
+<style>
+/* Improvement planner console: summary tiles, 3D plant with numbered project markers, then tabs
+   (Plan in 3D / Ranking / Inputs / Roadmap / BF quality). Same design language as the critical-decision trainers. */
+:root{
+  --bg:#eceff2; --surface:#ffffff; --surface2:#f5f7f9; --ink:#15191e; --muted:#5a6470; --line:#d3d9e0;
+  --accent:#27d07c; --accent-ink:#04240f; --stage:#dde2e8;
+  --qw:#1f9e5c; --hv:#0d7480; --si:#7a4fd0; --lt:#a86a12; --bad:#c62828;
+  --qw-bg:#e2f5e9; --hv-bg:#e0f0f2; --si-bg:#ece4fa; --lt-bg:#fbf0dc; --bad-bg:#fbe7e7;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101317; --surface:#181d23; --surface2:#1f252c; --ink:#e7eaee; --muted:#98a2ad; --line:#2c343d;
+  --accent:#27d07c; --accent-ink:#04240f; --stage:#0b0e11;
+  --qw:#3ddc84; --hv:#3cc8d2; --si:#b07ae8; --lt:#f2b54e; --bad:#ff6b6b;
+  --qw-bg:#143122; --hv-bg:#11343a; --si-bg:#2a2140; --lt-bg:#3a2c14; --bad-bg:#3a1a1c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101317; --surface:#181d23; --surface2:#1f252c; --ink:#e7eaee; --muted:#98a2ad; --line:#2c343d;
+  --accent:#27d07c; --accent-ink:#04240f; --stage:#0b0e11;
+  --qw:#3ddc84; --hv:#3cc8d2; --si:#b07ae8; --lt:#f2b54e; --bad:#ff6b6b;
+  --qw-bg:#143122; --hv-bg:#11343a; --si-bg:#2a2140; --lt-bg:#3a2c14; --bad-bg:#3a1a1c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.imbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;margin:-20px calc(-1*max(16px,env(safe-area-inset-right,0px))) 0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;background:rgba(10,13,17,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.imbar .bk{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:4px 12px;border-radius:10px;border:1px solid var(--line);color:#e7eaee;font:600 13.5px var(--f-body)}
+.imbar .bk svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.imbar .tt{flex:1;min-width:0;line-height:1.1}.imbar .tt small{display:block;font:500 10.5px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.imbar .tt b{display:block;font:700 17px var(--f-display);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e7eaee}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,4.2vw,44px);line-height:1.02;margin:4px 0 6px;text-wrap:balance;letter-spacing:.01em}
+.sub{color:var(--muted);max-width:74ch;margin:0}
+.legend{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+.pill.qw{background:var(--qw-bg);color:var(--qw)} .pill.hv{background:var(--hv-bg);color:var(--hv)}
+.pill.si{background:var(--si-bg);color:var(--si)} .pill.lt{background:var(--lt-bg);color:var(--lt)} .pill.bad{background:var(--bad-bg);color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.stat small{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.15}
+.stat span{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:calc(54px + env(safe-area-inset-top,0px));z-index:20;background:var(--bg);padding:6px 0}
+.tab{all:unset;cursor:pointer;font:600 13.5px var(--f-body);padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:40px;display:inline-flex;align-items:center}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pane{display:none;flex-direction:column;gap:16px}.pane.on{display:flex}
+.layout{display:grid;grid-template-columns:minmax(290px,370px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.step{font-family:var(--f-display);font-weight:600;font-size:19px;letter-spacing:.02em;margin:0}
+.plist{display:flex;flex-direction:column;gap:6px}
+.pj{all:unset;cursor:pointer;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface2)}
+.pj .rk{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.pj .nm{font-size:13.5px;line-height:1.3;min-width:0}
+.pj .bn{font-family:var(--f-mono);font-size:12px;white-space:nowrap}
+.pj:hover{border-color:var(--accent)}
+.pj[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+.pj .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.right{display:flex;flex-direction:column;gap:16px;min-width:0}
+.stage{position:relative;background:var(--stage);border:1px solid var(--line);border-radius:10px;overflow:hidden;aspect-ratio:16/8.4;max-width:100%;min-height:250px}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.tag{position:absolute;pointer-events:none;transform:translate(-50%,-130%);background:var(--surface);color:var(--ink);border:1px solid var(--line);font-family:var(--f-mono);font-size:12px;padding:3px 8px;border-radius:5px;white-space:nowrap}
+.tag::after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;background:var(--surface);border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.hud{position:absolute;left:10px;top:10px;right:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.hud span{font-family:var(--f-mono);font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:2px 7px;border-radius:5px}
+.hud .btn{pointer-events:auto}
+.btn{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;padding:6px 12px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:34px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.btn:focus-visible,.pj:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.nogl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.card-head h2{font-family:var(--f-display);font-weight:600;font-size:clamp(22px,2.6vw,28px);line-height:1.1;margin:2px 0 0;text-wrap:balance}
+.crumb{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.catbox{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px}
+.catbox .big{font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1.05}
+.catbox .txt{font-size:12.5px;line-height:1.3}
+.met{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--surface2)}
+.met div{min-width:0}.met small{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.met b{font-family:var(--f-display);font-size:21px;font-weight:700}
+.card-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+@media (max-width:700px){.card-body{grid-template-columns:1fr}}
+.col{padding:14px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.col+.col{border-left:1px solid var(--line)}
+@media (max-width:700px){.col+.col{border-left:0;border-top:1px solid var(--line)}}
+.col h3{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:500}
+.col p{margin:0;max-width:70ch}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:7px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px}
+ol.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:12px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-ink);margin-top:1px}
+.card-foot{display:flex;justify-content:space-between;gap:8px;padding:12px 18px;border-top:1px solid var(--line);background:var(--surface2);flex-wrap:wrap}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:680px}
+.tbl th{font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td.r,.tbl th.r{text-align:right;font-variant-numeric:tabular-nums}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.chip.qw{background:var(--qw-bg);color:var(--qw)} .chip.hv{background:var(--hv-bg);color:var(--hv)}
+.chip.si{background:var(--si-bg);color:var(--si)} .chip.lt{background:var(--lt-bg);color:var(--lt)} .chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.met{background:var(--qw-bg);color:var(--qw)} .chip.not{background:var(--bad-bg);color:var(--bad)} .chip.na{background:var(--surface2);color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:7px}
+.bar{display:grid;grid-template-columns:minmax(120px,220px) minmax(0,1fr) 84px;gap:10px;align-items:center;font-size:13px}
+.bar .tr{background:var(--surface2);border-radius:6px;height:18px;overflow:hidden}.bar .fl{height:100%;border-radius:6px}
+.bar .vl{font-family:var(--f-mono);font-size:12px;text-align:right}
+.glist{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+input,select{font:inherit;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;min-height:38px;max-width:100%}
+input[type=number]{width:110px;text-align:right;font-variant-numeric:tabular-nums}
+input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.inp-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.inp-row:last-child{border-bottom:0}
+.inp-row .lb{font-size:13.5px;line-height:1.35}
+.inp-row .nt{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.inp-row .un{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);margin-left:6px}
+details.grp{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+details.grp>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;font-family:var(--f-display);font-weight:600;font-size:17px;letter-spacing:.02em}
+details.grp>summary::after{content:"+";font-family:var(--f-mono);color:var(--muted)}
+details.grp[open]>summary::after{content:"−"}
+details.grp>.in{padding:2px 14px 12px}
+.gantt{display:flex;flex-direction:column;gap:6px;min-width:720px}
+.grow{display:grid;grid-template-columns:230px minmax(0,1fr);gap:10px;align-items:center;font-size:13px}
+.grow .lane{position:relative;height:22px;background:repeating-linear-gradient(90deg,var(--surface2) 0,var(--surface2) calc(100%/8 - 1px),var(--line) calc(100%/8 - 1px),var(--line) calc(100%/8));border-radius:5px}
+.grow .seg{position:absolute;top:2px;bottom:2px;border-radius:4px;opacity:.9}
+.grow .seg span{position:absolute;left:6px;top:50%;transform:translateY(-50%);font-family:var(--f-mono);font-size:10.5px;color:#06130a;white-space:nowrap}
+.gaxis{display:grid;grid-template-columns:230px minmax(0,1fr);gap:10px;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.gaxis .ticks{display:flex;justify-content:space-between}
+.warn{background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:8px 12px;font-size:13.5px;display:none}
+.warn.on{display:block}
+.ach{display:flex;align-items:center;gap:6px}
+.ach .tr{flex:1;height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;min-width:60px}
+.ach .fl{height:100%;border-radius:5px}
+.toolrow{display:flex;gap:8px;flex-wrap:wrap}
+footer{font-size:12.5px;color:var(--muted);max-width:95ch}
+.sig{text-align:center;font-size:13px;color:var(--muted)}.sig b{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="imbar" aria-label="Navigation"><button class="bk" type="button" id="topBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>Back</span></button><div class="tt"><small>Sinter plant · 10 projects in 3D</small><b>Improvement plan</b></div></nav>
+
+<header>
+  <div>
+    <div class="eyebrow">Sinter plant · improvement planner</div>
+    <h1>Sinter Plant Improvement Plan</h1>
+    <p class="sub">10 improvement projects: annual benefit in Rs Cr, capex, payback, priority ranking, a 48-month roadmap and the BF sinter quality check (TI, RDI, RI, chemistry) - each located on the plant in 3D. Values start as typical Indian-plant placeholders: enter your plant data on the Inputs tab.</p>
+  </div>
+  <div class="legend" aria-label="Project categories">
+    <span class="pill qw"><i></i>Quick win</span>
+    <span class="pill hv"><i></i>High value</span>
+    <span class="pill si"><i></i>Strategic investment</span>
+    <span class="pill lt"><i></i>Long-term / review</span>
+  </div>
+</header>
+
+<div class="warn" id="shareWarn"></div>
+<div class="stats" id="stats"></div>
+
+<div class="tabs" role="tablist" aria-label="Pages">
+  <button class="tab" role="tab" data-t="plan">Plan in 3D</button>
+  <button class="tab" role="tab" data-t="rank">Ranking</button>
+  <button class="tab" role="tab" data-t="inputs">Inputs</button>
+  <button class="tab" role="tab" data-t="road">Roadmap</button>
+  <button class="tab" role="tab" data-t="quality">BF sinter quality</button>
+  <button class="tab" id="shareBtn" type="button">Share report</button>
+  <button class="tab" id="csvBtn" type="button">Save CSV</button>
+</div>
+
+<section class="pane" id="pane-plan">
+  <div class="layout">
+    <aside class="panel">
+      <h2 class="step">Projects in priority order</h2>
+      <div class="plist" id="plist"></div>
+      <p class="sub" style="font-size:12.5px">Benefits are risk-adjusted (x confidence x scenario). Tap a project, or tap its number on the plant.</p>
+    </aside>
+    <div class="right">
+      <div class="stage" id="stage">
+        <canvas id="cv" aria-label="3D view of the plant with the ten improvement projects marked"></canvas>
+        <div class="hud"><span>Drag to rotate · pinch to zoom · tap a number</span><button class="btn" id="overview" type="button">Whole plant</button></div>
+        <div class="tag" id="tag" hidden></div>
+      </div>
+      <article class="card" aria-live="polite">
+        <div class="card-head">
+          <div><div class="crumb" id="crumb"></div><h2 id="pTitle"></h2></div>
+          <div class="catbox" id="catbox"><div class="big" id="catBig"></div><div class="txt" id="catTxt"></div></div>
+        </div>
+        <div class="met" id="met"></div>
+        <div class="card-body">
+          <div class="col">
+            <h3>Diagnosis from your inputs</h3><p id="diag"></p>
+            <h3 style="margin-top:6px">Recommended strategy</h3><p id="strat"></p>
+            <h3 style="margin-top:6px">KPIs to track</h3><p id="kpis"></p>
+          </div>
+          <div class="col">
+            <h3>Step-by-step action plan</h3><ol class="steps" id="steps"></ol>
+            <h3 style="margin-top:6px">Dependencies</h3><p id="dep"></p>
+            <h3 style="margin-top:6px">Main risks and mitigation</h3><p id="risks"></p>
+          </div>
+        </div>
+        <div class="card-foot">
+          <button class="btn" id="prev" type="button">← Previous</button>
+          <button class="btn" id="show3d" type="button">Show on the plant</button>
+          <button class="btn" id="next" type="button">Next →</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="pane" id="pane-rank">
+  <div class="panel"><h2 class="step">Risk-adjusted benefit, Rs Cr/yr</h2><div class="bars" id="bars"></div></div>
+  <div class="tscroll"><table class="tbl" id="rtable"></table></div>
+  <div class="panel"><h2 class="step">Portfolio strategy</h2><ol class="glist" id="stratList"></ol></div>
+</section>
+
+<section class="pane" id="pane-inputs">
+  <div class="panel" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px">
+    <span class="sub" style="flex:1;min-width:220px">Blue-on-yellow cells of the Excel are these inputs. Everything is saved on this device and recalculated at once. Values start as typical Indian-plant placeholders - replace them with your plant data.</span>
+    <button class="btn" id="resetBtn" type="button">Reset to placeholders</button>
+  </div>
+  <div id="inpGroups" style="display:flex;flex-direction:column;gap:10px"></div>
+  <details class="grp" open><summary>C. Raw materials, prices and mix shares (dry basis)</summary><div class="in"><div class="tscroll" style="border:0"><table class="tbl" id="matsTable"></table></div><p class="sub" id="matNote" style="font-size:12.5px;margin-top:8px"></p></div></details>
+  <details class="grp"><summary>Project settings - capex, time, difficulty, confidence</summary><div class="in"><div class="tscroll" style="border:0"><table class="tbl" id="projTable"></table></div></div></details>
+</section>
+
+<section class="pane" id="pane-road">
+  <div class="panel">
+    <h2 class="step">48-month roadmap</h2>
+    <p class="sub" style="font-size:13px">Phase 1 = months 1-6 (quick wins) · Phase 2 = 7-18 · Phase 3 = 19+. Change the start month on the Inputs tab (project settings).</p>
+    <div class="tscroll" style="border:0;padding:4px 0">
+      <div class="gantt" id="gantt"></div>
+      <div class="gaxis" style="min-width:720px"><span></span><div class="ticks"><span>M1</span><span>M6</span><span>M12</span><span>M18</span><span>M24</span><span>M30</span><span>M36</span><span>M42</span><span>M48</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="pane" id="pane-quality">
+  <div class="panel">
+    <h2 class="step">Process levers - base case vs scenario</h2>
+    <p class="sub" style="font-size:13px">The base column is today's practice; the scenario column is the plan (bed height, moisture, CaCl2 spraying...). The raw mix scenario follows the target shares in the material table.</p>
+    <div class="tscroll" style="border:0"><table class="tbl" id="levTable"></table></div>
+  </div>
+  <div class="tscroll"><table class="tbl" id="qTable"></table></div>
+  <div class="panel"><h2 class="step">What moved the prediction</h2><div class="tscroll" style="border:0"><table class="tbl" id="movedTable" style="min-width:420px"></table></div><p class="sub" id="outLine" style="font-size:13px"></p></div>
+</section>
+
+<footer>Benefits are stand-alone and can overlap; use the Confidence % in project settings to stay conservative. NPV ignores tax, inflation and ramp-up. All prices in Rs; Rs Cr = Rs 10 million. Values are typical published ranges for an Indian integrated plant: check them against your plant data and SOP before using the results for decisions.</footer>
+<p class="sig"><b>Designed and developed by Niteen Kumar</b> · Iron Making · Sinter plant</p>
+</div>
+
+<script src="simprove-engine.js"></script>
+<script src="www/lib/three.min.js"></script>
+<script src="www/lib/orbit-controls.js"></script>
+<script>
+(function(){
+'use strict';
+var E=window.SIP, fmt=E.fmt, pct=E.pct, STORE='sip.v1', MK=E.MATCFG.key;
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var ZL={bins:'Proportioning bins',coke:'Coke breeze bin',drum:'Mixing drum',hood:'Ignition hood',strand:'Sinter strand',windbox:'Wind boxes and seals',fan:'Main fan',esp:'ESP and waste gas',stack:'Stack',crusher:'Hot crusher',cooler:'Sinter cooler',screen:'Product screens',returnbin:'Return fines circuit',belt:'Product conveyors',bf:'Blast furnace bunkers'};
+var CAT={'Quick win':'qw','High value':'hv','Strategic investment':'si','Long-term / review':'lt','Not viable as entered':'bad','Excluded':'bad'};
+var CATC={qw:'#3ddc84',hv:'#3cc8d2',si:'#b07ae8',lt:'#f2b54e',bad:'#ff6b6b'};
+var CATTXT={'Quick win':'Low capex, fast payback - launch in the first 6 months.','High value':'Strong return - schedule in Phase 2.','Strategic investment':'Large capex - start feasibility now, build later.','Long-term / review':'Weak economics as entered - review the inputs.','Not viable as entered':'No positive benefit with the current inputs.','Excluded':'Excluded from the plan in project settings.'};
+
+// ---------------- state
+function defaults(){return E.defaults();}
+var I=defaults();
+try{var sv=JSON.parse(localStorage.getItem(STORE)||'null');
+  if(sv&&sv.v===1){Object.keys(sv.I).forEach(function(k){if(k==='mats'||k==='coals'||k==='proj'){ (sv.I[k]||[]).forEach(function(row,i){ if(I[k]&&I[k][i])Object.assign(I[k][i],row); }); } else if(k==='lev'){Object.assign(I.lev.base,sv.I.lev.base||{});Object.assign(I.lev.scn,sv.I.lev.scn||{});} else if(k==='tgt'){ (sv.I.tgt||[]).forEach(function(v,i){I.tgt[i]=v;}); } else if(k==='w'||k==='th'){Object.assign(I[k],sv.I[k]||{});} else I[k]=sv.I[k]; });}
+}catch(e){}
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:1,I:I}));}catch(e){}}
+
+var R=E.run(I), sel=0, plant=null;
+
+// ---------------- tabs
+var TABS=['plan','rank','inputs','road','quality'];
+function showTab(t,push){ if(TABS.indexOf(t)<0)t='plan';
+  TABS.forEach(function(k){var on=k===t;$('pane-'+k).classList.toggle('on',on);});
+  document.querySelectorAll('.tab[data-t]').forEach(function(b){b.setAttribute('aria-selected',b.getAttribute('data-t')===t?'true':'false');});
+  if(push&&('#'+t)!==location.hash){try{location.hash=t;}catch(e){}}
+  if(t==='plan'&&plant)plant.size();
+}
+document.querySelectorAll('.tab[data-t]').forEach(function(b){b.addEventListener('click',function(){showTab(b.getAttribute('data-t'),true);});});
+window.addEventListener('hashchange',function(){showTab((location.hash||'#plan').slice(1),false);});
+
+// ---------------- renders
+function catOf(i){var r=R.pr.rows[i];return CAT[r.cat]||'lt';}
+function renderStats(){
+  var p=R.pr,q=R.q;
+  $('stats').innerHTML=
+    '<div class="stat"><small>Total benefit</small><b>₹'+fmt(p.total.F,1)+'</b><span> Cr/yr risk-adj.</span></div>'+
+    '<div class="stat"><small>Total capex</small><b>₹'+fmt(p.total.G,0)+'</b><span> Cr</span></div>'+
+    '<div class="stat"><small>Portfolio payback</small><b>'+fmt(p.total.H,2)+'</b><span> years</span></div>'+
+    '<div class="stat"><small>Portfolio NPV</small><b>₹'+fmt(p.total.NPV,0)+'</b><span> Cr</span></div>'+
+    '<div class="stat"><small>Quick wins</small><b>'+p.quickWins+'</b><span> worth ₹'+fmt(p.qwBenefit,1)+' Cr/yr</span></div>'+
+    '<div class="stat"><small>BF sinter quality targets met</small><b>'+esc(q.metB)+'</b><span> now → '+esc(q.metS)+' with the plan</span></div>';
+  var w=$('shareWarn'), bad=Math.round(R.ben.base.tgtShare*1000)!==1000;
+  w.classList.toggle('on',bad);
+  if(bad)w.textContent='Project 1 is OFF: the target shares in the material table add to '+pct(R.ben.base.tgtShare,1)+' - they must total 100%.';
+}
+function renderList(){
+  $('plist').innerHTML=R.pr.byRank.map(function(r){
+    return '<button class="pj" type="button" data-i="'+r.i+'" aria-pressed="'+(r.i===sel)+'"><span class="rk">'+r.rank+'</span><span class="nm"><span class="dot" style="background:'+CATC[CAT[r.cat]||'lt']+'"></span>'+esc(r.p.name)+'</span><span class="bn">₹'+fmt(r.F,1)+'</span></button>';
+  }).join('');
+}
+function renderCard(){
+  var r=R.pr.rows[sel],p=r.p,c=CAT[r.cat]||'lt';
+  $('crumb').textContent='Project '+p.id+' · '+(ZL[p.zone]||'')+' · Rank '+r.rank+' of 10';
+  $('pTitle').textContent=p.name;
+  var cb=$('catbox');cb.style.background='var(--'+c+'-bg)';cb.style.color='var(--'+c+')';
+  $('catBig').textContent=r.cat;
+  $('catTxt').textContent=(CATTXT[r.cat]||'')+(r.phase!=='-'?' '+r.phase+' · months '+r.start+'-'+r.end+'.':'');
+  $('met').innerHTML=
+    '<div><small>Benefit</small><b>₹'+fmt(r.F,1)+'</b> <span style="font-size:12px;color:var(--muted)">Cr/yr</span></div>'+
+    '<div><small>Capex</small><b>₹'+fmt(r.G,0)+'</b> <span style="font-size:12px;color:var(--muted)">Cr</span></div>'+
+    '<div><small>Payback</small><b>'+(r.H>=99?'-':fmt(r.H,r.H<1?2:1))+'</b> <span style="font-size:12px;color:var(--muted)">yrs</span></div>'+
+    '<div><small>NPV ('+fmt(Number(I.life),0)+' yr)</small><b>₹'+fmt(r.NPV,0)+'</b> <span style="font-size:12px;color:var(--muted)">Cr</span></div>'+
+    '<div><small>IRR</small><b>'+(r.IRR===''?'-':(r.IRR==='>100%'?'>100%':pct(r.IRR,0)))+'</b></div>'+
+    '<div><small>Score</small><b>'+fmt(r.Q,2)+'</b> <span style="font-size:12px;color:var(--muted)">of 5</span></div>'+
+    '<div><small>Confidence</small><b>'+pct(r.conf,0)+'</b></div>';
+  $('diag').textContent=R.diag[sel];
+  $('strat').textContent=p.strategy;
+  $('kpis').textContent=p.kpis;
+  $('steps').innerHTML=p.steps.map(function(s){return '<li>'+esc(s)+'</li>';}).join('');
+  $('dep').textContent=p.dep;
+  $('risks').textContent=p.risks;
+  renderList();
+}
+function pick(i,fly){sel=i;renderCard();if(plant&&fly!==false)plant.focus(R.pr.rows[i].p.zone,CATC[catOf(i)],R.pr.rows[i].p.id);}
+$('plist').addEventListener('click',function(e){var b=e.target.closest('.pj');if(b)pick(Number(b.getAttribute('data-i')));});
+$('prev').addEventListener('click',function(){var k=R.pr.byRank.findIndex(function(r){return r.i===sel;});pick(R.pr.byRank[(k+9)%10].i);});
+$('next').addEventListener('click',function(){var k=R.pr.byRank.findIndex(function(r){return r.i===sel;});pick(R.pr.byRank[(k+1)%10].i);});
+$('show3d').addEventListener('click',function(){pick(sel);document.querySelector('.stage').scrollIntoView({behavior:'smooth',block:'center'});});
+
+function renderRank(){
+  var max=Math.max.apply(null,R.pr.rows.map(function(r){return r.F;}).concat([0.001]));
+  $('bars').innerHTML=R.pr.byRank.map(function(r){
+    return '<div class="bar"><span>'+r.rank+'. '+esc(r.p.name)+'</span><span class="tr"><span class="fl" style="width:'+Math.max(2,r.F/max*100)+'%;background:'+CATC[CAT[r.cat]||'lt']+'"></span></span><span class="vl">₹'+fmt(r.F,1)+' Cr</span></div>';
+  }).join('');
+  $('rtable').innerHTML='<thead><tr><th>Rank</th><th>Project</th><th>Category</th><th>Phase</th><th class="r">Benefit ₹Cr/yr</th><th class="r">Capex ₹Cr</th><th class="r">Payback yrs</th><th class="r">NPV ₹Cr</th><th class="r">IRR</th><th class="r">Score</th><th>Main benefit</th></tr></thead><tbody>'+
+    R.pr.byRank.map(function(r){return '<tr><td>'+r.rank+'</td><td>'+esc(r.p.name)+'</td><td><span class="chip '+(CAT[r.cat]||'lt')+'">'+esc(r.cat)+'</span></td><td>'+esc(r.phase)+'</td><td class="r">'+fmt(r.F,1)+'</td><td class="r">'+fmt(r.G,0)+'</td><td class="r">'+(r.H>=99?'-':fmt(r.H,2))+'</td><td class="r">'+fmt(r.NPV,0)+'</td><td class="r">'+(r.IRR===''?'-':(r.IRR==='>100%'?'>100%':pct(r.IRR,0)))+'</td><td class="r">'+fmt(r.Q,2)+'</td><td>'+esc(r.p.ben)+'</td></tr>';}).join('')+
+    '<tr><td></td><td><b>Portfolio total</b></td><td></td><td></td><td class="r"><b>'+fmt(R.pr.total.F,1)+'</b></td><td class="r"><b>'+fmt(R.pr.total.G,0)+'</b></td><td class="r"><b>'+fmt(R.pr.total.H,2)+'</b></td><td class="r"><b>'+fmt(R.pr.total.NPV,0)+'</b></td><td></td><td></td><td></td></tr></tbody>';
+  $('stratList').innerHTML=R.strategy.map(function(s){return '<li>'+esc(s.replace(/^\d+\.\s*/,''))+'</li>';}).join('');
+}
+function renderGantt(){
+  $('gantt').innerHTML=R.pr.byRank.map(function(r){
+    if(r.start==='')return '';
+    var l=(r.start-1)/48*100,w=Math.min(r.V,49-r.start)/48*100;
+    return '<div class="grow"><span>'+r.rank+'. '+esc(r.p.name)+'</span><span class="lane"><span class="seg" style="left:'+l+'%;width:'+w+'%;background:'+CATC[CAT[r.cat]||'lt']+'"><span>M'+r.start+'-'+r.end+'</span></span></span></div>';
+  }).join('');
+}
+function renderQuality(){
+  var q=R.q;
+  $('levTable').innerHTML='<thead><tr><th>Lever</th><th>Unit</th><th class="r">Base (today)</th><th class="r">Scenario (plan)</th><th>Note</th></tr></thead><tbody>'+
+    E.LEVERS.map(function(l){
+      function cell(side){var v=I.lev[side][l[0]];
+        if(String(l[2]).slice(0,5)==='list:'){var ops=l[2].slice(5).split('|');return '<select data-lev="'+side+'.'+l[0]+'">'+ops.map(function(o){return '<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>';}).join('')+'</select>';}
+        return '<input type="number" step="any" data-lev="'+side+'.'+l[0]+'" value="'+esc(v)+'">';}
+      return '<tr><td>'+esc(l[1])+'</td><td class="r" style="font-family:var(--f-mono);font-size:12px">'+(String(l[2]).slice(0,5)==='list:'?'':esc(l[2]))+'</td><td class="r">'+cell('base')+'</td><td class="r">'+cell('scn')+'</td><td style="color:var(--muted);font-size:12.5px">'+esc(l[5])+'</td></tr>';
+    }).join('')+'</tbody>';
+  function st(s){return s==='MET'?'<span class="chip met">MET</span>':s==='NOT MET'?'<span class="chip not">NOT MET</span>':'<span class="chip na">-</span>';}
+  $('qTable').innerHTML='<thead><tr><th>Parameter</th><th>Limit</th><th class="r">BF target</th><th class="r">Base</th><th class="r">Scenario</th><th>Base</th><th>Scenario</th><th>Achievement (100 = on target)</th><th>What to do if NOT MET</th></tr></thead><tbody>'+
+    q.rows.map(function(r,i){var d=r.unit==='ratio'?2:(Math.abs(r.base)<10?2:1);
+      return '<tr><td>'+esc(r.name)+'<span style="color:var(--muted);font-family:var(--f-mono);font-size:11px"> '+esc(r.unit)+'</span></td><td style="font-family:var(--f-mono);font-size:12px">'+esc(r.lim)+'</td><td class="r"><input type="number" step="any" data-tgt="'+i+'" value="'+esc(r.tgt)+'" style="width:84px"></td><td class="r">'+fmt(r.base,d)+'</td><td class="r">'+fmt(r.scn,d)+' <span style="color:var(--muted);font-size:11px">('+(r.diff>=0?'+':'')+fmt(r.diff,d)+')</span></td><td>'+st(r.bs)+'</td><td>'+st(r.ss)+'</td>'+
+      '<td style="min-width:150px"><div class="ach"><span class="tr"><span class="fl" style="width:'+Math.min(100,r.achB/1.5)+'%;background:var(--muted)"></span></span><span style="font-family:var(--f-mono);font-size:11px">'+fmt(r.achB,0)+'</span></div><div class="ach"><span class="tr"><span class="fl" style="width:'+Math.min(100,r.achS/1.5)+'%;background:'+(r.ss==='MET'?'var(--qw)':'var(--bad)')+'"></span></span><span style="font-family:var(--f-mono);font-size:11px">'+fmt(r.achS,0)+'</span></div></td>'+
+      '<td style="color:var(--muted);font-size:12.5px;min-width:220px">'+esc(r.fix)+'</td></tr>';}).join('')+'</tbody>';
+  $('movedTable').innerHTML='<thead><tr><th>Lever group</th>'+E.MOVEDCOLS.map(function(c){return '<th class="r">Δ '+esc(c)+'</th>';}).join('')+'</tr></thead><tbody>'+
+    q.moved.map(function(m){return '<tr><td>'+esc(m[0])+'</td>'+[1,2,3].map(function(k){return '<td class="r">'+(m[k]>=0?'+':'')+fmt(m[k],2)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody>';
+  $('outLine').textContent='Scenario output vs base on the same strand: '+fmt((q.scn.output||0)*100,1)+'% · net productivity '+fmt(q.base.prod,2)+' → '+fmt(q.scn.prod,2)+' t/m2/h.';
+}
+// ---------------- inputs tab
+function matSelect(key,val){return '<select data-inp="'+key+'">'+I[MK].map(function(m,i){return '<option value="'+i+'"'+(Number(val)===i?' selected':'')+'>'+esc(m.name)+'</option>';}).join('')+'</select>';}
+function renderInputs(){
+  var groups={};E.INPUTS.forEach(function(r){(groups[r[6]]=groups[r[6]]||[]).push(r);});
+  $('inpGroups').innerHTML=Object.keys(E.GROUPS).map(function(g){
+    if(!groups[g])return '';
+    return '<details class="grp"'+(g==='A'?' open':'')+'><summary>'+esc(E.GROUPS[g])+'</summary><div class="in">'+groups[g].map(function(r){
+      var unit=String(r[3]),ctl;
+      if(unit.slice(0,5)==='list:'){var ops=unit.slice(5).split('|');ctl='<select data-inp="'+r[0]+'">'+ops.map(function(o){return '<option'+(o===I[r[0]]?' selected':'')+'>'+esc(o)+'</option>';}).join('')+'</select>';}
+      else if(unit==='coal'||unit==='mat')ctl=matSelect(r[0],I[r[0]]);
+      else ctl='<input type="number" step="any" data-inp="'+r[0]+'" value="'+esc(I[r[0]])+'"><span class="un">'+esc(unit)+'</span>';
+      var bench=r[4]!==''&&r[4]!=null?' <span class="un">benchmark '+esc(r[4])+'</span>':'';
+      return '<div class="inp-row"><span class="lb">'+esc(r[1])+bench+'</span><span>'+ctl+'</span>'+(r[5]?'<span class="nt">'+esc(r[5])+'</span>':'')+'</div>';
+    }).join('')+'</div></details>';
+  }).join('');
+  renderMats();renderProj();
+}
+function renderMats(){
+  var totC=0,totT=0;
+  $('matsTable').innerHTML='<thead><tr><th>Material</th><th class="r">Price Rs/t dry</th><th class="r">Current share %</th><th class="r">Target share %</th></tr></thead><tbody>'+
+    I[MK].map(function(m,i){totC+=Number(m.cur)||0;totT+=Number(m.tgt)||0;
+      return '<tr><td style="min-width:200px">'+esc(m.name)+'</td><td class="r"><input type="number" step="any" data-mat="'+i+'.price" value="'+esc(m.price)+'"></td><td class="r"><input type="number" step="0.1" data-mat="'+i+'.cur" value="'+fmtShare(m.cur)+'"></td><td class="r"><input type="number" step="0.1" data-mat="'+i+'.tgt" value="'+fmtShare(m.tgt)+'"></td></tr>';
+    }).join('')+
+    '<tr><td><b>Total (must be 100%)</b></td><td></td><td class="r"><b style="color:'+(ok(totC)?'inherit':'var(--bad)')+'">'+fmt(totC*100,1)+'%</b></td><td class="r"><b style="color:'+(ok(totT)?'inherit':'var(--bad)')+'">'+fmt(totT*100,1)+'%</b></td></tr></tbody>';
+  function ok(t){return Math.round(t*1000)===1000;}
+  $('matNote').textContent='Shares are entered in % of the dry mix. The target shares feed project 1'+' (raw mix optimisation) and the quality scenario. Keep each material inside its group: ores, fluxes, solid fuels, reverts.';
+}
+function fmtShare(v){v=Number(v)||0;return String(Math.round(v*1000)/10);}
+function renderProj(){
+  $('projTable').innerHTML='<thead><tr><th>Project</th><th class="r">Capex ₹Cr</th><th class="r">Months</th><th class="r">Complexity 1-5</th><th class="r">Risk 1-5</th><th class="r">Fit 1-5</th><th class="r">Confidence %</th><th class="r">Start month</th><th>In plan?</th></tr></thead><tbody>'+
+    E.PROJECTS.map(function(p,i){var s=I.proj[i];
+      function n(f,step,v){return '<input type="number" step="'+(step||'any')+'" data-proj="'+i+'.'+f+'" value="'+esc(v!=null?v:s[f])+'" style="width:84px">';}
+      return '<tr><td>'+p.id+'. '+esc(p.name)+'</td><td class="r">'+n('capex')+'</td><td class="r">'+n('months',1)+'</td><td class="r">'+n('cx',1)+'</td><td class="r">'+n('risk',1)+'</td><td class="r">'+n('fit',1)+'</td><td class="r">'+n('conf',1,Math.round((Number(s.conf)||0)*100))+'</td><td class="r"><input type="number" step="1" data-proj="'+i+'.start" value="'+esc(s.start)+'" placeholder="auto" style="width:84px"></td><td><select data-proj="'+i+'.inc"><option'+(s.inc==='Yes'?' selected':'')+'>Yes</option><option'+(s.inc==='No'?' selected':'')+'>No</option></select></td></tr>';
+    }).join('')+'</tbody>';
+}
+// ---------------- change handling
+document.addEventListener('change',function(e){
+  var t=e.target,k;
+  if((k=t.getAttribute('data-inp'))!=null){ I[k]=t.type==='number'?(t.value===''?'':Number(t.value)):t.value; if(t.tagName==='SELECT'&&(E.INPUTS.find(function(r){return r[0]===k&&(r[3]==='coal'||r[3]==='mat');})))I[k]=Number(t.value); }
+  else if((k=t.getAttribute('data-mat'))!=null){ var a=k.split('.'),m=I[MK][Number(a[0])]; if(a[1]==='price')m.price=Number(t.value)||0; else {m[a[1]]=(Number(t.value)||0)/100; if(a[1]==='tgt')m.scn=m.tgt;} }
+  else if((k=t.getAttribute('data-proj'))!=null){ var b=k.split('.'),s=I.proj[Number(b[0])]; if(b[1]==='inc')s.inc=t.value; else if(b[1]==='start')s.start=t.value===''?'':Number(t.value); else if(b[1]==='conf')s.conf=(Number(t.value)||0)/100; else s[b[1]]=Number(t.value)||0; }
+  else if((k=t.getAttribute('data-lev'))!=null){ var c=k.split('.'); I.lev[c[0]][c[1]]=t.type==='number'?(t.value===''?'':Number(t.value)):t.value; }
+  else if((k=t.getAttribute('data-tgt'))!=null){ I.tgt[Number(k)]=t.value===''?'':Number(t.value); }
+  else return;
+  save();recalc(t.closest('#pane-inputs')?'inputs':null);
+});
+$('resetBtn').addEventListener('click',function(){ if(this.dataset.c){ I=defaults();save();recalc();renderInputs();this.textContent='Reset to placeholders';delete this.dataset.c; } else { this.dataset.c='1';this.textContent='Tap again to reset everything'; var b=this; setTimeout(function(){delete b.dataset.c;b.textContent='Reset to placeholders';},5000);} });
+function recalc(skip){
+  R=E.run(I);
+  renderStats();renderCard();renderRank();renderGantt();renderQuality();
+  if(skip!=='inputs'){renderMats();}
+  if(plant)plant.refreshMarkers();
+}
+// ---------------- report
+function reportText(){
+  var L=[];L.push('Sinter Plant Improvement Plan');L.push('Iron Making · designed and developed by Niteen Kumar · '+new Date().toLocaleDateString('en-IN'));
+  L.push('');L.push('Total risk-adjusted benefit: Rs '+fmt(R.pr.total.F,1)+' Cr/yr · capex Rs '+fmt(R.pr.total.G,0)+' Cr · payback '+fmt(R.pr.total.H,2)+' yr · NPV Rs '+fmt(R.pr.total.NPV,0)+' Cr');
+  L.push('BF sinter quality targets met: '+R.q.metB+' now, '+R.q.metS+' with the plan.');
+  L.push('');L.push('Projects in priority order:');
+  R.pr.byRank.forEach(function(r){L.push(r.rank+'. '+r.p.name+' ['+r.cat+', '+r.phase+'] benefit Rs '+fmt(r.F,1)+' Cr/yr, capex Rs '+fmt(r.G,0)+' Cr, payback '+(r.H>=99?'-':fmt(r.H,2))+' yr. '+r.p.ben+'.');});
+  L.push('');L.push('Portfolio strategy:');R.strategy.forEach(function(s){L.push(s);});
+  L.push('');L.push('Placeholders until plant data is entered. Benefits can overlap between projects.');
+  return L.join('\n');
+}
+$('shareBtn').addEventListener('click',function(){var t=reportText();if(window.IMOut)IMOut.share('Sinter Plant Improvement Plan',t);else if(navigator.share)navigator.share({title:'Sinter Plant Improvement Plan',text:t});else if(navigator.clipboard)navigator.clipboard.writeText(t);});
+$('csvBtn').addEventListener('click',function(){
+  var rows=[['Sinter Plant Improvement Plan'],['Rank','Project','Category','Phase','Start','End','Benefit Rs Cr/yr','Capex Rs Cr','Payback yr','NPV Rs Cr','Score','Main benefit']];
+  R.pr.byRank.forEach(function(r){rows.push([r.rank,r.p.name,r.cat,r.phase,r.start,r.end,r.F.toFixed(2),r.G,r.H>=99?'':r.H.toFixed(2),r.NPV.toFixed(1),r.Q.toFixed(2),r.p.ben]);});
+  rows.push([]);rows.push(['Parameter','Limit','BF target','Base','Scenario','Base status','Scenario status']);
+  R.q.rows.forEach(function(r){rows.push([r.name,r.lim,r.tgt,r.base.toFixed(2),r.scn.toFixed(2),r.bs,r.ss]);});
+  var csv=rows.map(function(r){return r.map(function(c){c=String(c==null?'':c);return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c;}).join(',');}).join('\r\n');
+  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('﻿'+csv);a.download='Sinter improvement plan.csv';document.body.appendChild(a);a.click();a.remove();
+});
+// ---------------- 3D
+function buildPlant(){
+  var stage=$('stage'),canvas=$('cv'),tag=$('tag');
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(38,2,0.1,500);
+  var controls=new THREE.OrbitControls(camera,canvas);
+  controls.enableDamping=true;controls.maxPolarAngle=Math.PI*0.48;controls.minDistance=6;controls.maxDistance=110;
+  scene.add(new THREE.HemisphereLight(0xffffff,0x445566,0.9));
+  var sun=new THREE.DirectionalLight(0xffffff,0.8);sun.position.set(-10,30,20);scene.add(sun);
+  var zones={},all=[];
+  function mat(c,o){return new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.7,metalness:.25,transparent:true},o||{}));}
+  function add(geo,m,pos,zone,rot){var me=new THREE.Mesh(geo,m);me.position.set(pos[0],pos[1],pos[2]);if(rot)me.rotation.set(rot[0],rot[1],rot[2]);scene.add(me);all.push(me);if(zone)(zones[zone]=zones[zone]||[]).push(me);return me;}
+  var ground=new THREE.Mesh(new THREE.PlaneGeometry(90,40),new THREE.MeshStandardMaterial({color:0x737a83,roughness:1}));
+  ground.rotation.x=-Math.PI/2;ground.position.set(3,0,1);scene.add(ground);
+  var grid=new THREE.GridHelper(90,45,0x6d747d,0x7c838c);grid.position.set(3,0.01,1);grid.material.opacity=.25;grid.material.transparent=true;scene.add(grid);
+  var steel=0x7f8a96,dark=0x4a525c;
+  var binDefs=[[-22,0xb5651d,'bins'],[-20.5,0x9c4f22,'bins'],[-19,0xe3e0d6,'bins'],[-17.5,0xcfc7b4,'bins'],[-16,0x222222,'coke'],[-14.5,0x6b5c50,'returnbin']];
+  binDefs.forEach(function(d){var x=d[0],c=d[1],z=d[2];
+    add(new THREE.CylinderGeometry(.65,.65,2.2,20),mat(steel),[x,3.4,0],z);
+    add(new THREE.ConeGeometry(.65,.9,20),mat(steel),[x,1.85,0],z,[Math.PI,0,0]);
+    add(new THREE.CylinderGeometry(.6,.6,.12,20),mat(c,{roughness:1,metalness:0}),[x,4.52,0],z);});
+  add(new THREE.BoxGeometry(11,.18,1),mat(dark),[-17.8,1.05,0],'bins');
+  add(new THREE.BoxGeometry(3,.18,1),mat(dark),[-10.9,1.05,0],'belt');
+  add(new THREE.CylinderGeometry(1.15,1.15,4,28,1,true),mat(0x9aa3ad,{side:THREE.DoubleSide}),[-7.6,2.1,0],'drum',[0,0,Math.PI/2]);
+  add(new THREE.TorusGeometry(1.2,.12,8,28),mat(dark),[-8.8,2.1,0],'drum',[0,Math.PI/2,0]);
+  add(new THREE.TorusGeometry(1.2,.12,8,28),mat(dark),[-6.4,2.1,0],'drum',[0,Math.PI/2,0]);
+  var S0=-5,SL=18;
+  add(new THREE.BoxGeometry(SL,.45,3.2),mat(0x3d434a),[S0+SL/2,1.85,0],'strand');
+  add(new THREE.BoxGeometry(SL,.8,3),mat(0x5a3f2e,{emissive:0xff4a00,emissiveIntensity:.12}),[S0+SL/2,2.48,0],'strand');
+  for(var i=0;i<14;i++){add(new THREE.BoxGeometry(1.05,.9,2.6),mat(0x5a626b),[S0+.9+i*1.25,1.05,0],'windbox');add(new THREE.CylinderGeometry(.18,.18,1.3,10),mat(0x5a626b),[S0+.9+i*1.25,.5,-1.6],'windbox',[Math.PI/2,0,0]);}
+  add(new THREE.BoxGeometry(SL,.7,.8),mat(0x5a626b),[S0+SL/2,.45,-2.6],'windbox');
+  add(new THREE.BoxGeometry(2.6,1.1,3.6),mat(0x8c5a3c),[-3.4,3.45,0],'hood');
+  add(new THREE.BoxGeometry(2.4,.12,3.3),mat(0xff7a1a,{emissive:0xff5a00,emissiveIntensity:1}),[-3.4,2.92,0],'hood');
+  add(new THREE.CylinderGeometry(.12,.12,4,8),mat(0xd8b200),[-3.4,4.2,-2.2],'hood',[Math.PI/2,0,0]);
+  add(new THREE.BoxGeometry(.9,.9,6),mat(0x6b737c),[6,.6,-5.6],'esp');
+  add(new THREE.BoxGeometry(6,3.2,3.4),mat(0x9aa2ab),[6,1.6,-10],'esp');
+  add(new THREE.BoxGeometry(2.4,.8,.8),mat(0x6b737c),[10.2,1.4,-10],'fan');
+  add(new THREE.CylinderGeometry(1.2,1.2,1,24),mat(0x2f6f9f),[12,1.5,-10],'fan',[Math.PI/2,0,0]);
+  add(new THREE.CylinderGeometry(.75,1.05,13,24),mat(0xb7bec6),[14.6,6.5,-10],'stack');
+  add(new THREE.CylinderGeometry(.78,.78,.5,24),mat(0xc0392b),[14.6,12.3,-10],'stack');
+  add(new THREE.BoxGeometry(1.8,1.8,2.6),mat(0x6e5a48),[14.2,1.6,0],'crusher');
+  add(new THREE.BoxGeometry(1.6,.15,1),mat(dark),[16,1.2,0],'belt');
+  var cooler=add(new THREE.TorusGeometry(2.9,.85,10,40),mat(0x80705f),[20,1.3,0],'cooler',[Math.PI/2,0,0]);cooler.scale.z=.5;
+  for(var a=0;a<4;a++){var ang=a*Math.PI/2+.4;add(new THREE.CylinderGeometry(.5,.5,.6,16),mat(0x2f6f9f),[20+Math.cos(ang)*4.6,.35,Math.sin(ang)*4.6],'cooler');}
+  add(new THREE.BoxGeometry(1,.15,4.2),mat(dark),[20,.7,4.6],'belt');
+  add(new THREE.BoxGeometry(3.2,.4,1.8),mat(0x5f7d4b),[20,1.6,7.4],'screen',[0,0,-.18]);
+  add(new THREE.BoxGeometry(3.2,1.2,.15),mat(dark),[20,1,6.5],'screen');
+  add(new THREE.BoxGeometry(33,.15,.8),mat(0x5a4c40),[2,.45,9.2],'returnbin');
+  add(new THREE.BoxGeometry(.8,.15,9),mat(0x5a4c40),[-14.5,.6,4.7],'returnbin');
+  add(new THREE.BoxGeometry(5,.15,1),mat(dark),[24.6,1.1,7.4],'belt');
+  add(new THREE.CylinderGeometry(1.6,2.2,8,24),mat(0x5b4a44),[29,4,7.4],'bf');
+  add(new THREE.CylinderGeometry(.6,.6,4,16),mat(0x8a8f96),[29,10,7.4],'bf');
+  all.forEach(function(m){var ms=Array.isArray(m.material)?m.material:[m.material];ms.forEach(function(x){x.userData.e=x.emissive.clone();x.userData.ei=x.emissiveIntensity;});});
+  function center(z){var b=new THREE.Box3();(zones[z]||[]).forEach(function(m){b.expandByObject(m);});var c=new THREE.Vector3();b.getCenter(c);var s=new THREE.Vector3();b.getSize(s);return {c:c,r:Math.max(s.x,s.y,s.z)};}
+  // numbered project markers
+  var markers=[];
+  function markerTex(n,color){var cv2=document.createElement('canvas');cv2.width=cv2.height=96;var g=cv2.getContext('2d');
+    g.beginPath();g.arc(48,48,40,0,7);g.fillStyle=color;g.fill();g.lineWidth=6;g.strokeStyle='rgba(255,255,255,.92)';g.stroke();
+    g.fillStyle='#0b0e11';g.font='700 44px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(String(n),48,51);
+    return new THREE.CanvasTexture(cv2);}
+  E.PROJECTS.forEach(function(p,i){
+    var cc=center(p.zone),off=(zones[p.zone]||[]).length?0:2;
+    var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:markerTex(p.id,'#9aa2ab'),depthTest:false,transparent:true}));
+    sp.position.set(cc.c.x,cc.c.y+Math.min(cc.r*.5,6)+2.4+(p.id%2)*.9,cc.c.z);
+    sp.scale.set(2.6,2.6,1);sp.renderOrder=5;sp.userData.i=i;scene.add(sp);markers.push(sp);
+  });
+  function refreshMarkers(){E.PROJECTS.forEach(function(p,i){markers[i].material.map=markerTex(p.id,CATC[catOf(i)]);markers[i].material.needsUpdate=true;});}
+  refreshMarkers();
+  var HOME={p:[3,26,42],t:[3,2,0]};
+  var goal={pos:new THREE.Vector3(HOME.p[0],HOME.p[1],HOME.p[2]),tgt:new THREE.Vector3(HOME.t[0],HOME.t[1],HOME.t[2])},flying=true;
+  camera.position.copy(goal.pos);controls.target.copy(goal.tgt);
+  controls.addEventListener('start',function(){flying=false;});
+  var active=null,tagZone=null,glow=new THREE.Color('#3ddc84');
+  function apply(){all.forEach(function(m){var on=!active||(zones[active]||[]).indexOf(m)>=0;var ms=Array.isArray(m.material)?m.material:[m.material];ms.forEach(function(x){x.opacity=on?1:.22;x.depthWrite=on;if(!on||!active){x.emissive.copy(x.userData.e);x.emissiveIntensity=x.userData.ei;}});});}
+  var api={
+    focus:function(z,color,idn){active=z;tagZone=z;glow.set(color||'#3ddc84');apply();
+      var cc=center(z),d=Math.max(9,Math.min(cc.r*1.35,42));
+      goal.tgt.copy(cc.c);goal.pos.set(cc.c.x+d*.35,cc.c.y+d*.6,cc.c.z+(cc.c.z<-3?-1:1)*d*1.1);flying=true;
+      tag.hidden=false;tag.textContent=(idn?idn+' · ':'')+(ZL[z]||z);
+      if(reduce){camera.position.copy(goal.pos);controls.target.copy(goal.tgt);}},
+    overview:function(){active=null;tagZone=null;tag.hidden=true;apply();goal.pos.set(HOME.p[0],HOME.p[1],HOME.p[2]);goal.tgt.set(HOME.t[0],HOME.t[1],HOME.t[2]);flying=true;},
+    refreshMarkers:refreshMarkers,
+    size:function(){size();}
+  };
+  function themeBg(){var v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#0b0e11';scene.background=new THREE.Color(v);}
+  themeBg();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',themeBg);
+  function size(){var w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  new ResizeObserver(size).observe(stage);size();
+  // tap a marker
+  var ray=new THREE.Raycaster(),ptr=new THREE.Vector2(),down=null;
+  canvas.addEventListener('pointerdown',function(e){down=[e.clientX,e.clientY];});
+  canvas.addEventListener('pointerup',function(e){
+    if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>7){down=null;return;}
+    var r=canvas.getBoundingClientRect();ptr.x=((e.clientX-r.left)/r.width)*2-1;ptr.y=-((e.clientY-r.top)/r.height)*2+1;
+    ray.setFromCamera(ptr,camera);var hit=ray.intersectObjects(markers,false)[0];
+    if(hit)pick(hit.object.userData.i);down=null;});
+  var v=new THREE.Vector3(),t=0;
+  (function loop(){requestAnimationFrame(loop);t+=1;
+    if(flying){camera.position.lerp(goal.pos,.06);controls.target.lerp(goal.tgt,.06);if(camera.position.distanceTo(goal.pos)<.05)flying=false;}
+    controls.update();
+    if(active){var k=.55+.45*Math.sin(t*.08);(zones[active]||[]).forEach(function(m){var ms=Array.isArray(m.material)?m.material:[m.material];ms.forEach(function(x){x.emissive.copy(glow);x.emissiveIntensity=.25+.5*k;});});}
+    if(tagZone){var cc=center(tagZone);v.set(cc.c.x,cc.c.y+Math.min(cc.r*.4,6)+1,cc.c.z).project(camera);if(v.z<1){tag.style.left=((v.x+1)/2*stage.clientWidth)+'px';tag.style.top=((1-v.y)/2*stage.clientHeight)+'px';}}
+    renderer.render(scene,camera);})();
+  return api;
+}
+$('overview').addEventListener('click',function(){if(plant)plant.overview();});
+$('topBack').addEventListener('click',function(){if(window.IMOut&&IMOut.back)IMOut.back();else if(history.length>1)history.back();else location.href='index.html';});
+// ---------------- boot
+renderStats();renderCard();renderRank();renderGantt();renderQuality();renderInputs();
+try{plant=buildPlant();}catch(e){ $('stage').insertAdjacentHTML('beforeend','<div class="nogl">3D view needs WebGL, which this device or browser has turned off. The plan below still works.</div>'); }
+showTab((location.hash||'#plan').slice(1),false);
+pick(R.pr.byRank[0].i,false);
+})();
+</script>
+<script src="www/im-out.js" defer></script>
+</body>
+</html>

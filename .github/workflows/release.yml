@@ -1,16 +1,17 @@
-name: Publish Android app
+name: Publish Iron Making
 
-# Publishes the free Android APK as a GitHub release.
-# The Windows, Mac and Office PC versions are paid: they are sold in the app (Download the app → pay by UPI)
-# and shared from the owner's Google Drive after the payment is approved, so they are not published here.
-# This also removes Windows / Mac / browser-zip files from older releases.
+# Publishes everything as a GitHub release:
+#   - Android phone APK (from downloads/)
+#   - Browser (no-install) zip (from downloads/)
+#   - Windows x64 zip and Mac zips (Apple Silicon + Intel), built here from app/ + desktop/
+# All free since 6.3.
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version, for example 5.9.2'
+        description: 'Version, for example 6.3'
         required: true
         default: '6.3'
 
@@ -22,27 +23,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Version
         id: v
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then V="${{ inputs.version }}"; else V="${GITHUB_REF_NAME#v}"; fi
-          echo "version=$V" >> "$GITHUB_OUTPUT"; echo "tag=v$V" >> "$GITHUB_OUTPUT"
-      - name: Remove paid versions from all releases
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "tag=v$V" >> "$GITHUB_OUTPUT"
+
+      - name: Build Windows and Mac desktop packages
         env:
-          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
         run: |
-          for t in $(gh release list --limit 100 --json tagName --jq '.[].tagName'); do
-            for a in $(gh release view "$t" --json assets --jq '.assets[].name' | grep -E 'Windows|Mac-|Browser-NoInstall' || true); do
-              echo "delete $t/$a"; gh release delete-asset "$t" "$a" --yes
-            done
-          done
+          # package_desktop.sh downloads Electron + rcodesign and packages the Windows/Mac zips into dist/
+          bash tools/package_desktop.sh
+          ls -lh dist/
+
+      - name: Collect release assets
+        env:
+          V: ${{ steps.v.outputs.version }}
+        run: |
+          # Everything that goes to the release lands in dist/
+          mkdir -p dist
+          cp downloads/*.apk dist/
+          # Browser zip comes prebuilt in downloads/ (small, under 10 MB)
+          cp downloads/IronMaking-*-Browser-NoInstall.zip dist/ 2>/dev/null || true
+          ls -lh dist/
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.v.outputs.tag }}
           V: ${{ steps.v.outputs.version }}
         run: |
-          mkdir -p dist && cp downloads/*.apk dist/
           sed "s/{V}/$V/g" .github/release-notes.md > notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber

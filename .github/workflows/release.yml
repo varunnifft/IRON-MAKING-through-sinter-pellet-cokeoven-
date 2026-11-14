@@ -61,6 +61,14 @@ jobs:
         run: |
           sed "s/{V}/$V/g" .github/release-notes.md > notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
+            # Drop any asset that is NOT one of the files we are about to upload: clears orphan APKs/zips from older runs.
+            KEEP=$(cd dist && printf '|%s' * | cut -c2-)
+            for a in $(gh release view "$TAG" --json assets --jq '.assets[].name'); do
+              if ! echo "$a" | grep -Eq "^($KEEP)$"; then
+                echo "removing orphan $a"
+                gh release delete-asset "$TAG" "$a" --yes
+              fi
+            done
             gh release upload "$TAG" dist/* --clobber
             gh release edit "$TAG" --title "Iron Making $V" --notes-file notes.md --latest
           else

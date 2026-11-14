@@ -31,6 +31,9 @@ jobs:
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "tag=v$V" >> "$GITHUB_OUTPUT"
 
+      - name: Install Pillow (for peicon.py — writes the Windows icon into the exe)
+        run: pip install --quiet Pillow
+
       - name: Build Windows and Mac desktop packages
         env:
           VERSION: ${{ steps.v.outputs.version }}

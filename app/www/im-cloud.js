@@ -72,10 +72,7 @@
   function seen(event) {
     var u = user(); if (!u) return Promise.reject(new Error('not logged in'));
     return call('seen', { loginId: u.loginId, event: event || 'open', user: { name: u.name, email: u.email, company: u.company, mobile: u.mobile } })
-      .then(function (r) {
-        if (r && r.pending) { ls(TOK, null); var e = new Error(r.message || 'Your account is waiting for the admin to approve it.'); e.pending = true; throw e; }
-        ls(TOK, { id: u.loginId, tok: r.token }); ls(LASTS, Date.now()); return r.token;
-      });
+      .then(function (r) { ls(TOK, { id: u.loginId, tok: r.token }); ls(LASTS, Date.now()); return r.token; });
   }
   function withUser(fn) {
     var u = user(); if (!u || !configured()) return Promise.reject(new Error('offline'));

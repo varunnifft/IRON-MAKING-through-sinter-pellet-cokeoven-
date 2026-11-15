@@ -81,8 +81,8 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
     </section>
 
     <section class="box" id="pendBox" hidden>
-      <h2>Pending user approvals <span id="pendNum" style="color:#ffd9a8"></span></h2>
-      <p class="url" style="margin:0 0 10px">New sign-ups wait here until you approve them. You also get an email for each new sign-up. Approve lets them log in; Block keeps the row but denies log-in; Reject deletes the row (they can sign up again later).</p>
+      <h2>Download access requests <span id="pendNum" style="color:#ffd9a8"></span></h2>
+      <p class="url" style="margin:0 0 10px">Users who opened <b>App for Win / Mac / PC / Laptop</b> and asked for access. You also get an email for each request. <b>Approve</b> lets them see the Download buttons; <b>Block</b> keeps the row but denies log-in; <b>Reject</b> deletes the row. Already-approved users do not show here.</p>
       <div id="pendList"></div>
     </section>
 
@@ -185,13 +185,13 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
   }
 
   function renderPending(r) {
-    var pend = (r.users || []).filter(function (u) { return String(u[12] || '').trim() === 'Pending'; });
+    var pend = (r.users || []).filter(function (u) { var st = String(u[12] || '').trim(); return st === 'Requested' || st === 'Pending'; });
     $('pendBox').hidden = pend.length === 0;
     $('pendNum').textContent = pend.length ? '· ' + pend.length + ' waiting' : '';
     if (!pend.length) { $('pendList').innerHTML = ''; return; }
     $('pendList').innerHTML = pend.map(function (u) {
       var id = esc(u[0]), name = esc(u[1] || '-'), email = esc(u[2] || '-'), company = esc(u[3] || '-'), mobile = esc(u[4] || '-'), app = esc(u[5] || '-'), first = esc(u[6] || '-');
-      return '<div class="pay"><div><b>' + id + '</b> · ' + name + ' <span class="pill Pending">waiting</span></div>' +
+      return '<div class="pay"><div><b>' + id + '</b> · ' + name + ' <span class="pill Pending">requested</span></div>' +
         '<div class="url" style="margin:0">Email ' + email + ' · ' + company + ' · ' + mobile + ' · App ' + app + ' · Signed up ' + first + '</div>' +
         '<div class="acts"><button class="btn main" type="button" data-user="approve" data-id="' + id + '">Approve</button>' +
         '<button class="btn" type="button" data-user="block" data-id="' + id + '">Block</button>' +
@@ -241,10 +241,10 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       .then(function () { $('sSave').disabled = false; });
   });
   var codeOk = true;
-  var OLDCODE = 'Your Google Apps Script still has old code (needs 6.3.1), so the download links cannot be saved yet. On a computer: script.google.com > Iron Making Cloud > paste the new code > Save > Deploy > Manage deployments > pencil > Version: New version > Deploy.';
+  var OLDCODE = 'Your Google Apps Script still has old code (needs 6.3.2), so the download links cannot be saved yet. On a computer: script.google.com > Iron Making Cloud > paste the new code > Save > Deploy > Manage deployments > pencil > Version: New version > Deploy.';
   function load() {
     say(''); $('refresh').disabled = true; $('refresh').textContent = 'Loading…';
-    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = r.codeVersion === '6.3.1' || r.codeVersion === '6.3'; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); } catch (x) { } })
+    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = r.codeVersion === '6.3.2' || r.codeVersion === '6.3.1' || r.codeVersion === '6.3'; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); } catch (x) { } })
       .then(function () { $('refresh').disabled = false; $('refresh').textContent = 'Refresh'; });
   }
   $('refresh').addEventListener('click', load);

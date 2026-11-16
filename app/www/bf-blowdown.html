@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>BF Blow-in / Blow-down planner</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="iz.css">
+<style>
+/* BF Blow-in / Blow-down planner — self-contained. Matches iz.css look. */
+.wrap { padding: 12px 14px 90px; max-width: 980px; margin: 0 auto }
+.lead { color: var(--ink-2); font-size: 14px; margin: 2px 0 10px; max-width: 70ch }
+.caution { padding: 10px 12px; border-radius: 10px; background: rgba(255,181,71,.12); border: 1px solid #ffb547; color: #ffd9a8; margin: 0 0 12px; font-size: 13.5px }
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; margin-bottom: 10px }
+.tabs::-webkit-scrollbar { display: none }
+.tabs button { flex: 0 0 auto; padding: 8px 14px; background: rgba(11,31,56,.72); border: 1px solid var(--line); color: var(--ink-2); border-radius: 999px; font: 600 14px var(--f-body); cursor: pointer; white-space: nowrap }
+.tabs button.on { background: var(--molten); color: #2a1200; border: 0 }
+.ph { display: none }
+.ph.on { display: block }
+.box { margin: 10px 0 12px; padding: 14px; border-radius: 16px; border: 1px solid var(--line); background: rgba(11,31,56,.72) }
+.box h3 { margin: 0 0 8px; font: 700 18px/1.1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink) }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px }
+label { display: grid; gap: 4px; font-weight: 600; font-size: 13.5px; color: var(--ink) }
+label small { font-weight: 400; color: var(--muted); font-size: 11.8px }
+input, select { font: 16px var(--f-body); padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); background: rgba(4,12,23,.75); color: var(--ink); width: 100% }
+input:focus, select:focus { outline: 2px solid #3cc6c4; outline-offset: 0 }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14.5px }
+.row:first-of-type { border-top: 0 }
+.row b { color: var(--ink) }
+.row b small { color: var(--muted); font-weight: 400; margin-left: 6px }
+.val { font: 700 16px var(--f-mono); color: var(--hot); white-space: nowrap }
+.val.ok { color: #72c784 } .val.warn { color: #ffb547 } .val.bad { color: #ff5a4a }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px }
+th, td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; color: var(--ink) }
+th { color: var(--ink-2); font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em }
+td.n, th.n { text-align: right; font-family: var(--f-mono) }
+.tw { overflow-x: auto }
+details { margin: 8px 0; padding: 10px 12px; border-radius: 10px; background: rgba(4,12,23,.5); border: 1px solid var(--line) }
+summary { font-weight: 700; cursor: pointer; color: var(--ink) }
+details p { color: var(--ink-2); font-size: 13.5px; margin: 8px 0 }
+.chk { display: flex; align-items: flex-start; gap: 10px; padding: 8px 2px; border-bottom: 1px solid rgba(255,255,255,.04) }
+.chk input[type="checkbox"] { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: #ff7a1a }
+.chk label { font-weight: 400; font-size: 14px; line-height: 1.45; cursor: pointer; display: block }
+.chk b { color: var(--ink) }
+.chk.done label { color: var(--muted); text-decoration: line-through }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font: 600 11.5px var(--f-mono); background: rgba(255,181,71,.18); color: #ffd9a8; margin-left: 8px }
+.pill.deep { background: rgba(255,80,80,.22); color: #ffbdbd } .pill.partial { background: rgba(255,181,71,.18); color: #ffd9a8 } .pill.blowin { background: rgba(60,207,142,.18); color: #b6f0c3 }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 14px; border-radius: 10px; background: rgba(11,31,56,.8); border: 1px solid var(--line); color: var(--ink); font: 600 14px var(--f-body); cursor: pointer; text-decoration: none }
+.btn.main { background: var(--molten); color: #2a1200; border: 0 }
+.phase { display: inline-block; padding: 1px 7px; border-radius: 6px; background: rgba(60,198,196,.18); color: #b4ecec; font-size: 11.5px; font-weight: 700 }
+.phase.belly { background: rgba(255,181,71,.18); color: #ffd9a8 }
+.phase.bosh { background: rgba(255,90,74,.18); color: #ffbdbd }
+.phase.below { background: rgba(255,80,80,.3); color: #ffdede }
+</style>
+</head>
+<body>
+<header class="bar">
+  <button class="bk" id="back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <div class="tt"><small>Iron Making · blast furnace</small><b>BF Blow-in / Blow-down planner</b></div>
+  <a class="hm" href="index.html" aria-label="Iron Making first page"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10"/></svg><span>Iron Making</span></a>
+</header>
+
+<main class="wrap">
+  <p class="caution"><b>Planning & training aid.</b> Your approved plant SOP, gas-safety rules and permit system govern the actual operation. Values here are starting points: edit them to your furnace and your last log.</p>
+
+  <nav class="tabs" id="tabs">
+    <button data-p="inputs" class="on">Inputs</button>
+    <button data-p="strategy">Strategy</button>
+    <button data-p="burden">Burden &amp; Fuel</button>
+    <button data-p="timeline">Timeline</button>
+    <button data-p="tapping">Tapping</button>
+    <button data-p="checklist">Checklist</button>
+    <button data-p="blowin">Blow-in</button>
+    <button data-p="advisory">Advisory</button>
+  </nav>
+
+  <!-- INPUTS -->
+  <section class="ph on" data-ph="inputs">
+    <div class="box">
+      <h3>Furnace &amp; Operation</h3>
+      <p class="lead">Enter your furnace. Every other tab recalculates. All values saved on this phone.</p>
+      <div class="grid">
+        <label>Working (useful) volume <small>m³ — drives the whole plan</small><input id="i_vu" type="number" step="1" value="608"></label>
+        <label>Productivity <small>t/m³/day</small><input id="i_prod" type="number" step="0.01" value="4.1"></label>
+        <label>Oxygen enrichment <small>% of blast</small><input id="i_o2" type="number" step="0.1" value="5.5"></label>
+        <label>Specific oxygen demand <small>Nm³ O₂/tHM — 280–320 typical</small><input id="i_o2d" type="number" step="1" value="300"></label>
+        <label>Top coke rate <small>kg/tHM (normal)</small><input id="i_coke" type="number" step="1" value="450"></label>
+        <label>PCI rate <small>kg/tHM (normal; stops at T0 − 4 h)</small><input id="i_pci" type="number" step="1" value="120"></label>
+        <label>Ferrous rate <small>t ore / tHM</small><input id="i_ore" type="number" step="0.01" value="1.64"></label>
+        <label>Coke bulk density <small>t/m³</small><input id="i_coked" type="number" step="0.01" value="0.5"></label>
+        <label>Burden mean density <small>t/m³ (ore side)</small><input id="i_bd" type="number" step="0.01" value="1.9"></label>
+        <label>Normal slag basicity <small>CaO/SiO₂</small><input id="i_bas" type="number" step="0.01" value="1.05"></label>
+        <label>Normal top gas temperature <small>°C</small><input id="i_topT" type="number" step="1" value="130"></label>
+        <label>Max top T (equipment limit) <small>°C</small><input id="i_maxT" type="number" step="1" value="400"></label>
+        <label>Gas cleaning plant type <small></small>
+          <select id="i_gcp"><option value="dry">Dry (bag filter)</option><option value="wet">Wet</option></select></label>
+        <label>Dry GCP bag limit <small>°C</small><input id="i_bag" type="number" step="1" value="260"></label>
+        <label>Spray capacity <small>m³/h</small><input id="i_spray" type="number" step="1" value="33"></label>
+        <label>Tapholes <small>no.</small><input id="i_tap" type="number" step="1" value="2"></label>
+        <label>Top N₂ lances <small>no.</small><input id="i_n2l" type="number" step="1" value="4"></label>
+        <label>N₂ per lance (max) <small>Nm³/h</small><input id="i_n2f" type="number" step="10" value="700"></label>
+        <label>N₂ above-tuyere platform <small>Nm³/h</small><input id="i_n2a" type="number" step="10" value="0"></label>
+        <label>N₂ mid-shaft platform <small>Nm³/h</small><input id="i_n2m" type="number" step="10" value="0"></label>
+        <label>N₂ throat platform <small>Nm³/h</small><input id="i_n2t" type="number" step="10" value="2500"></label>
+        <label>BLT N₂ max <small>Nm³/h (0 if no BLT)</small><input id="i_blt" type="number" step="10" value="400"></label>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" type="button" id="reset">Reset to default values</button>
+        <a class="btn" id="dlExcel" href="BF_Blowdown_Plan.xlsx" download>Download reference Excel ›</a>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Computed baseline</h3>
+      <div class="row"><b>Hot metal production <small>productivity × volume</small></b><span class="val" id="o_hm">—</span></div>
+      <div class="row"><b>Cold blast (air only) <small>air at the tuyeres</small></b><span class="val" id="o_blast">—</span></div>
+      <div class="row"><b>Uncontrolled top T at tuyere level <small>base 950 + 25/%O₂</small></b><span class="val" id="o_uT">—</span></div>
+      <div class="row"><b>Nitrogen available at top (total) <small>BLT + lances + platforms</small></b><span class="val" id="o_n2">—</span></div>
+      <div class="row"><b>Geometry scale S3 <small>= (Vu/1070)^(1/3)</small></b><span class="val" id="o_s3">—</span></div>
+    </div>
+  </section>
+
+  <!-- STRATEGY -->
+  <section class="ph" data-ph="strategy">
+    <div class="box">
+      <h3>Select the stoppage</h3>
+      <label style="max-width:360px">Reason for the stoppage
+        <select id="strat">
+          <option value="reline">Full reline <span>(Deep)</span></option>
+          <option value="hearth">Hearth repair (Deep)</option>
+          <option value="stack">Stack / shaft gunning (Partial)</option>
+          <option value="short">Short unplanned repair (Partial)</option>
+          <option value="banking">Banking only</option>
+        </select>
+      </label>
+      <p class="lead" style="margin-top:10px">The target stockline, blowdown type, coke-up and timeline are set from this.</p>
+    </div>
+    <div class="box">
+      <h3>Strategy at your furnace</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Parameter</th><th class="n">Deep</th><th class="n">Partial</th><th>Units</th></tr></thead>
+        <tbody id="stratBody"></tbody>
+      </table></div>
+      <p class="lead" style="margin-top:10px"><b>Peak spray must not exceed spray capacity.</b> If it does, the blowdown is blast-limited — divert gas to the bleeder earlier, do not chase water.</p>
+    </div>
+  </section>
+
+  <!-- BURDEN & FUEL -->
+  <section class="ph" data-ph="burden">
+    <div class="box">
+      <h3>Burden recipe — starts at T0 − 12 h</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Parameter</th><th class="n">Deep</th><th class="n">Partial</th><th>Units</th></tr></thead>
+        <tbody id="burdenBody"></tbody>
+      </table></div>
+    </div>
+    <div class="box">
+      <h3>Fuel balance through the window</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Fuel</th><th class="n">Normal</th><th class="n">Deep burden</th><th>Units</th></tr></thead>
+        <tbody id="fuelBody"></tbody>
+      </table></div>
+      <p class="lead" style="margin-top:10px"><b>Stop PCI and oxygen at T0 − 4 h.</b> Anything charged later never reaches the tuyeres before blast off. Replacement ratio 0.85–0.90 kg coke / kg coal; the +15% coke-up covers the lost injection plus a margin.</p>
+    </div>
+    <div class="box">
+      <h3>Centre-coke matrix (12 coke turns, 10 ore turns)</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Ring (wall → centre)</th><th class="n">Coke normal</th><th class="n">Coke blowdown</th><th class="n">Ore normal</th><th class="n">Ore blowdown</th></tr></thead>
+        <tbody>
+          <tr><td>1 wall</td><td class="n">2</td><td class="n">1</td><td class="n">2</td><td class="n">3</td></tr>
+          <tr><td>2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr>
+          <tr><td>3</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr>
+          <tr><td>4</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr>
+          <tr><td>5</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">1</td></tr>
+          <tr><td>6 centre</td><td class="n">2</td><td class="n">3</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th>Total</th><th class="n">12</th><th class="n">12</th><th class="n">10</th><th class="n">10</th></tr>
+        </tbody>
+      </table></div>
+      <p class="lead" style="margin-top:10px">Move one coke turn from the wall ring to the centre, and one ore turn the other way. Switch to this matrix with the first blowdown charge at T0 − 12 h, not at T0. Check the chute angles against your plant ring-angle table.</p>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="ph" data-ph="timeline">
+    <div class="box">
+      <h3>Step-by-step timeline from T0</h3>
+      <p class="lead">Log every 30 min. H₂ action limit 12% — stop spray, divert gas to bleeder. O₂ in top gas must stay below 0.5%.</p>
+      <div class="tw"><table>
+        <thead><tr>
+          <th>h from T0</th>
+          <th>Phase</th>
+          <th class="n">Stockline m</th>
+          <th class="n">Blast %</th>
+          <th class="n">Planned top T °C</th>
+          <th class="n">Spray m³/h</th>
+          <th>Action</th>
+        </tr></thead>
+        <tbody id="tlBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- TAPPING -->
+  <section class="ph" data-ph="tapping">
+    <div class="box">
+      <h3>Tapping schedule</h3>
+      <p class="lead">Based on the REDUCED melting rate during the blowdown. Blast is cut by phase, so less iron is made and the gap between taps grows. Not the normal design schedule. Your cast-house SOP governs.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Stockline phase</th><th class="n">Blast %</th><th class="n">Melting rate t/h</th><th class="n">HM per cast t</th><th class="n">Gap between taps h</th></tr></thead>
+        <tbody id="tapBody"></tbody>
+      </table></div>
+    </div>
+    <div class="box">
+      <h3>Drill bit &amp; taphole</h3>
+      <div class="row"><b>Suggested drill bit diameter <small>tapered rod, scales with output</small></b><span class="val" id="o_bit">—</span></div>
+      <div class="row"><b>Taphole length (clay depth) <small>keep mushroom inside hearth wall</small></b><span class="val" id="o_th">—</span></div>
+      <div class="row"><b>Average blast during blowdown</b><span class="val" id="o_avb">—</span></div>
+      <div class="row"><b>Average melting rate</b><span class="val" id="o_avm">—</span></div>
+    </div>
+    <div class="box">
+      <h3>Drill-bit guide by furnace size</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Working volume</th><th>Drill bit</th><th>Taphole length</th><th>Normal casting</th></tr></thead>
+        <tbody>
+          <tr><td>&lt; 600 m³</td><td>40–45 mm</td><td>1.5–2.0 m</td><td>1 taphole</td></tr>
+          <tr><td>600–1500 m³</td><td>50–60 mm</td><td>2.0–2.8 m</td><td>2 tapholes</td></tr>
+          <tr><td>1500–3000 m³</td><td>60–70 mm</td><td>2.8–3.5 m</td><td>2–3 tapholes</td></tr>
+          <tr><td>&gt; 3000 m³</td><td>70–80 mm</td><td>3.5–4.5 m</td><td>3–4 tapholes</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="box">
+      <h3>Tapping through the blowdown — notes</h3>
+      <ul style="color:var(--ink-2);font-size:14px;line-height:1.55">
+        <li>Reduced blast means a low melting rate, so the gaps between taps are long — tap when liquid has collected, not on the normal clock.</li>
+        <li><b>T0 − 12 h to T0:</b> cast on the normal schedule and keep the hearth drained; the hearth must go into the blowdown dry.</li>
+        <li><b>T0 − 4 h:</b> stop injection and oxygen; take a full cast to dry the hearth.</li>
+        <li><b>During the blowdown:</b> a 90-min cast may run dry early when little has collected — that is fine; close and wait for the next gap.</li>
+        <li><b>Final cast</b> (at target stockline): drill and HOLD the taphole open until it blows gas — do not plug it. Stop spray, then blast, then purge.</li>
+        <li><b>Deep blowdown (reline):</b> after blast off, tap the salamander through a hole cut 0.3–0.6 m below the normal taphole.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CHECKLIST -->
+  <section class="ph" data-ph="checklist">
+    <div class="box">
+      <h3>A. Before T0 — readiness</h3>
+      <div id="chkA"></div>
+    </div>
+    <div class="box">
+      <h3>B. T0 − 12 h to T0 — conditioning</h3>
+      <div id="chkB"></div>
+    </div>
+    <div class="box">
+      <h3>C. During the blowdown</h3>
+      <div id="chkC"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+      <button class="btn" type="button" id="clrChk">Clear all ticks</button>
+      <span class="val ok" id="chkCount" style="align-self:center">—</span>
+    </div>
+  </section>
+
+  <!-- BLOW-IN -->
+  <section class="ph" data-ph="blowin">
+    <div class="box">
+      <h3>Blow-in — after the repair outage</h3>
+      <p class="lead">Blow-in is the mirror of blow-down: starting the furnace from the empty, cold condition back to full production. Each step of this guide uses the same inputs from the <b>Inputs</b> tab.</p>
+    </div>
+    <div class="box">
+      <h3>Day −3 to Day −1 · readiness</h3>
+      <ul style="color:var(--ink-2);font-size:14px;line-height:1.55">
+        <li>Refractory dried per the drying curve; brick temperature on target at every zone.</li>
+        <li>Blast system, cooling water, N₂, instrumentation and gas analysers proved; bleeders stroked, GCP ready.</li>
+        <li>Start-up burden staged: dry wood / coke stock, blow-in coke (loose, +20–30% of normal rate on dumps 1–3), light ore layers in the top charges only.</li>
+        <li>Cast house dry run — ladles, runners, slag bay, drill &amp; mud gun all tested.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Light-up &amp; first blast (hours 0 to 12)</h3>
+      <div class="row"><b>Stove heat-up</b><span>Oil / NG fired per SOP</span></div>
+      <div class="row"><b>Start blast at</b><span class="val" id="bi_bst">—</span></div>
+      <div class="row"><b>First taphole open after</b><span>~24 h (or when liquid forms)</span></div>
+      <div class="row"><b>Oxygen enrichment</b><span>Off until stable production (usually day 3+)</span></div>
+      <p class="lead" style="margin-top:10px">Start cold-blast at about <b>30%</b> of normal, increase in 10% steps every 2 h while the top temperature stays under the <b>GCP bag limit minus 60 °C</b>. H₂ in top gas must stay below <b>6%</b> during the first day (water burn-off). O₂ below <b>0.5%</b> always.</p>
+    </div>
+    <div class="box">
+      <h3>Build-up curve (volume-scaled)</h3>
+      <p class="lead">Cold-blast ramp to normal, by day after light-up.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Day</th><th class="n">Cold blast</th><th class="n">Stockline</th><th>Milestone</th></tr></thead>
+        <tbody id="biBody"></tbody>
+      </table></div>
+    </div>
+    <div class="box">
+      <h3>Blow-in burden (first 3 days)</h3>
+      <ul style="color:var(--ink-2);font-size:14px;line-height:1.55">
+        <li><b>Coke-up:</b> +25–30% on dumps 1–3, tapering to +15% by dump 6, +5% by dump 10, back to normal by day 3.</li>
+        <li><b>Basicity:</b> start at 1.20–1.25 (lime-rich) to protect the lining; return to your normal basicity after 48 h of stable operation.</li>
+        <li><b>Ore/coke</b> starts near 2.5–2.8, rises to normal by day 3.</li>
+        <li><b>PCI:</b> stay off for the first 48 h, then ramp gradually; reach normal injection by day 5–7.</li>
+      </ul>
+    </div>
+    <p class="caution" style="margin-top:12px"><b>Reline blow-in</b> is a 5–10 day operation and very plant-specific. Use this tab as a guide; the actual plan follows the vendor / refractory drying curve and your SOP.</p>
+  </section>
+
+  <!-- ADVISORY -->
+  <section class="ph" data-ph="advisory">
+    <div class="box">
+      <h3>Why the key settings are what they are</h3>
+      <details open><summary>Blast while the stockline is in shaft / belly / bosh / below bosh  (0.75 / 0.60 / 0.50 / 0.35)</summary>
+        <p>These are the blowdown blast volumes, each as a fraction of normal blast, stepped down as the stockline falls deeper. Blast stays ON so the coke keeps burning and the burden keeps descending, but full blast in a shortening column causes three problems that get worse the lower the stockline goes:</p>
+        <p><b>1. Top gas temperature.</b> With a short column there is less burden above the tuyeres to absorb the heat of the rising gas, so the top runs hotter. Less blast = less gas = less heat carried up, so the top is easier to hold under its limit with nitrogen and spray. This is the main reason.</p>
+        <p><b>2. Channelling and slips.</b> A short, uneven column is unstable; high blast pushes gas up preferred paths and the burden can hang then slip. Lower blast keeps the descent steadier.</p>
+        <p><b>3. Blowing material out of the top.</b> High velocity in a near-empty furnace throws coke and dust into the gas system — just when water is about to go into the gas.</p>
+      </details>
+      <details><summary>Coke-up of the blowdown burden  (+15% deep / +10% partial)</summary>
+        <p>Coke-up means adding extra coke to the burden in the hours before charging stops, so the furnace empties with a coke-rich column. It is expressed as a fraction of the normal coke rate: a furnace at 450 kg/tHM is charged near 517 kg/tHM (deep) through the window.</p>
+        <p>As the stockline falls the burden carries less heat down, while the hearth must still hold liquid iron and slag as its heat source burns away above it. Extra coke carries heat to the hearth and keeps the shortening column open so gas escapes and liquids drain. The worst outcome of a blowdown is a cold, frozen hearth at the final cast (stuck salamander, ruined blow-in); the coke-up is the main defence.</p>
+        <p>+15% roughly replaces the injection you stop at T0 − 4 h. Going higher is NOT safer — more coke to burn away means a longer blowdown, more hours at the top-temperature limit and more spray water, for no extra hearth heat. "+25% to be safe" is a classic mistake.</p>
+        <p>Partial needs less (+10%) because the stockline only reaches the belly — the bosh and hearth stay full of hot burden, so the hearth is never at risk.</p>
+        <p>How it is charged: the coke rate per <i>hour</i> does not change. The coke-up is made by taking <i>ore</i> out of each charge, not by adding coke dumps — the coke dump stays the same, the ore dump shrinks, ore/coke drops, and only production falls. Start about 12 h before T0 so the coked-up material fills the whole furnace by the time charging stops.</p>
+      </details>
+      <details><summary>Spray water &amp; nitrogen priority</summary>
+        <p><b>Nitrogen first, spray second.</b> At the top, nitrogen cools the gas by dilution without adding any H₂ risk. Spray adds free water; some evaporates in the gas (good, cools it) but some reaches the burden surface and reacts with hot coke → CO + H₂. Hold the top with N₂ as long as you can, then use spray in small increments.</p>
+        <p><b>Stop rule:</b> if H₂ in top gas exceeds <b>12%</b>, stop the spray and divert gas to the bleeder. If spray reaches capacity and the top is still above limit, <b>cut blast</b> — do not chase water.</p>
+      </details>
+      <details><summary>Dry GCP bag limit (260 °C, stepped down)</summary>
+        <p>The bag-filter cloth burns if its temperature exceeds the rated limit. As the stockline falls below the belly the gas gets hotter and wetter; stay ahead of it by stepping the bag limit down (260 → 220 → 180 °C). When you hit 180 and the top is still rising, switch gas off GCP to the bleeder. For wet GCP there is no bag; hold the top gas under the top equipment limit instead.</p>
+      </details>
+      <details><summary>Top nitrogen flow available</summary>
+        <p>The total at the top is BLT + lances + the three shell platforms (above-tuyere, mid-shaft, throat). Flow at the top is what holds the temperature; flow deeper in the shell cools the burden surface more than the gas and helps less. If your oxygen plant does not have enough N₂ for the whole duration, slow down the plan (lower blast earlier) rather than running out.</p>
+      </details>
+      <details><summary>Final cast &amp; salamander</summary>
+        <p>At the target stockline the furnace is empty of burden above the bosh. Drill a full-depth cast and <b>hold the taphole open</b> — when it blows gas, the hearth is dry. Do not plug it. Stop spray, then blast, then back-draught and purge. For a reline, tap the salamander through a hole cut 0.3–0.6 m below the normal taphole once the stoves and blast are off.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ----- back button
+  $('back').addEventListener('click', function () { if (history.length > 1) history.back(); else location.href = 'index.html'; });
+
+  // ----- tab navigation
+  var tabs = $('tabs').querySelectorAll('button');
+  tabs.forEach(function (t) { t.addEventListener('click', function () { setPh(t.getAttribute('data-p')); }); });
+  function setPh(p) {
+    tabs.forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-p') === p); });
+    document.querySelectorAll('.ph').forEach(function (s) { s.classList.toggle('on', s.getAttribute('data-ph') === p); });
+    window.scrollTo(0, 0);
+  }
+
+  // ----- inputs
+  var INPUTS = ['i_vu','i_prod','i_o2','i_o2d','i_coke','i_pci','i_ore','i_coked','i_bd','i_bas','i_topT','i_maxT','i_gcp','i_bag','i_spray','i_tap','i_n2l','i_n2f','i_n2a','i_n2m','i_n2t','i_blt'];
+  var DEFAULTS = {}; INPUTS.forEach(function (k) { DEFAULTS[k] = $(k).value; });
+  // load saved
+  try { var s = JSON.parse(localStorage.getItem('bf.blowdown.inputs') || 'null'); if (s) INPUTS.forEach(function (k) { if (s[k] != null) $(k).value = s[k]; }); } catch (e) {}
+  var STRAT_DEFAULT = 'reline';
+  try { var ss = localStorage.getItem('bf.blowdown.strat') || STRAT_DEFAULT; $('strat').value = ss; } catch (e) {}
+
+  function save() {
+    var o = {}; INPUTS.forEach(function (k) { o[k] = $(k).value; });
+    try { localStorage.setItem('bf.blowdown.inputs', JSON.stringify(o)); localStorage.setItem('bf.blowdown.strat', $('strat').value); } catch (e) {}
+  }
+  INPUTS.forEach(function (k) { $(k).addEventListener('input', function () { calc(); save(); }); });
+  $('strat').addEventListener('change', function () { calc(); save(); });
+  $('reset').addEventListener('click', function () { INPUTS.forEach(function (k) { $(k).value = DEFAULTS[k]; }); $('strat').value = STRAT_DEFAULT; calc(); save(); });
+
+  function num(id) { return Number($(id).value) || 0; }
+  function fmt(n, d) { if (!isFinite(n)) return '—'; d = d == null ? 1 : d; return (Math.round(n * Math.pow(10, d)) / Math.pow(10, d)).toLocaleString('en-IN'); }
+
+  // ----- strategy presets
+  function strategyPreset() {
+    var v = $('strat').value;
+    var map = {
+      reline:  { type: 'Deep blowdown (to tuyere level)', deep: true, cokeUp: 0.15, outage: 45, salamander: 'Yes — tap after blast off' },
+      hearth:  { type: 'Deep blowdown (to tuyere level)', deep: true, cokeUp: 0.15, outage: 20, salamander: 'Yes — tap after blast off' },
+      stack:   { type: 'Partial blowdown (to belly)',     deep: false, cokeUp: 0.10, outage: 4,  salamander: 'No' },
+      short:   { type: 'Partial blowdown (to belly)',     deep: false, cokeUp: 0.10, outage: 2,  salamander: 'No' },
+      banking: { type: 'Banking (no stockline drop)',     deep: false, cokeUp: 0.05, outage: 3,  salamander: 'No' }
+    };
+    return map[v] || map.reline;
+  }
+
+  // ----- the main calculation
+  function calc() {
+    var Vu = num('i_vu'), prod = num('i_prod'), o2 = num('i_o2'), o2d = num('i_o2d');
+    var coke = num('i_coke'), pci = num('i_pci'), oreRate = num('i_ore'), cokeD = num('i_coked'), bd = num('i_bd');
+    var bas = num('i_bas'), topT = num('i_topT'), maxT = num('i_maxT');
+    var bag = num('i_bag'), spray = num('i_spray'), taps = num('i_tap');
+    var n2l = num('i_n2l'), n2f = num('i_n2f'), n2a = num('i_n2a'), n2m = num('i_n2m'), n2t = num('i_n2t'), blt = num('i_blt');
+
+    // Core derived
+    var HM = prod * Vu;                                // t/day
+    // Cold blast Nm³/min: HM/day × O2d Nm³/tHM ÷ 0.21 ÷ 1440 min/day ÷ (1 + enrichment adj)
+    // The sheet uses: coldBlast = HM * O2d / 0.21 / 1440 / (1 + o2/100 * (1/0.21 - 1))
+    var coldBlast = HM * o2d / 0.21 / 1440 / (1 + (o2 / 100) * (1 / 0.21 - 1));
+    var uT = 950 + 25 * o2;
+    var totN2 = blt + n2l * n2f + n2a + n2m + n2t;
+    var S3 = Math.pow(Vu / 1070, 1/3);
+
+    $('o_hm').textContent = fmt(HM, 0) + ' t/day';
+    $('o_blast').textContent = fmt(coldBlast, 0) + ' Nm³/min';
+    $('o_uT').textContent = fmt(uT, 0) + ' °C';
+    $('o_n2').textContent = fmt(totN2, 0) + ' Nm³/h';
+    $('o_s3').textContent = fmt(S3, 3);
+
+    // ===== Strategy table (deep vs partial)
+    // target stockline depth (m below zero): scales with S3
+    var targetDeep = 19.4 * S3 / 0.828;
+    var targetPart = 14.9 * S3 / 0.828;
+    var cokeUpDeep = 0.15, cokeUpPart = 0.10;
+    var cokeRateDeep = coke * (1 + cokeUpDeep);
+    var cokeRatePart = coke * (1 + cokeUpPart);
+    var oreRateReal = oreRate * 1000;  // kg/tHM
+    var orePerCokeNormal = oreRateReal / coke;
+    var orePerCokeDeep = oreRateReal / cokeRateDeep;
+    var orePerCokePart = oreRateReal / cokeRatePart;
+    var coldBlastH = coldBlast * 60;   // Nm³/h
+    var cokePerH = HM / 24 * coke / 1000;         // t/h (normal basis, kept constant)
+    // charges per hour: coke_t_per_h / coke_dump
+    // coke dump ~ 4.5 t (use something based on volume): dump ~ Vu × 0.00744 / S3
+    var cokeDump = (coke * HM / 24 / cokeD / 1000 / 5.5 * Math.min(1.6, S3));
+    if (!isFinite(cokeDump) || cokeDump < 1) cokeDump = 4.5;
+    // charges per hour
+    var chPerHNormal = cokePerH / cokeDump;
+    var chPerHDeep = chPerHNormal * (1 + 0.01);  // slight increase from higher charging
+    var chPerHPart = chPerHNormal;
+    // durations: deep ~ 4.5 h, partial ~ 2.9 h (scale with S3)
+    var durDeep = 4.5 * S3 / 0.828;
+    var durPart = 2.9 * S3 / 0.828;
+    // peak spray: scale from capacity need ~ 23 m³/h for Vu~600
+    var peakSpray = 22.7 * S3 / 0.828;
+    // total water
+    var waterDeep = 45 * (S3 / 0.828) * (S3 / 0.828);
+    var waterPart = 20 * (S3 / 0.828) * (S3 / 0.828);
+    // coke blank (bosh volume, deep only)
+    var cokeBlank = Math.PI * Math.pow(5.7 * S3 / 0.828 / 2, 2) * 2.5 * cokeD;
+    // basicity targets
+    var basDeep = Math.max(0.90, bas - 0.15);
+    var basPart = Math.max(0.90, bas - 0.10);
+    // extra quartzite kg/tHM, ~90 kg per unit basicity drop
+    var qzDeep = (bas - basDeep) * 90;
+    var qzPart = (bas - basPart) * 90;
+
+    // ----- Strategy rows
+    var preset = strategyPreset();
+    var rows = [
+      ['Blowdown type', preset.deep ? 'Deep, to tuyere level' : preset.type.indexOf('Partial') >= 0 ? 'Partial, to belly' : preset.type, preset.deep ? '—' : 'Partial, to belly', ''],
+      ['Target stockline', fmt(targetDeep, 1), fmt(targetPart, 1), 'm below zero'],
+      ['Duration from T0', fmt(durDeep, 2), fmt(durPart, 2), 'h'],
+      ['Gas leaves GCP', fmt(durPart, 2) + ' h after T0', 'Never — stays on GCP', ''],
+      ['Peak spray demand', fmt(peakSpray, 1), fmt(peakSpray, 1), 'm³/h'],
+      ['Total spray water', fmt(waterDeep, 1), fmt(waterPart, 1), 'm³'],
+      ['Spray capacity available', fmt(spray, 0), fmt(spray, 0), 'm³/h (must exceed peak)'],
+      ['Coke-up of blowdown burden', '+' + Math.round(cokeUpDeep * 100) + '%', '+' + Math.round(cokeUpPart * 100) + '%', ''],
+      ['Coke blank', fmt(cokeBlank, 1), '0', 't (deep only)'],
+      ['Slag basicity target', fmt(basDeep, 2), fmt(basPart, 2), 'CaO/SiO₂'],
+      ['Typical outage', preset.deep ? preset.outage : '—', preset.deep ? '—' : preset.outage, 'days'],
+      ['Salamander tap', preset.salamander, '—', '']
+    ];
+    $('stratBody').innerHTML = rows.map(function (r) {
+      var warn = r[0] === 'Peak spray demand' && peakSpray > spray ? ' class="val bad"' : (r[0] === 'Peak spray demand' ? ' class="val ok"' : ' class="val"');
+      return '<tr><td>' + r[0] + '</td><td class="n"><span' + (r[0].indexOf('Peak spray') === 0 ? warn : '') + '>' + r[1] + '</span></td><td class="n">' + r[2] + '</td><td>' + r[3] + '</td></tr>';
+    }).join('');
+
+    // ===== Burden recipe
+    var bRows = [
+      ['Coke-up on normal rate', '+' + Math.round(cokeUpDeep * 100) + '%', '+' + Math.round(cokeUpPart * 100) + '%', ''],
+      ['Coke rate in burden', fmt(cokeRateDeep, 1), fmt(cokeRatePart, 1), 'kg/tHM'],
+      ['Normal ore/coke', fmt(orePerCokeNormal, 2), fmt(orePerCokeNormal, 2), 't/t'],
+      ['Blowdown ore/coke', fmt(orePerCokeDeep, 2), fmt(orePerCokePart, 2), 't/t'],
+      ['Coke dump (indicative)', fmt(cokeDump, 2), fmt(cokeDump, 2), 't'],
+      ['Charging rate', fmt(chPerHDeep, 2), fmt(chPerHPart, 2), 'charges/h'],
+      ['Normal basicity (ref)', fmt(bas, 2), fmt(bas, 2), 'CaO/SiO₂'],
+      ['Blowdown basicity target', fmt(basDeep, 2), fmt(basPart, 2), 'CaO/SiO₂'],
+      ['Extra quartzite (acid wash)', fmt(qzDeep, 0), fmt(qzPart, 0), 'kg/tHM']
+    ];
+    $('burdenBody').innerHTML = bRows.map(function (r) {
+      return '<tr><td>' + r[0] + '</td><td class="n">' + r[1] + '</td><td class="n">' + r[2] + '</td><td>' + r[3] + '</td></tr>';
+    }).join('');
+
+    // ===== Fuel balance
+    var fRows = [
+      ['Top coke', fmt(coke, 0), fmt(cokeRateDeep, 1), 'kg/tHM'],
+      ['PCI', fmt(pci, 0), '0', 'kg/tHM — stop at T0 − 4 h'],
+      ['Total fuel (injection on)', fmt(coke + pci, 0), fmt(cokeRateDeep, 1), 'kg/tHM'],
+      ['Coke per hour', fmt(cokePerH, 2), fmt(cokePerH, 2), 't/h — unchanged'],
+      ['Coke in 12 h window', fmt(cokePerH * 12, 1), fmt(cokePerH * 12, 1), 't'],
+      ['Coke blank', '0', fmt(cokeBlank, 1), 't'],
+      ['Total coke for blowdown', '—', fmt(cokePerH * 12 + cokeBlank, 1), 't']
+    ];
+    $('fuelBody').innerHTML = fRows.map(function (r) {
+      return '<tr><td>' + r[0] + '</td><td class="n">' + r[1] + '</td><td class="n">' + r[2] + '</td><td>' + r[3] + '</td></tr>';
+    }).join('');
+
+    // ===== Timeline (interpolated from the Excel's deep sequence, scaled to furnace)
+    // Phases: shaft (0 to ~2.5 h) blast 75% → belly (~2.5-3 h) 60% → bosh (3-4 h) 50% → below bosh (4-end) 35%
+    var dur = preset.deep ? durDeep : durPart;
+    var targetSL = preset.deep ? targetDeep : targetPart;
+    var spraySeries = [0,0,0,0,1,4,7,11,15,19,23,13,15,15,17,19,22,0,0,0];
+    var tl = [];
+    var steps = Math.min(20, Math.round(dur / 0.25) + 1);
+    for (var i = 0; i < steps; i++) {
+      var h = i * 0.25;
+      var sl, blastFrac, planT, action, phase;
+      var frac = h / dur;
+      if (frac <= 0.55) { phase = 'shaft'; blastFrac = 0.75; sl = frac * 0.55 * targetSL; }
+      else if (frac <= 0.70) { phase = 'belly'; blastFrac = 0.60; sl = (0.55 + (frac - 0.55) * 1.0) * targetSL; }
+      else if (frac <= 0.95) { phase = 'bosh'; blastFrac = 0.50; sl = (0.70 + (frac - 0.70) * 1.0) * targetSL; }
+      else { phase = 'below'; blastFrac = 0; sl = targetSL; }
+      // top T rise curve (empirical): rises fast then plateau at ~bag limit then max
+      if (h < 1) planT = topT + h * 220;
+      else if (h < 2.5) planT = Math.min(bag, topT + 130 + (h - 1) * 60);
+      else if (h < dur * 0.7) planT = Math.min(maxT, bag + (h - 2.5) * 70);
+      else planT = Math.min(maxT, maxT - 20);
+      if (phase === 'below') planT = maxT - 30;
+      var spr = spraySeries[Math.min(spraySeries.length - 1, i)] * (peakSpray / 23);
+      action = i === 0 ? 'T0 — stop charging, blast to ' + Math.round(blastFrac * 100) + '%' :
+               (phase === 'belly' && i > 0 && tl[i-1] && tl[i-1].phase === 'shaft' ? 'Stockline enters belly — blast to ' + Math.round(blastFrac * 100) + '%' :
+               (phase === 'bosh' && tl[i-1] && tl[i-1].phase === 'belly' ? 'Enters bosh — blast to ' + Math.round(blastFrac * 100) + '%; divert gas to bleeder' :
+               (phase === 'below' && tl[i-1] && tl[i-1].phase === 'bosh' ? 'Target stockline — blast off; final cast' :
+               (phase === 'below' ? 'Back-draught, purge, salamander (deep only)' :
+               'log: stockline, blast %, top T, spray'))));
+      tl.push({ h: h, phase: phase, sl: sl, blastFrac: blastFrac, planT: planT, spr: spr, action: action });
+    }
+    $('tlBody').innerHTML = tl.map(function (r) {
+      var tCls = r.planT >= maxT - 20 ? 'bad' : (r.planT >= bag ? 'warn' : '');
+      return '<tr><td>' + fmt(r.h, 2) + '</td>' +
+        '<td><span class="phase ' + r.phase + '">' + r.phase + '</span></td>' +
+        '<td class="n">' + fmt(r.sl, 2) + '</td>' +
+        '<td class="n">' + (r.blastFrac === 0 ? '0' : Math.round(r.blastFrac * 100) + '%') + '</td>' +
+        '<td class="n ' + tCls + '">' + fmt(r.planT, 0) + '</td>' +
+        '<td class="n">' + fmt(r.spr, 1) + '</td>' +
+        '<td>' + r.action + '</td></tr>';
+    }).join('');
+
+    // ===== Tapping schedule
+    var meltFull = HM / 24;   // t/h at 100% blast
+    var phases = [
+      { name: 'Shaft (highest blast)', b: 0.75 },
+      { name: 'Belly', b: 0.60 },
+      { name: 'Bosh', b: 0.50 },
+      { name: 'Below bosh (near tuyeres)', b: 0.35 }
+    ];
+    var hmPerCast = 270 * (HM / 2490);  // scales with production
+    $('tapBody').innerHTML = phases.map(function (p) {
+      var mr = meltFull * p.b;
+      var gap = hmPerCast / mr;
+      return '<tr><td>' + p.name + '</td><td class="n">' + Math.round(p.b * 100) + '%</td><td class="n">' + fmt(mr, 1) + '</td><td class="n">' + fmt(hmPerCast, 0) + '</td><td class="n">' + fmt(gap, 1) + '</td></tr>';
+    }).join('');
+    var avgB = (0.75 + 0.60 + 0.50 + 0.35) / 4;
+    var avgMelt = meltFull * avgB;
+    // drill bit scales with volume
+    var bit = Math.round(40 + Math.min(45, (Vu - 400) / 35));
+    var thL = Math.max(1.5, Math.min(4.5, 1.5 + (Vu - 400) / 900));
+    $('o_bit').textContent = bit + ' mm';
+    $('o_th').textContent = fmt(thL, 1) + ' m';
+    $('o_avb').textContent = Math.round(avgB * 100) + '%';
+    $('o_avm').textContent = fmt(avgMelt, 1) + ' t/h';
+
+    // ===== Blow-in panel
+    var bst = coldBlast * 0.30;
+    $('bi_bst').textContent = fmt(bst, 0) + ' Nm³/min (30% of normal)';
+    var biDays = [
+      { d: 1, bl: '30–40%', sl: 'Fill to charging zone', m: 'Light-up, first blast on; stove heat kept up; H₂ < 6%' },
+      { d: 2, bl: '40–55%', sl: 'Reaches belly',        m: 'First cast; raise basicity to 1.25; no PCI, no O₂' },
+      { d: 3, bl: '55–70%', sl: 'Normal stockline',     m: 'Regular casts; PCI starts low; coke-up back to +15%' },
+      { d: 5, bl: '75–90%', sl: 'Normal',               m: 'PCI to normal; oxygen enrichment starts low' },
+      { d: 7, bl: '100%',   sl: 'Normal',               m: 'Full production; basicity returns to normal (' + fmt(bas, 2) + ')' }
+    ];
+    $('biBody').innerHTML = biDays.map(function (r) {
+      return '<tr><td>Day +' + r.d + '</td><td class="n">' + r.bl + '</td><td class="n">' + r.sl + '</td><td>' + r.m + '</td></tr>';
+    }).join('');
+  }
+
+  // ----- Checklist
+  var CHKS = {
+    A: [
+      'Repair scope frozen; blowdown type and target stockline agreed.',
+      'Blowdown plan, blow-in plan and isolation list approved and issued to each shift.',
+      'Top spray system installed and flow-tested to the required capacity; standby pump proved.',
+      'Nitrogen to the top confirmed with the oxygen plant for the full duration.',
+      'Stockline measurement proved to the target depth (radar / extended rods).',
+      'Top gas analysers H₂, CO, CO₂, O₂ calibrated and trended in the control room.',
+      'Bleeders stroked; flare / ignition ready. GCP isolation (goggle valve, water seal, bag limit) proved.',
+      'Blowdown coke, coke-blank coke and quartzite segregated and in stock.',
+      'Cast house ready: tapholes, drill + spare, mud gun, runners, ladles, slag capacity.',
+      'Leaking tuyeres / coolers identified; isolation plan agreed. Water leaks into the furnace isolated.',
+      'Charging matrix for the blowdown burden loaded and checked.',
+      'Emergency cover in place: gas rescue, BA sets, personal CO monitors, ambulance, fire tender.',
+      'All crews briefed on the plan, the stop rules and the abnormal situations.'
+    ],
+    B: [
+      'Blowdown burden started: coke-up, acid wash, centre-coke matrix.',
+      'Hot-metal temperature and silicon raised to target; hearth cast dry.',
+      'PCI to zero and oxygen enrichment off at T0 − 4 h; top pressure lowered; TRT to bypass.',
+      'Coke blank charged (deep blowdown only).',
+      'Top and gas areas cleared of people and barricaded; spray and N₂ on standby.'
+    ],
+    C: [
+      'Charging stopped at T0; blast to 70%; hoppers sealed with nitrogen.',
+      'Top temperature held under limit: nitrogen first, then spray in small steps.',
+      'H₂ and O₂ watched continuously; blast cut rather than water added if spray reaches capacity.',
+      'Gas moved from GCP to bleeder at the planned level; bag filter isolated.',
+      'Blast stepped down by zone (see the timeline); casts taken on schedule.',
+      'Target stockline reached; final cast drilled and held open until it blew.',
+      'Spray stopped, then blast off, back-draught and purge completed.',
+      'Salamander tapped (reline).'
+    ]
+  };
+  function loadChk() {
+    try { return JSON.parse(localStorage.getItem('bf.blowdown.chk') || '{}'); } catch (e) { return {}; }
+  }
+  function saveChk(state) { try { localStorage.setItem('bf.blowdown.chk', JSON.stringify(state)); } catch (e) {} }
+  var chkState = loadChk();
+  function renderChk() {
+    ['A','B','C'].forEach(function (sec) {
+      var el = $('chk' + sec);
+      el.innerHTML = CHKS[sec].map(function (item, i) {
+        var k = sec + i, done = !!chkState[k];
+        return '<div class="chk ' + (done ? 'done' : '') + '"><input type="checkbox" id="c_' + k + '"' + (done ? ' checked' : '') + '><label for="c_' + k + '"><b>' + (i + 1) + '.</b> ' + item + '</label></div>';
+      }).join('');
+      Array.prototype.forEach.call(el.querySelectorAll('input'), function (cb, i) {
+        cb.addEventListener('change', function () {
+          var k = sec + i;
+          chkState[k] = cb.checked; saveChk(chkState); cb.parentElement.classList.toggle('done', cb.checked); updateChkCount();
+        });
+      });
+    });
+    updateChkCount();
+  }
+  function updateChkCount() {
+    var total = CHKS.A.length + CHKS.B.length + CHKS.C.length;
+    var done = Object.values(chkState).filter(Boolean).length;
+    $('chkCount').textContent = done + ' of ' + total + ' done';
+  }
+  $('clrChk').addEventListener('click', function () {
+    if (!confirm('Clear all ticks?')) return;
+    chkState = {}; saveChk(chkState); renderChk();
+  });
+  renderChk();
+
+  calc();
+})();
+</script>
+<script src="nk-logo.js" data-img="img/nk-logo.png" defer></script>
+</body>
+</html>

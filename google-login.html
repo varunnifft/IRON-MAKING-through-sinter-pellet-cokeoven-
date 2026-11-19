@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Sign in · Iron Making</title>
+<!-- Iron Making 6.3.7 · Google sign-in page. Host this file on GitHub Pages (https://<you>.github.io/...).
+     The app opens it as: google-login.html?n=<one-time code>&s=<your Iron Making Cloud /exec link>
+     It shows Google's "Sign in with Google" button, then sends Google's ID token to your Apps Script, which checks it. -->
+<style>
+  * { box-sizing: border-box }
+  html, body { margin: 0; min-height: 100%; background: radial-gradient(120% 80% at 50% 0%, #16365c, #071426 55%, #040c17); color: #eef3f8; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif }
+  main { max-width: 420px; margin: 0 auto; padding: 48px 22px; text-align: center }
+  .logo { font: 800 44px/1 "Arial Narrow", system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase }
+  .logo em { font-style: normal; color: #ff8a2a }
+  .tag { margin: 8px 0 30px; color: #9fe6e3; font-size: 13px; letter-spacing: .12em; text-transform: uppercase }
+  .card { background: rgba(255,255,255,.06); border: 1px solid #1d3553; border-radius: 18px; padding: 24px 20px }
+  h1 { margin: 0 0 6px; font-size: 22px } p { margin: 6px 0; color: #c3d0dd }
+  #btn { display: flex; justify-content: center; margin: 20px 0 6px; min-height: 44px }
+  .ok { color: #72c784 } .bad { color: #ff8a7a }
+  .back { display: inline-block; margin-top: 18px; padding: 14px 22px; border-radius: 12px; color: #2a1200; font-weight: 700; text-decoration: none; background: linear-gradient(90deg, #ff3d00, #ff7a1a 45%, #ffc23d) }
+  small { display: block; margin-top: 22px; color: #93a6ba; font-size: 12px }
+</style>
+<script src="https://accounts.google.com/gsi/client" async></script>
+</head>
+<body>
+<main>
+  <div class="logo">Iron <em>Making</em></div>
+  <div class="tag">Raw material to liquid pig iron</div>
+  <div class="card" id="card">
+    <h1 id="t">Sign in with Google</h1>
+    <p id="m">Choose the Google account you want to use in the Iron Making app.</p>
+    <div id="btn"></div>
+  </div>
+  <small>Iron Making receives only your name and email address from Google, to create your login.</small>
+</main>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), nonce = q.get('n') || '', server = q.get('s') || '';
+  var $ = function (id) { return document.getElementById(id); };
+  function show(title, msg, cls, back) {
+    $('t').textContent = title; $('m').innerHTML = msg; $('m').className = cls || ''; $('btn').innerHTML = '';
+    if (back) {
+      var android = /Android/i.test(navigator.userAgent), a = document.createElement('a'); a.className = 'back';
+      if (android) { a.href = 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.bfburdenmodel.ironmaking;end'; a.textContent = 'Back to Iron Making'; }
+      else { a.href = '#'; a.textContent = 'Close this tab'; a.onclick = function () { window.close(); return false; }; }
+      $('card').appendChild(a);
+    }
+  }
+  if (!/^[A-Za-z0-9_-]{20,80}$/.test(nonce) || !/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(server)) {
+    show('Open this from the app', 'Please start the sign-in from the Iron Making app: tap <b>Continue with Google</b>.', 'bad'); return;
+  }
+  function post(data) {
+    return fetch(server, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) })
+      .then(function (r) { return r.json(); }).then(function (r) { if (!r.ok) throw new Error(r.error || 'Something went wrong.'); return r; });
+  }
+  function onCredential(resp) {
+    show('Signing you in…', 'Checking your Google account.', '');
+    post({ action: 'googleSignIn', nonce: nonce, credential: resp.credential }).then(function (r) {
+      show('Signed in ✓', 'Welcome, <b>' + String(r.name).replace(/[<>&]/g, '') + '</b> (' + String(r.email).replace(/[<>&]/g, '') + ').<br>Go back to the Iron Making app — it opens by itself in a few seconds.', 'ok', true);
+    }, function (e) { show('Could not sign in', e.message + '<br>Go back to the app and try again.', 'bad', true); });
+  }
+  function start(clientId) {
+    if (!window.google || !google.accounts || !google.accounts.id) { setTimeout(function () { start(clientId); }, 150); return; }
+    google.accounts.id.initialize({ client_id: clientId, callback: onCredential, auto_select: false, cancel_on_tap_outside: false, itp_support: true });
+    google.accounts.id.renderButton($('btn'), { theme: 'filled_blue', size: 'large', shape: 'pill', text: 'continue_with', width: 300 });
+    google.accounts.id.prompt();
+  }
+  fetch(server + '?gcfg=1', { redirect: 'follow' }).then(function (r) { return r.json(); }).then(function (r) {
+    if (!r.clientId) throw new Error('Google sign-in is not switched on by the admin yet.');
+    start(r.clientId);
+  }).catch(function (e) { show('Not available', e.message, 'bad', true); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>BF Blow-in / Blow-down planner</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="iz.css">
+<link rel="stylesheet" href="bd.css">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="pwa.js" defer></script></head>
+<body>
+<header class="bar">
+  <button class="bk" id="back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <div class="tt"><small>Iron Making · blast furnace</small><b>BF Blow-in / Blow-down planner</b></div>
+  <a class="hm" href="index.html" aria-label="Iron Making first page"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10"/></svg><span>Iron Making</span></a>
+</header>
+
+<main class="wrap">
+  <p class="caution"><b>Planning &amp; training aid.</b> Your approved plant SOP, gas-safety rules and permit system govern the actual operation. Values here are starting points: edit them to your furnace and your last log.</p>
+
+  <nav class="tabs" id="tabs" aria-label="Planner pages">
+    <button data-p="inputs" class="on">Inputs</button>
+    <button data-p="strategy">Strategy</button>
+    <button data-p="burden">Burden &amp; Fuel</button>
+    <button data-p="timeline">Timeline</button>
+    <button data-p="tapping">Tapping</button>
+    <button data-p="checklist">Checklist</button>
+    <button data-p="blowin">Blow-in</button>
+    <button data-p="emergency" class="hot">Abnormal &amp; emergency</button>
+    <button data-p="safety" class="safe">Safety</button>
+    <button data-p="advisory">Advisory</button>
+  </nav>
+
+  <!-- ================= INPUTS ================= -->
+  <section class="ph on" data-ph="inputs">
+    <div class="box imp-wrap" id="importCard"></div>
+
+    <div class="box">
+      <h3>Furnace &amp; operation</h3>
+      <p class="lead">Type your values, or import them from a file above. A box left empty uses the value shown in grey. <b>Working volume is 750 m³ when nothing is entered.</b> Everything is saved on this phone.</p>
+      <div class="grid" id="planGrid"></div>
+      <div class="btnrow">
+        <button class="btn" type="button" id="reset">Reset all to default</button>
+        <a class="btn" href="BF_Blowdown_Plan.xlsx" download>Download reference Excel ›</a>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Blast during the blowdown</h3>
+      <p class="lead">Fraction of normal cold blast while the stockline is in each zone. Lower = slower and cooler; higher = faster but hotter and more water. See Advisory.</p>
+      <div class="grid" id="blastGrid"></div>
+    </div>
+
+    <div class="box">
+      <h3>Furnace geometry</h3>
+      <p class="lead">Size-scaled from the working volume. <b>Before a live blowdown, replace them with your real dimensions from the GA drawing</b> — type them or import the drawing data. Empty box = scaled value in grey.</p>
+      <div class="geo">
+        <div class="grid" id="geoGrid"></div>
+        <figure class="prof"><svg id="profSvg" viewBox="0 0 220 300" role="img" aria-label="Furnace profile with depths"></svg><figcaption>Profile drawn from these dimensions · depth below zero stockline</figcaption></figure>
+      </div>
+      <div class="btnrow"><button class="btn" type="button" id="geoAuto">Clear geometry · use scaled values</button></div>
+      <div class="tw" style="margin-top:10px"><table>
+        <thead><tr><th>Level</th><th class="n">Depth m</th><th class="n">Cumulative volume m³</th><th>Use</th></tr></thead>
+        <tbody id="depthBody"></tbody>
+      </table></div>
+      <div class="tw" style="margin-top:10px"><table>
+        <thead><tr><th>Zone</th><th class="n">Volume m³</th></tr></thead>
+        <tbody id="zoneBody"></tbody>
+      </table></div>
+    </div>
+
+    <div class="box">
+      <h3>Computed baseline</h3>
+      <div id="baseRows"></div>
+    </div>
+  </section>
+
+  <!-- ================= STRATEGY ================= -->
+  <section class="ph" data-ph="strategy">
+    <div class="box">
+      <h3>Select the stoppage</h3>
+      <label style="max-width:420px">Why is the furnace being stopped?
+        <select id="strat">
+          <option value="reline">Full reline</option>
+          <option value="hearth">Hearth repair</option>
+          <option value="stack">Stack / shaft repair (gunning, above tuyeres)</option>
+          <option value="tuyere">Tuyere / cooler repairs</option>
+          <option value="long">Long stoppage (market / raw material)</option>
+        </select>
+      </label>
+      <div class="opts" id="stratHelp"></div>
+    </div>
+    <div class="box sel" id="stratSel"></div>
+    <div class="box">
+      <h3>Deep vs partial at your furnace</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Parameter</th><th class="n">Deep</th><th class="n">Partial</th><th>Units</th></tr></thead>
+        <tbody id="stratBody"></tbody>
+      </table></div>
+      <p class="lead" style="margin-top:10px"><b>Peak spray must not exceed spray capacity.</b> If it does, the blowdown is blast-limited — divert gas to the bleeder earlier or lower the blast, do not chase water.</p>
+    </div>
+  </section>
+
+  <!-- ================= BURDEN ================= -->
+  <section class="ph" data-ph="burden">
+    <div class="box">
+      <h3>Blowdown burden — start at T0 − 12 h</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Parameter</th><th class="n">Deep</th><th class="n">Partial</th><th>Units</th></tr></thead>
+        <tbody id="burdenBody"></tbody>
+      </table></div>
+    </div>
+    <div class="box">
+      <h3>Fuel balance through the window</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Fuel</th><th class="n">Normal</th><th class="n">Deep burden</th><th>Units</th></tr></thead>
+        <tbody id="fuelBody"></tbody>
+      </table></div>
+      <p class="lead" style="margin-top:10px"><b>Stop PCI and oxygen at T0 − 4 h.</b> Anything charged later never reaches the tuyeres before blast off. Replacement ratio 0.85–0.90 kg coke / kg coal; the coke-up covers the lost injection plus a margin for the emptying column.</p>
+    </div>
+    <div class="box">
+      <h3>Centre-coke matrix (12 coke turns, 10 ore turns)</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Ring (wall → centre)</th><th class="n">Coke normal</th><th class="n">Coke blowdown</th><th class="n">Ore normal</th><th class="n">Ore blowdown</th></tr></thead>
+        <tbody>
+          <tr><td>1 wall</td><td class="n">2</td><td class="n">1</td><td class="n">2</td><td class="n">3</td></tr>
+          <tr><td>2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr>
+          <tr><td>3</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr>
+          <tr><td>4</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr>
+          <tr><td>5</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n">1</td></tr>
+          <tr><td>6 centre</td><td class="n">2</td><td class="n">3</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th>Total</th><th class="n">12</th><th class="n">12</th><th class="n">10</th><th class="n">10</th></tr>
+        </tbody>
+      </table></div>
+      <p class="lead" style="margin-top:10px">Move one coke turn from the wall ring to the centre, and one ore turn the other way. Switch with the first blowdown charge at T0 − 12 h, not at T0. Check chute angles against your ring-angle table.</p>
+    </div>
+  </section>
+
+  <!-- ================= TIMELINE ================= -->
+  <section class="ph" data-ph="timeline">
+    <div class="box">
+      <h3>Step-by-step timeline from T0</h3>
+      <div class="seg" id="tlSeg"><button data-k="deep">Deep</button><button data-k="partial">Partial</button></div>
+      <p class="lead">Every 15 min from T0 (charging stopped). <b>H₂ action limit 12%</b> — stop spray, gas to bleeder. <b>O₂ in top gas must stay below 0.5%.</b> Top T is held at the gas-route limit by N₂ first, then spray.</p>
+      <div id="tlSum" class="sumrow"></div>
+      <div class="tw"><table class="tl">
+        <thead><tr>
+          <th>h</th><th>Zone</th><th class="n">Stockline m</th><th class="n">Blast</th><th class="n">Top T uncontrolled</th><th class="n">Top T held</th><th class="n">Spray m³/h</th><th class="n">Water m³</th><th>Gas</th><th>Action</th>
+        </tr></thead>
+        <tbody id="tlBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ================= TAPPING ================= -->
+  <section class="ph" data-ph="tapping">
+    <div class="box">
+      <h3>Tapping inputs</h3>
+      <div class="grid" id="tapGrid"></div>
+    </div>
+    <div class="box">
+      <h3>Melting rate &amp; tap gap by blowdown zone</h3>
+      <p class="lead">Based on the REDUCED melting rate during the blowdown — blast is cut by zone, so less iron is made and the gap between taps grows. Your cast-house SOP governs.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Stockline zone</th><th class="n">Blast</th><th class="n">Melting t/h</th><th class="n">HM per cast t</th><th class="n">Tap cycle h</th><th class="n">Gap h</th></tr></thead>
+        <tbody id="tapBody"></tbody>
+      </table></div>
+    </div>
+    <div class="box"><h3>Over the blowdown · drill bit</h3><div id="tapRows"></div></div>
+    <div class="box">
+      <h3>Drill-bit guide by furnace size</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Working volume</th><th>Drill bit</th><th>Taphole length</th><th>Normal casting</th></tr></thead>
+        <tbody>
+          <tr><td>&lt; 600 m³</td><td>40–45 mm</td><td>1.5–2.0 m</td><td>1 taphole</td></tr>
+          <tr><td>600–1500 m³</td><td>50–60 mm</td><td>2.0–2.8 m</td><td>2 tapholes</td></tr>
+          <tr><td>1500–3000 m³</td><td>60–70 mm</td><td>2.8–3.5 m</td><td>2–3 tapholes</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="box">
+      <h3>Tapping through the blowdown</h3>
+      <ul class="ul">
+        <li>Reduced blast means a low melting rate, so gaps are long — tap when liquid has collected, not on the normal clock.</li>
+        <li><b>T0 − 12 h to T0:</b> cast on the normal schedule; the hearth must go into the blowdown dry.</li>
+        <li><b>T0 − 4 h:</b> stop injection and oxygen; take a full cast to dry the hearth.</li>
+        <li><b>During the blowdown:</b> a cast may run dry early when little has collected — fine; close and wait for the next gap.</li>
+        <li><b>Final cast</b> at target stockline: drill and HOLD the taphole open until it blows gas — do not plug. Stop spray, then blast, then purge.</li>
+        <li><b>Deep (reline):</b> after blast off, tap the salamander through a hole 0.3–0.6 m below the normal taphole.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= CHECKLIST ================= -->
+  <section class="ph" data-ph="checklist">
+    <div class="box"><h3>A. Before T0 — readiness</h3><div id="chkA"></div></div>
+    <div class="box"><h3>B. T0 − 12 h to T0 — conditioning</h3><div id="chkB"></div></div>
+    <div class="box"><h3>C. During the blowdown</h3><div id="chkC"></div></div>
+    <div class="btnrow"><button class="btn" type="button" id="clrChk">Clear all ticks</button><span class="val ok" id="chkCount">—</span></div>
+  </section>
+
+  <!-- ================= BLOW-IN (full planner, bi-app.js) ================= -->
+  <section class="ph" data-ph="blowin">
+    <div class="box">
+      <h3>Blow-in planner · from cold or banked furnace to full production</h3>
+      <p class="lead">Built the same way as the blow-down: pick the start type, check the suggested recipe, change anything by hand, and read the predicted result with advice. It uses the furnace, geometry and raw-material values from the <b>Inputs</b> tab. Saved on this phone.</p>
+      <nav class="bitabs" id="biTabs" aria-label="Blow-in pages">
+        <button data-b="type" class="on">1 · Start type</button>
+        <button data-b="inputs">2 · Blow-in inputs</button>
+        <button data-b="recipe">3 · Recipe &amp; filling</button>
+        <button data-b="dist">4 · Distribution</button>
+        <button data-b="timeline">5 · Timeline</button>
+        <button data-b="tapping">6 · Tapping</button>
+        <button data-b="predict" class="hot">7 · Prediction &amp; advice</button>
+        <button data-b="check">8 · Checklist</button>
+      </nav>
+      <div class="sumrow" id="biChips"></div>
+    </div>
+
+    <!-- 1 start type -->
+    <div class="bip on" data-bp="type">
+      <div class="box">
+        <h3>What is the furnace starting from?</h3>
+        <label style="max-width:460px">Blow-in type
+          <select id="bi_type">
+            <option value="auto">Follow the stoppage chosen in Strategy</option>
+            <option value="reline">After reline (new lining, empty furnace)</option>
+            <option value="deep">After deep blowdown (stockline at tuyeres)</option>
+            <option value="partial">After partial blowdown (stockline at belly)</option>
+            <option value="bank">After banking / long stoppage (furnace full)</option>
+          </select>
+        </label>
+        <div class="opts" id="biTypeHelp"></div>
+      </div>
+      <div class="box sel" id="biTypeSel"></div>
+    </div>
+
+    <!-- 2 inputs -->
+    <div class="bip" data-bp="inputs">
+      <div class="box">
+        <h3>Light-up &amp; blast build-up</h3>
+        <p class="lead">Empty box = suggested value for your blow-in type (grey). Type a number to use your own. <b>Your SOP governs.</b></p>
+        <div class="grid" id="biGridOp"></div>
+      </div>
+      <div class="box">
+        <h3>Raw materials &amp; slag targets</h3>
+        <p class="lead">Typical Indian sinter/pellet/lump mix and coke. Replace with your latest analysis — the flux and slag check depend on it.</p>
+        <div class="grid" id="biGridChem"></div>
+      </div>
+      <div class="box">
+        <h3>Learn from your last blow-in (optional)</h3>
+        <p class="lead">If you know when the first cast came at your last blow-in of the same type, enter it. The prediction is then scaled to your furnace.</p>
+        <div class="grid" id="biGridCal"></div>
+        <div class="btnrow"><button class="btn" type="button" id="biReset">Reset blow-in inputs to suggested</button></div>
+      </div>
+    </div>
+
+    <!-- 3 recipe -->
+    <div class="bip" data-bp="recipe">
+      <div class="box">
+        <h3>Filling the furnace · zone by zone</h3>
+        <p class="lead">Suggested ore/coke (O/C, t/t) for each zone. <b>Type your own O/C in the box to change the recipe</b> — every total, flux and prediction follows. 0 = coke only (coke blank).</p>
+        <div id="biHearthOpt"></div>
+        <div class="tw"><table>
+          <thead><tr><th>Zone (bottom → top)</th><th class="n">Volume m³</th><th class="n">O/C suggested</th><th class="n">O/C used</th><th class="n">Coke t</th><th class="n">Ore t</th><th class="n">Limestone t</th><th class="n">Dolomite t</th><th class="n">Quartzite t</th><th class="n">Charges</th><th class="n">Coke rate kg/tHM</th><th class="n">HM t</th></tr></thead>
+          <tbody id="biFillBody"></tbody>
+        </table></div>
+        <div class="sumrow" id="biFillTot" style="margin-top:10px"></div>
+        <div class="btnrow"><button class="btn" type="button" id="biRecipeAuto">Use suggested O/C everywhere</button></div>
+      </div>
+      <div class="box">
+        <h3>One charge of each zone (what the stock house weighs)</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Zone</th><th class="n">Coke dump t</th><th class="n">Ore t</th><th class="n">Limestone kg</th><th class="n">Dolomite kg</th><th class="n">Quartzite kg</th><th class="n">No. of charges</th></tr></thead>
+          <tbody id="biDumpBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Slag check for each zone</h3>
+        <p class="lead">Expected slag after silicon goes into the hot metal. Indian high-alumina burden: keep <b>Al₂O₃ ≤ 18%</b> and <b>MgO 8–10%</b> for a fluid slag in a cold hearth.</p>
+        <div class="tw"><table>
+          <thead><tr><th>Zone</th><th class="n">Slag kg/tHM</th><th class="n">CaO/SiO₂</th><th class="n">Al₂O₃ %</th><th class="n">MgO %</th><th class="n">HM Si % expected</th><th>Check</th></tr></thead>
+          <tbody id="biSlagBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Top-charge programme after the fill (coke-up taper)</h3>
+        <p class="lead">Charges put on top while the furnace burns down. Coke-up halves each block until normal. PCI and O₂ come in on the days set in Blow-in inputs; until PCI is on, its coal is replaced by coke (0.9 kg coke per kg coal).</p>
+        <div class="tw"><table>
+          <thead><tr><th>From → to (h after light-up)</th><th class="n">Coke-up</th><th class="n">Coke kg/tHM</th><th class="n">PCI kg/tHM</th><th class="n">O/C t/t</th><th class="n">Ore per charge t</th><th class="n">Charges</th><th class="n">Basicity</th></tr></thead>
+          <tbody id="biProgBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 4 distribution -->
+    <div class="bip" data-bp="dist">
+      <div class="box">
+        <h3>Burden distribution during the blow-in</h3>
+        <p class="lead" id="biDistLead"></p>
+        <div class="seg" id="biDistSeg"><button data-k="A">Fill + first 24 h</button><button data-k="B">Day 2 – 3</button><button data-k="N">Normal (target)</button></div>
+        <p class="lead">Turns per ring, ring 1 = wall, ring 6 = centre. <b>Type your own turns</b>; the totals and the gas-flow pattern update.</p>
+        <div class="tw"><table class="bimx">
+          <thead><tr><th>Ring</th><th class="n">Coke turns</th><th class="n">Ore turns</th><th class="n">Local O/C</th><th class="n">Gas flow</th></tr></thead>
+          <tbody id="biMxBody"></tbody>
+        </table></div>
+        <div class="btnrow"><button class="btn" type="button" id="biMxAuto">Use suggested matrix</button></div>
+      </div>
+      <div class="box">
+        <h3>Radial pattern</h3>
+        <figure class="prof" style="margin:0"><svg id="biDistSvg" viewBox="0 0 340 190" role="img" aria-label="Ore to coke ratio and gas flow from wall to centre"></svg><figcaption>Bars: local O/C (ore-rich = less gas). Line: relative gas flow. Wall left, centre right.</figcaption></figure>
+        <div id="biDistRows" style="margin-top:8px"></div>
+      </div>
+      <div class="box"><h3>Advice for this matrix</h3><ul class="ul" id="biDistAdv"></ul></div>
+    </div>
+
+    <!-- 5 timeline -->
+    <div class="bip" data-bp="timeline">
+      <div class="box">
+        <h3>Hour by hour from light-up</h3>
+        <p class="lead">Simulated from your blast plan, coke burn at the tuyeres and the recipe column. Every hour for the first 36 h, then every 3 h, then every 12 h to full production.</p>
+        <div class="sumrow" id="biTlSum"></div>
+        <div class="tw"><table class="tl">
+          <thead><tr><th>h</th><th class="n">Blast</th><th class="n">Nm³/min</th><th class="n">Tuyeres open</th><th class="n">Tuyere velocity m/s</th><th class="n">Coke burnt t/h</th><th>Melting from</th><th class="n">Top charges</th><th class="n">HM made t</th><th class="n">Liquid in hearth t</th><th>Gas</th><th>Event / action</th></tr></thead>
+          <tbody id="biTlBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 6 tapping -->
+    <div class="bip" data-bp="tapping">
+      <div class="box"><h3>First cast &amp; tapholes</h3><div id="biTapRows"></div></div>
+      <div class="box">
+        <h3>Predicted casts · first 72 h</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Cast</th><th class="n">At h</th><th class="n">HM t</th><th class="n">Slag t</th><th class="n">Si % expected</th><th class="n">HM temp °C</th><th>Note</th></tr></thead>
+          <tbody id="biCastBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Cast house through the blow-in</h3>
+        <ul class="ul" id="biTapNotes"></ul>
+      </div>
+    </div>
+
+    <!-- 7 prediction -->
+    <div class="bip" data-bp="predict">
+      <div class="box">
+        <h3>Predicted result</h3>
+        <div class="sumrow" id="biPredChips"></div>
+        <figure class="prof" style="margin:8px 0 0"><svg id="biTrendSvg" viewBox="0 0 340 200" role="img" aria-label="Predicted hot metal per day, silicon and temperature"></svg><figcaption>Bars: hot metal per day · orange line: HM Si % · blue line: HM temperature</figcaption></figure>
+      </div>
+      <div class="box">
+        <h3>Day by day</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Day</th><th class="n">Avg blast</th><th class="n">HM t</th><th class="n">% of normal</th><th class="n">Coke burnt t</th><th class="n">Coke rate kg/tHM</th><th class="n">Si %</th><th class="n">HM °C</th><th class="n">Casts</th><th>Milestone</th></tr></thead>
+          <tbody id="biDayBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Suggestions for your plan</h3>
+        <p class="lead">Checks on everything you entered. <b class="val bad">Red</b> = change before blow-in, <b class="val warn">amber</b> = check, <b class="val ok">green</b> = fine.</p>
+        <div id="biAdvice"></div>
+      </div>
+      <p class="caution"><b>How good is the prediction?</b> Planning grade: coke burn and hot-metal make come from the blast oxygen balance (calibrated to your normal operation); heat-up delay, silicon and temperature are typical values for the blow-in type. Enter your last blow-in in step 2 to tune it. Real time comes from your furnace: tuyere colour, top gas, first slag.</p>
+    </div>
+
+    <!-- 8 checklist -->
+    <div class="bip" data-bp="check">
+      <div class="box"><h3>A. Readiness · day −3 to light-up</h3><div id="biChkA"></div></div>
+      <div class="box"><h3>B. Filling &amp; light-up</h3><div id="biChkB"></div></div>
+      <div class="box"><h3>C. First 72 hours</h3><div id="biChkC"></div></div>
+      <div class="btnrow"><button class="btn" type="button" id="biClrChk">Clear all ticks</button><span class="val ok" id="biChkCount">—</span></div>
+      <p class="caution">Problems during the blow-in (dark tuyeres, cold first cast, CO leak) play in 3D under <b>Abnormal &amp; emergency</b>.</p>
+    </div>
+  </section>
+
+  <!-- ================= ABNORMAL & EMERGENCY ================= -->
+  <section class="ph" data-ph="emergency">
+    <div class="box">
+      <h3>Abnormal &amp; emergency situations</h3>
+      <p class="lead">Pick a situation. The 3D furnace plays it live: <b>what goes wrong → what you see → what you do → how it recovers</b>. Drag to turn, pinch to zoom. Values on the gauges are typical, not your furnace.</p>
+      <div class="scgroups" id="scList"></div>
+    </div>
+    <div class="box sc3d">
+      <div class="scHead"><span class="pill" id="scTag">—</span><b id="scTitle">—</b></div>
+      <div class="stage" id="stage">
+        <canvas id="bd3d"></canvas>
+        <div class="gauges" id="gauges"></div>
+        <div class="caption"><span class="stepn" id="stepN">—</span><b id="stepT">—</b><p id="stepD">—</p></div>
+        <div class="loading" id="load3d">Loading 3D…</div>
+      </div>
+      <div class="player">
+        <button class="btn" type="button" id="scPrev" aria-label="Previous step">‹</button>
+        <button class="btn main" type="button" id="scPlay">Pause</button>
+        <button class="btn" type="button" id="scNext" aria-label="Next step">›</button>
+        <div class="dots" id="scDots"></div>
+      </div>
+    </div>
+    <div class="scInfo" id="scInfo"></div>
+  </section>
+
+  <!-- ================= SAFETY ================= -->
+  <section class="ph" data-ph="safety">
+    <div class="box">
+      <h3>Safety aspects · blow-down &amp; blow-in</h3>
+      <p class="lead">Everything that must be taken care of to keep people safe. Typical values shown; <b>your plant gas-safety standard, permit system and statutory rules govern.</b> Tick the ones you have confirmed — saved on this phone.</p>
+      <div class="sumrow"><span class="val ok" id="safeCount">—</span><button class="btn" type="button" id="clrSafe">Clear ticks</button></div>
+    </div>
+    <div id="safeBody"></div>
+  </section>
+
+  <!-- ================= ADVISORY ================= -->
+  <section class="ph" data-ph="advisory">
+    <div class="box">
+      <h3>Why the key settings are what they are</h3>
+      <details open><summary>Blast while the stockline is in shaft / belly / bosh / below bosh</summary>
+        <p>The blowdown blast, as a fraction of normal, is stepped down as the stockline falls. Blast stays ON so the coke keeps burning and the burden keeps descending, but full blast in a shortening column causes three problems that get worse the lower the stockline goes:</p>
+        <p><b>1. Top gas temperature.</b> Less burden above the tuyeres absorbs less heat, so the top runs hotter. Less blast = less gas = less heat carried up, so the top is easier to hold with nitrogen and spray. This is the main reason.</p>
+        <p><b>2. Channelling and slips.</b> A short, uneven column is unstable; high blast pushes gas up preferred paths and the burden can hang then slip.</p>
+        <p><b>3. Blowing material out of the top.</b> High velocity in a near-empty furnace throws coke and dust into the gas system — just when water is going into the gas.</p>
+        <p><b>Trade-off:</b> lower values = slower, cooler, less spray water; higher = faster but hotter and more water-hungry.</p>
+      </details>
+      <details><summary>Coke-up of the blowdown burden (+15% deep / +10% partial)</summary>
+        <p>Extra coke in the burden before charging stops so the furnace empties with a coke-rich column. Extra coke carries heat to the hearth and keeps the shortening column open so gas escapes and liquids drain. The worst outcome is a cold, frozen hearth at the final cast; the coke-up is the main defence.</p>
+        <p>+15% roughly replaces the injection stopped at T0 − 4 h. Higher is NOT safer — more coke to burn away means a longer blowdown, more hours at the top limit and more spray water. "+25% to be safe" is a classic mistake. Partial needs less (+10%) because the bosh and hearth stay full of hot burden.</p>
+        <p>The coke rate per hour does not change: the coke-up is made by taking ore out of each charge. Start about 12 h before T0 so the coked-up material fills the furnace by the time charging stops.</p>
+      </details>
+      <details><summary>Spray water &amp; nitrogen priority</summary>
+        <p><b>Nitrogen first, spray second.</b> N₂ cools the gas by dilution without adding H₂. Spray water partly reaches the hot burden and makes H₂ (C + H₂O → CO + H₂). Hold the top with N₂ as long as you can, then spray in small steps.</p>
+        <p><b>Stop rule:</b> H₂ above 12% → stop spray, gas to bleeder. If spray is at capacity and the top is still above limit, <b>cut blast</b> — do not chase water.</p>
+      </details>
+      <details><summary>Gas route and the dry GCP bag limit</summary>
+        <p>Bag cloth burns above its rated temperature. With a dry GCP the gas leaves for the bleeder when the stockline reaches the belly top; with a wet GCP it stays until the bosh top and is held to the top equipment limit.</p>
+      </details>
+      <details><summary>Final cast &amp; salamander</summary>
+        <p>At the target stockline drill a full-depth cast and hold the taphole open — when it blows gas, the hearth is dry. Do not plug it. Stop spray, then blast, then back-draught and purge. For a reline, tap the salamander through a hole 0.3–0.6 m below the normal taphole after blast off. Keep the salamander area bone-dry — water under molten iron explodes.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<script src="importer.js"></script>
+<script src="bd-data.js"></script>
+<script src="bd-app.js"></script>
+<script src="bi-app.js"></script>
+<script src="nk-logo.js" data-img="img/nk-logo.png" defer></script>
+</body>
+</html>

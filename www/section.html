@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>Iron Making · Section</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="im.css">
+<style>
+/* Tool buttons: one gradient card per tool with an icon tile, accent colour and an Open pill. */
+#tool{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.tl{--c:#ff7a1a;position:relative;display:flex;align-items:center;gap:14px;padding:14px 14px 14px 16px;border-radius:18px;text-decoration:none;color:inherit;overflow:hidden;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c) 16%,#0b1f38),rgba(11,31,56,.88) 62%);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);
+  box-shadow:0 18px 36px -26px rgba(0,0,0,.9);transition:transform .16s,box-shadow .16s,border-color .16s}
+.tl::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(180deg,var(--c),color-mix(in srgb,var(--c) 35%,transparent))}
+.tl:hover{transform:translateY(-2px);border-color:var(--c);box-shadow:0 22px 44px -24px color-mix(in srgb,var(--c) 55%,#000)}
+.tl:focus-visible{outline:3px solid var(--c);outline-offset:2px}
+.tl .tic{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 45%,#071426));box-shadow:0 8px 18px -10px var(--c)}
+.tl .tic svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tl .tx{flex:1;min-width:0}
+.tl .tx b{display:block;font:700 19px/1.1 var(--f-display);letter-spacing:.05em;text-transform:uppercase;color:#fff;text-wrap:balance}
+.tl .tx small{display:block;margin-top:4px;color:var(--ink-2);font-size:12.5px;line-height:1.4}
+.tl .tg{position:absolute;top:10px;right:12px;font:700 10.5px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:#07321c;background:linear-gradient(90deg,#27d07c,#9be15d);padding:4px 8px;border-radius:999px}
+.tl .ar{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;border:1.5px solid color-mix(in srgb,var(--c) 70%,#fff 10%);background:color-mix(in srgb,var(--c) 22%,transparent)}
+.tl .ar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:420px){.tl .tx b{font-size:17px}.tl .tic{width:46px;height:46px}}
+@media (prefers-reduced-motion: reduce){.tl{transition:none}.tl:hover{transform:none}}
+.wipm{margin-top:12px;border-radius:10px;border:1px dashed rgba(255,181,71,.45);background:rgba(255,181,71,.05)}
+.wipm summary{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;list-style:none;font-size:12px;color:var(--muted)}
+.wipm summary::-webkit-details-marker{display:none}
+.wipm-d{width:7px;height:7px;border-radius:50%;background:#ffb547;box-shadow:0 0 8px #ffb547}
+.wipm summary b{font:700 12px/1 var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:#ffd9a8}
+.wipm-n{font:500 11px/1 var(--f-mono)}
+.wipm-c{margin-left:auto;transition:transform .2s}.wipm[open] .wipm-c{transform:rotate(90deg)}
+.wipm p{margin:0;padding:0 10px;font-size:12.5px;color:var(--ink-2)}.wipm .soon{margin:8px 10px 10px;gap:6px}.wipm .soon li{padding:6px 10px;font-size:12px}
+</style>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="pwa.js" defer></script></head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Iron Making</a>
+  <header class="hero"><img id="img" src="img/process/bf.webp" alt="" width="1200" height="640"><div class="cap"><div class="eb" id="eb"></div><h1 id="ttl"></h1></div></header>
+  <p class="lead" id="lead"></p>
+  <div id="tool"></div>
+  <details class="wipm" aria-labelledby="wiph">
+    <summary><span class="wipm-d" aria-hidden="true"></span><b id="wiph">Under progress</b><span class="wipm-n" id="wipN"></span><span class="wipm-c" aria-hidden="true">›</span></summary>
+    <p id="wipText"></p>
+    <ul class="soon" id="soon"></ul>
+  </details>
+  <div class="foot"><span>Iron Making 6.3.7</span><span id="sname"></span></div>
+</div>
+<script>
+(function () {
+  var S = {
+    bf: { img: 'bf', eb: 'Section 05', t: 'Blast furnace',
+      lead: 'Sinter, pellet, lump ore and coke are charged at the top; hot blast and injected fuel at the tuyeres reduce the burden to liquid pig iron and slag, tapped from the hearth.',
+      tool: { href: 'bf-home.html', b: 'BF Model', s: 'Burden batch chemistry, burden calculator, 3D distribution, furnace 3D view, cohesive zone, hearth liquid, cost optimiser, action plan against critical situations, taphole check with 3D, tuyere watch, water cooling requirement and report.', ic: 'furnace', c: '#ff7a1a' },
+      soon: ['Process overview: zones of the furnace and what happens in each', 'Daily operating KPIs: productivity, fuel rate, coke rate, PCI, hot metal Si and temperature', 'Shift checklists'] },
+    sinter: { img: 'sinter', eb: 'Section 02', t: 'Sinter plant',
+      lead: 'Iron ore fines, flux, return fines and coke breeze are mixed, ignited and sintered on the travelling strand into a strong, reducible feed for the blast furnace.',
+      tool4: { href: '../sinter-improve.html', b: 'Improvement plan · 3D', s: '10 sinter plant improvement projects: benefit in Rs Cr/yr, capex, payback, priority ranking, 48-month roadmap and BF sinter quality check (TI, RDI, RI), with each project located on the plant in 3D.', ic: 'trend', c: '#27d07c', tag: 'New' },
+      tool3: { href: '../how-sinter.html', b: 'How sinter is made · 3D animation', s: 'Ore fines to blast-furnace sinter, step by step: proportioning, mixing, ignition, strand, cooling and screening.', ic: 'play', c: '#19b3b1' },
+      tool2: { href: '../sinter-critical.html', b: 'Sinter critical decisions · 3D', s: '64 critical situations in 12 plant areas: severity (A minutes, B shift, C days), why it matters and what to do, with the affected part of the plant lit up in 3D.', ic: 'warn', c: '#ff5a4a' },
+      tool: { href: 'ironmakingapk://sinter', b: 'Sinter quality prediction', s: 'Predict sinter chemistry and quality from the blend and machine settings, compare with lab results and export the report.', ic: 'gauge', c: '#ff7a1a' },
+      soon: ['Process overview: proportioning, mixing, ignition, strand, cooler and screening', 'Sinter quality KPIs: TI, RDI, RI, FeO, basicity and yield', 'Shift checklists'] },
+    coke: { img: 'coke', eb: 'Section 04', t: 'Coke oven',
+      lead: 'A blend of coking coals is carbonised in the oven battery, pushed and quenched to give the strong, porous coke that carries the blast furnace burden and supplies its heat.',
+      tool4: { href: '../xco/improve.html', b: 'Improvement plan · 3D', s: '10 coke making improvement projects: benefit in Rs Cr/yr, capex, payback, priority ranking, 48-month roadmap and BF coke quality check, with each project located on the battery in 3D.', ic: 'trend', c: '#27d07c', tag: 'New' },
+      tool3: { href: '../xco/how-coke.html', b: 'How coke is made · 3D animation', s: 'Coal yard to blast-furnace coke, step by step: crushing, charging, carbonisation, pushing and quenching.', ic: 'play', c: '#19b3b1' },
+      tool2: { href: '../xco/coke-critical.html', b: 'Coke oven critical decisions · 3D', s: '56 critical situations in 12 battery areas: severity (A minutes, B shift, C days), why it matters and what to do, with the affected part of the battery lit up in 3D.', ic: 'warn', c: '#3cc8d2' },
+      tool: { href: 'ironmakingapk://coke', b: 'Coke quality prediction', s: 'Coke quality (CSR, CRI, M40, M10), yield, mass & heat balance and corrective actions. Upload the Excel or enter values by hand; missing values can be taken from the reference data. Works offline.', ic: 'gauge', c: '#ff7a1a' },
+      soon: ['Process overview: coal handling, charging, carbonisation, pushing and quenching', 'Coke quality KPIs: CSR, CRI, M40, M10, ash and moisture', 'Shift checklists'] },
+    pellet: { img: 'pellet', eb: 'Section 03', t: 'Pellet plant',
+      lead: 'Fine iron ore concentrate is ground, mixed with binder and balled into green pellets, then dried, preheated and fired in the grate-kiln before cooling.',
+      tool: null,
+      soon: ['Process overview: grinding, balling, travelling grate, rotary kiln and annular cooler', 'Pellet quality KPIs: CCS, tumbler index, porosity, reducibility and swelling', 'Pellet plant calculator'] }
+  };
+  function show() {
+    var k = (location.hash || '#bf').slice(1); var s = S[k] || S.bf; if (!S[k]) k = 'bf';
+    document.title = 'Iron Making · ' + s.t;
+    document.getElementById('img').src = 'img/process/' + s.img + '.webp';
+    document.getElementById('img').alt = s.t;
+    document.getElementById('eb').textContent = s.eb;
+    document.getElementById('ttl').textContent = s.t;
+    document.getElementById('lead').textContent = s.lead;
+    document.getElementById('sname').textContent = s.t;
+    var IC = {
+      gauge: '<svg viewBox="0 0 24 24"><path d="M5 19a8.5 8.5 0 1 1 14 0"/><path d="M12 13.5 15.5 9"/><circle cx="12" cy="14.5" r="1.4"/></svg>',
+      play: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5 16 12l-6 3.5z"/></svg>',
+      warn: '<svg viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 9.5v4.5M12 17.2v.3"/></svg>',
+      furnace: '<svg viewBox="0 0 24 24"><path d="M9 3h6l3 9-1.5 6h-9L6 12z"/><path d="M10 15c0-2 2-2.5 2-4.5M14 15c0-1.5 1-2 1-3.5"/></svg>',
+      trend: '<svg viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M4.5 16.5 10 11l3.5 3.5 6-6.5"/><path d="M15 7.5h4.5V12"/></svg>'
+    };
+    function tl(t) {
+      return '<a class="tl" style="--c:' + (t.c || '#ff7a1a') + '" href="' + t.href + '">' +
+        '<span class="tic" aria-hidden="true">' + (IC[t.ic] || IC.gauge) + '</span>' +
+        '<span class="tx"><b>' + t.b + '</b><small>' + t.s + '</small></span>' +
+        (t.tag ? '<span class="tg">' + t.tag + '</span>' : '') +
+        '<span class="ar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></span></a>';
+    }
+    var tool = document.getElementById('tool');
+    tool.innerHTML = [s.tool, s.tool4, s.tool3, s.tool2].filter(Boolean).map(tl).join('');
+    document.getElementById('wipText').textContent = s.tool
+      ? 'More information for the ' + s.t.toLowerCase() + ' section is being prepared and will be added in a future update. The ' + s.tool.b + ' tool above is ready to use now.'
+      : 'This section is being prepared. Information and tools for the pellet plant will be added in a future update.';
+    document.getElementById('soon').innerHTML = s.soon.map(function (x) { return '<li><b>Coming:</b> ' + x + '</li>'; }).join('');
+    document.getElementById('wipN').textContent = s.soon.length + ' more coming';
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', show); show();
+})();
+</script>
+<script src="nk-logo.js" data-img="img/nk-logo.png" defer></script>
+</body>
+</html>

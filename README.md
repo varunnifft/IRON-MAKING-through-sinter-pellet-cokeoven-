@@ -10,7 +10,7 @@ Iron Making is the update of the *BF Model* app. It works offline. Logins, files
 | Device | How |
 |---|---|
 | **Android phone (free)** | [Download the APK](../../releases/latest) (`IronMaking-…-PHONE-INSTALL.apk`) and install it. It updates BF Model / Iron Making 5.2 and later. |
-| **Windows 10 / 11, Mac, Office PC (no install)** | Paid, in rupees by UPI: open the Android app → **App for win/mac/pc/laptop user** → choose the version → pay online (automatic) or by UPI. After the payment is confirmed, the download link appears in the app, and later updates are free. A paid copy opens only with the buyer's own login, on up to 2 computers. |
+| **Windows 10 / 11, Mac, Office PC (no install)** | Free for every logged-in user: open the Android app → **App for win/mac/pc/laptop user** and use the download link set by the admin. |
 
 An account is needed: create one in the app or log in with your BF Model account.
 
@@ -40,6 +40,12 @@ downloads/        Android APK
 desktop/, tools/  Windows / Mac shell (Electron) and packaging script
 .github/workflows release.yml publishes the Android APK as a GitHub release
 ```
+
+## Website
+
+- Home page: https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/
+- Privacy policy: https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/privacy.html
+- Terms of service: https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/terms.html
 
 ## Note
 

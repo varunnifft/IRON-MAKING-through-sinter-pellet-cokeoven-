@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>Query / feedback · Iron Making</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="im.css">
+<style>
+  body { min-height: 100vh }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 14px 16px 90px }
+  .top { display: flex; align-items: center; gap: 10px; padding: 6px 0 4px }
+  .top a { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-size: 20px }
+  .top > div { flex: 1; text-align: left }
+  .top small { display: block; font: 600 11px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: #9fe6e3 }
+  .top h1 { margin: 0; font: 700 26px/1.05 var(--f-display); letter-spacing: .05em; text-transform: uppercase }
+  .lead { color: var(--ink-2); font-size: 14.5px; margin: 10px 0 14px }
+  .box { padding: 16px; border-radius: 18px; border: 1px solid var(--line); background: rgba(11,31,56,.88); box-shadow: 0 18px 36px -24px #000 }
+  label.f { display: block; margin: 0 0 12px } label.f > span { display: block; font: 600 13px var(--f-body); color: var(--ink-2); margin-bottom: 5px } label.f > span em { font-style: normal; color: #ff8a7a }
+  input, select, textarea { width: 100%; box-sizing: border-box; font: 16px var(--f-body); padding: 11px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(4,12,23,.75); color: var(--ink) }
+  textarea { min-height: 140px; resize: vertical; line-height: 1.45 }
+  input:focus, select:focus, textarea:focus { outline: 2px solid rgba(255,181,71,.6); border-color: transparent }
+  .contact { margin: 4px 0 12px; padding: 12px; border-radius: 14px; border: 1px dashed rgba(255,181,71,.55); background: rgba(255,181,71,.06) }
+  .contact h3 { margin: 0 0 4px; font: 700 15px var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #ffd9a8 }
+  .contact p { margin: 0 0 10px; font-size: 12.5px; color: var(--ink-2) }
+  .contact .two { display: grid; gap: 10px } @media (min-width: 520px) { .contact .two { grid-template-columns: 1fr 1fr } }
+  .contact label.f { margin: 0 }
+  .ok-c { border-color: #3ccf8e; background: rgba(60,207,142,.07) } .ok-c h3 { color: #7fe0b8 }
+  .bad { border-color: #ff6a5a !important }
+  .hint { min-height: 18px; margin: 4px 0 10px; font-size: 13px; color: #ff8a7a }
+  .send { width: 100%; min-height: 50px; border: 0; border-radius: 14px; font: 700 16px var(--f-body); color: #2a1200; background: linear-gradient(90deg, #ff7a1a, #ffc23d); cursor: pointer }
+  .send:disabled { background: #2a3a50; color: #7f93a8; cursor: not-allowed }
+  .done { text-align: center; padding: 26px 16px } .done .ic { width: 60px; height: 60px; margin: 0 auto 10px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; background: linear-gradient(135deg, #2e9e5b, #19b3b1); color: #fff }
+  .done h2 { margin: 0 0 6px; font: 700 24px var(--f-display); letter-spacing: .05em; text-transform: uppercase } .done p { color: var(--ink-2); margin: 6px 0 } .done b { color: #ffd9a8 }
+  .past { margin-top: 18px } .past h3 { font: 700 14px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2) }
+  .past div { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); margin-top: 8px; font-size: 13px; color: var(--ink-2) } .past div b { color: #fff; font-family: var(--f-mono) }
+  .alt { margin-top: 12px; font-size: 13px; color: var(--muted); text-align: center } .alt a { color: #8fd3ff }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="index.html" aria-label="Back to Iron Making">‹</a><div><small>Iron Making</small><h1>Query / feedback</h1></div></div>
+  <p class="lead">Ask a question, report a problem or suggest an improvement. Your message goes straight to the app owner, who will reply on your mobile or email.</p>
+
+  <form class="box" id="qForm" novalidate>
+    <label class="f"><span>Your name</span><input name="name" autocomplete="name" maxlength="80"></label>
+    <label class="f"><span>Company / plant</span><input name="company" autocomplete="organization" maxlength="120"></label>
+    <label class="f"><span>Topic</span><select name="topic">
+      <option>Query</option><option>Problem in the app</option><option>Suggestion</option><option>Training / learning module</option><option>Account / login</option><option>Other</option></select></label>
+    <label class="f"><span>Your message <em>*</em></span><textarea name="message" maxlength="4000" placeholder="Write your concern here…"></textarea></label>
+    <div class="contact" id="cBox">
+      <h3>How can we reply? <span style="color:#ff8a7a">*</span></h3>
+      <p>Give your mobile number <b>or</b> email (or both). Without one, the message cannot be sent.</p>
+      <div class="two">
+        <label class="f"><span>Mobile number</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="e.g. 98765 43210"></label>
+        <label class="f"><span>Email</span><input name="email" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="you@example.com"></label>
+      </div>
+    </div>
+    <div class="hint" id="hint" role="status"></div>
+    <button class="send" id="send" type="submit" disabled>Submit</button>
+  </form>
+
+  <div class="box done" id="done" hidden>
+    <div class="ic">✓</div><h2>Message sent</h2>
+    <p>Reference <b id="ref"></b></p>
+    <p id="doneTxt">The app owner will reply soon.</p>
+    <p style="margin-top:14px"><a class="btn" href="index.html" style="display:inline-block;padding:10px 18px;border-radius:12px;border:1px solid var(--line);color:var(--ink);text-decoration:none">Back to Iron Making</a>
+      <button type="button" id="again" style="margin-left:6px;padding:10px 18px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--ink);font:600 14px var(--f-body)">Write another</button></p>
+  </div>
+
+  <div class="past" id="past" hidden><h3>Your earlier messages</h3><div id="pastList"></div></div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'im.queries', f = document.getElementById('qForm'), hint = document.getElementById('hint'), send = document.getElementById('send'), cBox = document.getElementById('cBox');
+  function rd(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var u = (window.BFAuth && BFAuth.user && BFAuth.user()) || rd('bf-user') || {};
+  f.name.value = u.name || ''; f.company.value = u.company || '';
+  if (u.email && !/@(cloud|local)$/.test(u.email)) f.email.value = u.email;
+  if (u.mobile) f.phone.value = u.mobile;
+  var last = rd('im.q.contact'); if (last) { if (!f.phone.value && last.phone) f.phone.value = last.phone; if (!f.email.value && last.email) f.email.value = last.email; }
+
+  function digits(s) { return String(s || '').replace(/\D/g, ''); }
+  function okPhone() { var d = digits(f.phone.value); return d.length >= 10 && d.length <= 15; }
+  function okMail() { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim()); }
+  function check(show) {
+    var msg = f.message.value.trim().length >= 5, p = f.phone.value.trim(), e = f.email.value.trim();
+    var pBad = p && !okPhone(), eBad = e && !okMail(), contact = okPhone() || okMail();
+    f.phone.classList.toggle('bad', !!(show && pBad)); f.email.classList.toggle('bad', !!(show && eBad));
+    cBox.classList.toggle('ok-c', contact);
+    var t = '';
+    if (!msg) t = 'Write your message (at least a few words).';
+    else if (!contact) t = pBad ? 'Mobile number looks incomplete (10 digits).' : eBad ? 'Email address does not look right.' : 'Add your mobile number or email so we can reply.';
+    hint.textContent = show || (msg && !contact && (p || e)) ? t : '';
+    send.disabled = !(msg && contact);
+    return msg && contact;
+  }
+  ['input', 'change'].forEach(function (ev) { f.addEventListener(ev, function () { check(false); }); });
+  f.phone.addEventListener('blur', function () { check(true); }); f.email.addEventListener('blur', function () { check(true); });
+
+  function call(d) {
+    if (!window.IMCloud || !IMCloud.configured || !IMCloud.configured()) return Promise.reject(new Error('The app is not connected to the server yet.'));
+    var c = IMCloud.user && IMCloud.user() ? IMCloud.userCall('feedback', d).catch(function () { return IMCloud.call('feedback', d); }) : IMCloud.call('feedback', d);
+    return c;
+  }
+  f.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!check(true)) return;
+    var d = { name: f.name.value.trim(), company: f.company.value.trim(), topic: f.topic.value, message: f.message.value.trim(),
+      phone: okPhone() ? f.phone.value.trim() : '', email: okMail() ? f.email.value.trim() : '', app: 'Iron Making ' + (window.BF_APP_VERSION || '6.3.9') + (window.Android ? ' Android' : ' web') };
+    send.disabled = true; send.textContent = 'Sending…'; hint.textContent = '';
+    call(d).then(function (r) {
+      wr('im.q.contact', { phone: d.phone, email: d.email });
+      var L = rd(KEY) || []; L.unshift({ ref: r.ref, t: Date.now(), topic: d.topic, text: d.message.slice(0, 160) }); wr(KEY, L.slice(0, 20));
+      document.getElementById('ref').textContent = r.ref || '';
+      document.getElementById('doneTxt').textContent = 'The app owner will reply on ' + [d.phone, d.email].filter(Boolean).join(' or ') + '.' + (d.email ? ' A copy is in your email.' : '');
+      f.hidden = true; document.getElementById('done').hidden = false; past(); window.scrollTo(0, 0);
+    }, function (e) {
+      send.textContent = 'Submit'; check(false);
+      hint.textContent = (/Failed to fetch|network|NetworkError|timeout/i.test(e.message) ? 'No internet. Connect and tap Submit again.' : e.message);
+    });
+  });
+  document.getElementById('again').onclick = function () { f.message.value = ''; f.hidden = false; document.getElementById('done').hidden = true; send.textContent = 'Submit'; check(false); f.message.focus(); };
+  function past() {
+    var L = rd(KEY) || []; document.getElementById('past').hidden = !L.length;
+    document.getElementById('pastList').innerHTML = L.map(function (x) { var d = new Date(x.t); return '<div><b>' + esc(x.ref) + '</b> · ' + esc(x.topic) + ' · ' + d.toLocaleDateString('en-IN') + '<br>' + esc(x.text) + '</div>'; }).join('');
+  }
+  past(); check(false);
+})();
+</script>
+</body>
+</html>

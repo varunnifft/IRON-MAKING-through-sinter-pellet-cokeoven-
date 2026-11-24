@@ -16,20 +16,24 @@
   function compute() { LK = CE.linkBF(); R = CE.compute(S, LK); return R; }
 
   // ---------------- navigation ----------------
-  var TITLES = { dash: 'Carbon footprint', input: 'Inputs', bal: 'Carbon balance', guide: 'Method · CBAM' }, cur = 'dash';
+  var TITLES = { dash: 'Carbon footprint', input: 'Inputs', bal: 'Carbon balance', guide: 'Method · CBAM', plant: 'Check & change' }, cur = 'dash';
   function go(p, noPush) {
     cur = p; $$('.page').forEach(function (s) { s.classList.toggle('on', s.id === 'p-' + p); });
-    $$('nav.bn button[data-p]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-p') === p); });
+    $$('nav.bn button[data-p]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-p') === (p === 'plant' ? 'dash' : p)); });
     $('#ttl').textContent = TITLES[p]; compute();
-    ({ dash: renderDash, input: renderInput, bal: renderBal, guide: renderGuide })[p]();
-    if (!noPush) { try { history.pushState({ p: p }, '', '#' + p); } catch (e) { } }
+    if (p === 'plant') $('#ttl').textContent = CE.PL[W.pid].name + ' · check & change';
+    ({ dash: renderDash, input: renderInput, bal: renderBal, guide: renderGuide, plant: renderPlant })[p]();
+    if (!noPush) { try { history.pushState({ p: p, pid: W.pid }, '', '#' + p + (p === 'plant' ? '-' + W.pid : '')); } catch (e) { } }
     window.scrollTo(0, 0);
   }
-  window.addEventListener('popstate', function (e) { go((e.state && e.state.p) || 'dash', true); });
+  window.addEventListener('popstate', function (e) { var st = e.state || {}; if (st.pid) W.pid = st.pid; go(st.p || 'dash', true); });
   $$('nav.bn button[data-p]').forEach(function (b) { b.onclick = function () { go(b.getAttribute('data-p')); }; });
   $('#back').onclick = function () { if (cur === 'dash') location.href = 'index.html'; else history.back(); };
   window.appBack = function () { if (cur !== 'dash') { history.back(); return true; } location.href = 'index.html'; return true; };
-  function bindGo(el) { $$('[data-go]', el).forEach(function (b) { b.onclick = function () { go(b.getAttribute('data-go')); }; }); }
+  function bindGo(el) {
+    $$('[data-go]', el).forEach(function (b) { b.onclick = function () { go(b.getAttribute('data-go')); }; });
+    $$('[data-pl]', el).forEach(function (b) { b.onclick = function () { openPlant(b.getAttribute('data-pl'), b.getAttribute('data-fresh') === '1'); }; });
+  }
 
   function counts() {
     var c = { user: 0, link: 0, ref: 0 };
@@ -48,7 +52,7 @@
     var el = $('#p-dash'), P = R.plants, G = R.pig;
     var h = '<div class="hero"><div><div class="eb">All plants · CBAM mass balance</div><h1>Carbon <span>footprint</span></h1><p>CO2 for each tonne of hot metal, sinter, pellet and coke, and the embedded emissions of pig iron the way the EU CBAM counts them.</p>' +
       '<div class="row2" style="margin-top:10px"><button class="btn pri sm" data-go="input">Inputs · upload</button><button class="btn sm" data-go="bal">Carbon balance</button><button class="btn sm" data-a="exp">⤓ Export .xlsx</button></div></div></div>' + stateLine();
-    if (!G) { el.innerHTML = h + '<div class="card"><h3>Inputs needed</h3><p class="sub">Blast furnace inputs are missing (' + esc(P.bf.need.map(function (d) { return d.l; }).slice(0, 6).join(', ')) + ').</p><button class="btn pri" data-go="input">Open Inputs ›</button></div>'; bindGo(el); bindExp(el); return; }
+    if (!G) { el.innerHTML = h + quickCard() + '<div class="card"><h3>Inputs needed</h3><p class="sub">Blast furnace inputs are missing (' + esc(P.bf.need.map(function (d) { return d.l; }).slice(0, 6).join(', ')) + ').</p><button class="btn pri" data-go="input">Open Inputs ›</button></div>'; bindGo(el); bindExp(el); return; }
     var parts = [['BF direct', G.bfD, '#ff7a1a'], ['Sinter (precursor)', (G.pre.filter(function (x) { return x.l === 'Sinter'; })[0] || { d: 0 }).d, '#ffb547'],
       ['Pellets (precursor)', (G.pre.filter(function (x) { return x.l === 'Pellets'; })[0] || { d: 0 }).d, '#c08a5a'], ['Indirect (electricity)', G.indirect, '#19b3b1']];
     h += '<div class="big"><div class="l">Pig iron · specific embedded emissions (CBAM)</div><div class="v">' + f(G.total, 2) + '<small>tCO2 / t pig iron</small></div>' +
@@ -57,10 +61,12 @@
       '<div class="lg">' + parts.map(function (x) { return '<span style="--c:' + x[2] + '">' + x[0] + ' ' + f(x[1], 3) + '</span>'; }).join('') + '</div></div>';
     var tile = function (id, extra) {
       var p = CE.PL[id], r = P[id];
-      if (r.need.length) return kc(p.name, '—', 'tCO2/' + p.unit, p.col, 'Inputs needed');
-      return kc(p.name, f(r.total, 3), 'tCO2/' + p.unit, p.col, 'Direct ' + f(r.direct, 3) + ' · indirect ' + f(r.indirect, 3) + (extra || ''));
+      var t = r.need.length ? kc(p.name, '—', 'tCO2/' + p.unit, p.col, 'Inputs needed') : kc(p.name, f(r.total, 3), 'tCO2/' + p.unit, p.col, 'Direct ' + f(r.direct, 3) + ' · indirect ' + f(r.indirect, 3) + (extra || ''));
+      return t.replace('<div class="k"', '<div class="k tap" role="button" tabindex="0" data-pl="' + id + '" aria-label="' + p.name + ': how it is calculated, change inputs"').replace('<div class="l">', '<span class="go">How? ›</span><div class="l">');
     };
+    h += '<p class="sub" style="margin:12px 0 0">Tap a plant to see how its CO2 is calculated, and change any input to see the effect at once.</p>';
     h += '<div class="kgrid">' + tile('bf', '<br>Gate to gate, BF only') + tile('sinter') + tile('pellet') + tile('coke', '<br>Outside CBAM boundary') + '</div>';
+    h += quickCard();
     h += '<div class="card"><h3>How pig iron adds up</h3><div class="kv"><span>Blast furnace direct (after waste gas correction)</span><b>' + f(G.bfD) + '</b></div>' +
       G.pre.map(function (x) { return '<div class="kv"><span>' + x.l + ' ' + f(x.rate * 1000, 0) + ' kg/tHM · own ' + f(x.own * 100, 0) + ' %</span><b>' + f(x.d) + '</b></div>'; }).join('') +
       '<div class="kv"><span>Electricity · BF + own sinter / pellet</span><b>' + f(G.indirect) + '</b></div><div class="kv"><span><b>Total embedded, tCO2/t pig iron</b></span><b>' + f(G.total) + '</b></div>' +
@@ -83,9 +89,107 @@
         '<div class="kv"><span>Carbon emitted (in − out) × 44/12</span><b>' + f(r.gross) + ' <small>tCO2/' + esc(p.unit) + '</small></b></div>' +
         (p.id === 'bf' ? '<div class="kv"><span>Waste gas correction: BF gas exported × NCV × 56.1 × 0.667</span><b>−' + f(r.corr) + '</b></div>' : '') +
         '<div class="kv"><span>Direct</span><b>' + f(r.direct) + '</b></div><div class="kv"><span>Indirect: ' + f(r.V.el, 3) + ' MWh × grid factor</span><b>' + f(r.indirect) + '</b></div>' +
-        '<div class="kv"><span><b>Total</b></span><b>' + f(r.total) + ' <small>tCO2/' + esc(p.unit) + '</small></b></div></div>';
+        '<div class="kv"><span><b>Total</b></span><b>' + f(r.total) + ' <small>tCO2/' + esc(p.unit) + '</small></b></div>' +
+        '<button class="btn sm" data-pl="' + p.id + '" style="margin-top:10px">Check &amp; change inputs ›</button></div>';
     });
-    $('#p-bal').innerHTML = h;
+    $('#p-bal').innerHTML = h; bindGo($('#p-bal'));
+  }
+
+  // ---------------- plant: how it is calculated + what-if (manual quick check) ----------------
+  var W = { pid: 'bf', v: {} };          // working values, per t of product; saved only when the user taps Save
+  function quickCard() {
+    return '<div class="card"><h3>Quick CO2 check · type your own numbers</h3><p class="sub">Need a number fast? Pick a plant, type the main inputs per tonne, and see its CO2 at once. Nothing is saved unless you tap Save.</p><div class="qk">' +
+      CE.PLANTS.map(function (p) { return '<button data-pl="' + p.id + '" data-fresh="1" style="--c:' + p.col + '">' + p.name + '<small>tCO2/' + esc(p.unit) + '</small></button>'; }).join('') + '</div></div>';
+  }
+  function openPlant(pid, fresh) { W.pid = pid; W.v = {}; W.fresh = !!fresh; go('plant'); }
+  function curVal(d) { return CE.valueOf(S, LK, d); }
+  function wS() {                        // the state with the working values on top of the saved ones
+    var v = {}; Object.keys(S.v).forEach(function (k) { v[k] = S.v[k]; }); Object.keys(W.v).forEach(function (k) { v[k] = W.v[k]; });
+    return { mode: S.mode, v: v, basis: S.basis, prod: S.prod };
+  }
+  var PCF = { bf: ['ngC', 'cogC', 'grid'], sinter: ['ngC', 'cogC', 'bfgC', 'grid'], pellet: ['ngC', 'cogC', 'bfgC', 'grid'], coke: ['ngC', 'bfgC', 'grid'] };
+  function plantFields(pid) { return CE.FIELDS[pid].concat(PCF[pid].map(function (c) { var d = CE.CM[c]; return { id: d.id, k: c, l: d.l, u: d.u, ref: d.ref, g: 'Factors used', kind: 'p', common: true }; })); }
+  function baseOf(d) { if (d.common) { var u = S.v[d.id]; return { v: num(u) ? u : d.ref, src: num(u) ? 'user' : 'ref' }; } return curVal(d); }
+  function renderPlant() {
+    var pid = W.pid, p = CE.PL[pid], el = $('#p-plant'), h = '';
+    h += '<div class="plsw">' + CE.PLANTS.map(function (q) { return '<button data-sw="' + q.id + '"' + (q.id === pid ? ' class="on"' : '') + '>' + q.name + '</button>'; }).join('') + '</div>';
+    h += '<div class="wres" id="wres"></div>';
+    h += '<div class="card"><h3>Inputs · per ' + esc(p.unit) + '</h3><p class="sub">The boxes show the values used now (your data, BF Model or reference). Change any box: the result above updates at once. Changed boxes turn amber.</p>' +
+      '<div class="row2" style="margin:4px 0 6px"><button class="btn sm" id="wRef">Start from reference</button><button class="btn sm" id="wUndo">Undo changes</button></div>';
+    var g0 = '';
+    plantFields(pid).forEach(function (d) {
+      if (d.g !== g0) { g0 = d.g; h += '<div class="grp2">' + esc(d.g) + '</div>'; }
+      var b = baseOf(d), w = W.v[d.id], val = num(w) ? w : b.v;
+      h += '<div class="f' + (num(w) ? ' chg' : '') + '" data-f="' + d.id + '"><label for="w-' + d.id + '">' + esc(d.l) + '<small>' + esc(d.u) + '</small></label><input id="w-' + d.id + '" data-w="' + d.id + '" inputmode="decimal" value="' + (num(val) ? +(+val).toPrecision(6) : '') + '">' +
+        '<span class="was">' + wasTxt(d, b) + '</span></div>';
+    });
+    h += '<div class="row2" style="margin-top:12px"><button class="btn pri" id="wSave">Save as my values</button><button class="btn" data-go="dash">Results ›</button></div></div>';
+    h += '<div class="card"><h3>How it is calculated</h3><div class="how" id="whow"></div></div>';
+    el.innerHTML = h; bindGo(el);
+    $$('[data-sw]', el).forEach(function (b) { b.onclick = function () { W.pid = b.getAttribute('data-sw'); W.v = {}; try { history.replaceState({ p: 'plant', pid: W.pid }, '', '#plant-' + W.pid); } catch (e) { } go('plant', true); }; });
+    $$('input[data-w]', el).forEach(function (i) { i.addEventListener('input', function () { setW(i); }); });
+    $('#wUndo').onclick = function () { W.v = {}; renderPlant(); toast('Back to the values in use'); };
+    $('#wRef').onclick = function () { W.v = {}; plantFields(pid).forEach(function (d) { var b = baseOf(d); if (b.v !== d.ref) W.v[d.id] = d.ref; }); renderPlant(); toast('Reference values loaded: now type your own'); };
+    $('#wSave').onclick = function () {
+      var n = Object.keys(W.v).length; if (!n) { toast('Nothing changed'); return; }
+      Object.keys(W.v).forEach(function (k) { S.v[k] = W.v[k]; });
+      S.mode = 'user'; S.file = S.file || ''; save(); W.v = {}; compute(); renderPlant(); toast(n + ' value' + (n > 1 ? 's' : '') + ' saved as your data');
+    };
+    updW();
+    if (W.fresh) { W.fresh = false; setTimeout(function () { var i = $('input[data-w]', el); if (i) { i.focus(); i.select(); } }, 250); }
+  }
+  function wasTxt(d, b) {
+    var src = { user: 'your data', link: 'BF Model', ref: 'reference' }[b.src] || '';
+    return num(W.v[d.id]) ? 'Changed · in use ' + f(b.v, 3) + ' (' + src + ')' : 'In use · ' + src;
+  }
+  function setW(i) {
+    var id = i.getAttribute('data-w'), d = plantFields(W.pid).filter(function (x) { return x.id === id; })[0], b = baseOf(d), v = parseNum(i.value);
+    if (i.value.trim() === '' || v == null || Math.abs(v - b.v) < 1e-12) delete W.v[id]; else W.v[id] = v;
+    var row = i.parentNode; row.classList.toggle('chg', num(W.v[id])); row.querySelector('.was').textContent = wasTxt(d, b);
+    updW();
+  }
+  function updW() {
+    var pid = W.pid, p = CE.PL[pid], R2 = CE.compute(wS(), LK), r2 = R2.plants[pid], r1 = R.plants[pid];
+    var box = $('#wres'), how = $('#whow'); if (!box) return;
+    if (r2.need.length) { box.innerHTML = '<div class="u">Fill: ' + esc(r2.need.map(function (d) { return d.l; }).join(', ')) + '</div>'; how.innerHTML = ''; return; }
+    var dl = r1.need.length ? null : r2.total - r1.total, ch = Object.keys(W.v).length > 0;
+    var dTxt = !ch || dl == null ? '' : '<span class="d ' + (dl > 0.0005 ? 'up' : dl < -0.0005 ? 'dn' : '') + '">' + (dl >= 0 ? '+' : '−') + f(Math.abs(dl), 3) + (r1.total > 0 ? ' · ' + (dl >= 0 ? '+' : '−') + f(Math.abs(dl / r1.total * 100), 1) + ' %' : '') + '</span>';
+    var pig = '';
+    if (pid !== 'coke' && R2.pig && R.pig) { var dp = R2.pig.total - R.pig.total; pig = '<span>Pig iron (CBAM) <b>' + f(R2.pig.total, 3) + '</b>' + (ch ? ' (' + (dp >= 0 ? '+' : '−') + f(Math.abs(dp), 3) + ')' : '') + '</span>'; }
+    else if (pid === 'coke' && R2.pig && R2.pig.coke != null) pig = '<span>Adds to pig iron (information) <b>' + f(R2.pig.coke, 3) + '</b></span>';
+    box.innerHTML = '<div class="u">' + esc(p.name) + (ch ? ' · with your changes' : ' · values in use') + '</div><div class="row"><span class="v">' + f(r2.total, 3) + '</span><span class="u">tCO2/' + esc(p.unit) + '</span>' + dTxt + '</div>' +
+      '<div class="sp"><span>Direct <b>' + f(r2.direct, 3) + '</b></span><span>Indirect <b>' + f(r2.indirect, 3) + '</b></span>' + pig + '</div>';
+    how.innerHTML = explain(pid, r2, wS());
+  }
+  function explain(pid, r, St) {
+    var V = r.V, cf = function (c) { var u = St.v['common.' + c]; return num(u) ? u : CE.CM[c].ref; };
+    var line = function (l, formula, kg) { return kg ? '<div><span>' + esc(l) + '</span><b>' + f(kg, 1) + ' kg C</b><small>' + formula + '</small></div>' : ''; };
+    var m = function (l, q, c) { return line(l, f(V[q], 1) + ' kg × ' + f(V[c], 2) + ' % C', V[q] * V[c] / 100); };
+    var gas = function (l, q, c) { return line(l, f(V[q], 1) + ' Nm3 × ' + f(cf(c), 3) + ' kg C/Nm3', V[q] * cf(c)); };
+    var C1 = 12.011 / 56.077, C2 = 12.011 / 40.304;
+    var crb = function (l, q, a, b) { var kg = V[q] * (V[a] / 100 * C1 + (b ? V[b] / 100 * C2 : 0)); return line(l, f(V[q], 1) + ' kg × (CaO ' + f(V[a], 1) + ' % × 12/56' + (b ? ' + MgO ' + f(V[b], 1) + ' % × 12/40' : '') + ')', kg); };
+    var prod = function (l, c) { return line(l, '1000 kg × ' + f(V[c], 2) + ' % C', 1000 * V[c] / 100); };
+    var IN = '', OUT = '';
+    if (pid === 'bf') {
+      IN = m('Coke', 'coke', 'cokeC') + m('Nut coke', 'nut', 'nutC') + m('PCI coal', 'pci', 'pciC') + m('Oil / tar', 'oil', 'oilC') + gas('Natural gas', 'ng', 'ngC') + gas('Coke oven gas', 'cog', 'cogC') +
+        m('Sinter', 'sinter', 'sinterC') + m('Pellets', 'pellet', 'pelletC') + m('Lump ore', 'ore', 'oreC') + crb('Limestone (carbonate)', 'ls', 'lsCaO') + crb('Dolomite (carbonate)', 'dl', 'dlCaO', 'dlMgO') + line('Other carbon', 'as carbon', V.otherC);
+      OUT = prod('Hot metal', 'hmC') + m('Slag', 'slag', 'slagC') + m('Dust + sludge', 'dust', 'dustC');
+    } else if (pid === 'sinter' || pid === 'pellet') {
+      IN = m(pid === 'sinter' ? 'Coke breeze' : 'Breeze / anthracite in mix', 'breeze', 'breezeC') + (pid === 'sinter' ? m('Anthracite', 'anth', 'anthC') : m('Coal (kiln)', 'coal', 'coalC') + m('Fuel oil', 'oil', 'oilC')) +
+        gas('Natural gas', 'ng', 'ngC') + gas('Coke oven gas', 'cog', 'cogC') + gas('BF gas', 'bfg', 'bfgC') + crb('Limestone (carbonate)', 'ls', 'lsCaO') + crb('Dolomite (carbonate)', 'dl', 'dlCaO', 'dlMgO') + (pid === 'sinter' ? line('Other carbon', 'as carbon', V.otherC) : '');
+      OUT = prod(pid === 'sinter' ? 'Sinter' : 'Pellets', 'prodC') + (pid === 'sinter' ? m('Dust', 'dust', 'dustC') : '');
+    } else {
+      IN = m('Coal', 'coal', 'coalC') + gas('BF gas (underfiring)', 'bfg', 'bfgC') + gas('Natural gas', 'ng', 'ngC');
+      OUT = prod('Coke', 'prodC') + gas('Coke oven gas exported', 'cogEx', 'cogC') + m('Tar', 'tar', 'tarC') + m('Benzol', 'benzol', 'benzolC');
+    }
+    var u = CE.PL[pid].unit, h = '<h4>1 · Carbon in</h4>' + IN + '<div class="tot"><span>Total carbon in</span><b>' + f(r.cin, 1) + ' kg C</b></div>' +
+      '<h4>2 · Carbon out</h4>' + OUT + '<div class="tot"><span>Total carbon out</span><b>' + f(r.cout, 1) + ' kg C</b></div>' +
+      '<h4>3 · Direct CO2</h4><div><span>Carbon emitted × 44/12</span><b>' + f(r.gross, 3) + ' t</b><small>(' + f(r.cin, 1) + ' − ' + f(r.cout, 1) + ') kg C × 44.01 / 12.011 ÷ 1000</small></div>';
+    if (pid === 'bf') h += '<div><span>Waste gas correction (CBAM)</span><b>−' + f(r.corr, 3) + ' t</b><small>' + f(V.bfgEx, 0) + ' Nm3 × ' + f(V.bfgNcv, 2) + ' MJ/Nm3 ÷ 1000 × 56.1 × 0.667 ÷ 1000</small></div>';
+    h += '<div class="tot"><span>Direct</span><b>' + f(r.direct, 3) + ' tCO2/' + esc(u) + '</b></div>' +
+      '<h4>4 · Indirect CO2 (electricity)</h4><div><span>Electricity × emission factor</span><b>' + f(r.indirect, 3) + ' t</b><small>' + f(V.el, 3) + ' MWh × ' + f(cf('grid'), 3) + ' tCO2/MWh</small></div>' +
+      '<h4>5 · Total</h4><div class="tot"><span>Direct + indirect</span><b>' + f(r.total, 3) + ' tCO2/' + esc(u) + '</b></div>';
+    return h;
   }
 
   // ---------------- inputs ----------------
@@ -322,7 +426,7 @@
   function closeSheet() { $('#sheet').classList.remove('open'); $('#sheetBg').classList.remove('open'); }
   $('#menu').onclick = openSheet; $('#sheetBg').onclick = closeSheet;
 
-  var start = (location.hash || '').slice(1); if (!TITLES[start]) start = 'dash';
-  try { history.replaceState({ p: start }, '', '#' + start); } catch (e) { }
+  var start = (location.hash || '').slice(1), sm = start.match(/^plant-(bf|sinter|pellet|coke)$/); if (sm) { W.pid = sm[1]; start = 'plant'; } if (!TITLES[start]) start = 'dash';
+  try { history.replaceState({ p: start, pid: W.pid }, '', '#' + start + (start === 'plant' ? '-' + W.pid : '')); } catch (e) { }
   go(start, true);
 })();

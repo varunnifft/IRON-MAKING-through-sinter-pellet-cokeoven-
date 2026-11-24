@@ -22,8 +22,23 @@
 .hit input { width: 20px; height: 20px; margin-top: 2px } .hit small { display: block; color: var(--muted); overflow-wrap: anywhere } .hit b { font-family: var(--f-mono); color: #ffd9a8 }
 .gtxt p, .gtxt li { font-size: 13.5px; line-height: 1.55; color: var(--ink-2) } .gtxt h4 { margin: 14px 0 4px; font: 700 15px var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #ffd9a8 }
 .gtxt code { font: 500 12.5px var(--f-mono); color: #9fe6e3 }
+.k.tap { cursor: pointer; border-color: #2a4a70; transition: transform .12s } .k.tap:active { transform: scale(.98) }
+.k.tap .go { position: absolute; right: 10px; top: 9px; font: 600 11px var(--f-mono); color: #ffd27a }
+.qk { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px }
+.qk button { min-height: 46px; border-radius: 12px; border: 1px solid #2a4a70; background: rgba(4,12,23,.5); color: #fff; font: 700 14px var(--f-body); cursor: pointer; text-align: left; padding: 8px 12px; border-left: 4px solid var(--c) }
+.qk button small { display: block; font: 500 11px var(--f-mono); color: var(--muted) }
+.wres { position: sticky; top: 62px; z-index: 5; margin-top: 10px; padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(255,181,71,.45); background: linear-gradient(160deg, rgba(40,28,8,.96), rgba(11,31,56,.97) 65%); box-shadow: 0 10px 24px rgba(0,0,0,.4) }
+.wres .row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap } .wres .v { font: 700 38px/1 var(--f-display) } .wres .u { font-size: 13px; color: var(--muted) }
+.wres .d { font: 700 13px var(--f-mono); padding: 3px 8px; border-radius: 99px; background: rgba(255,255,255,.08) } .wres .d.up { color: #ff8a7a } .wres .d.dn { color: #7fe0b8 }
+.wres .sp { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 12.5px; color: var(--ink-2) } .wres .sp b { color: #fff }
+.f.chg input { border-color: var(--amber); background: rgba(255,181,71,.10) } .f .was { grid-column: 1 / -1; font: 500 11px var(--f-mono); color: var(--muted) } .f.chg .was { color: #ffd27a }
+.how div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 7px 0; border-top: 1px solid rgba(29,53,83,.6); font-size: 13px }
+.how div small { grid-column: 1 / -1; font: 500 11.5px/1.4 var(--f-mono); color: #9fe6e3 } .how div b { font-family: var(--f-mono); color: #ffd9a8; white-space: nowrap }
+.how .tot { border-top: 1px solid #2a4a70; font-weight: 700 } .how h4 { margin: 14px 0 2px; font: 700 13px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--amber) }
+.plsw { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px } .plsw button { flex: none; min-height: 38px; padding: 6px 13px; border-radius: 99px; border: 1px solid #2a4a70; background: transparent; color: var(--ink-2); font: 700 13px var(--f-body) }
+.plsw button.on { background: rgba(255,181,71,.14); border-color: var(--amber); color: #ffd9a8 }
 </style>
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="pwa.js" defer></script></head>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Iron Making"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="pwa.js" defer></script></head>
 <body>
 <header class="bar">
   <button class="bk" id="back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -36,6 +51,7 @@
   <section class="page" id="p-input"></section>
   <section class="page" id="p-bal"></section>
   <section class="page" id="p-guide"></section>
+  <section class="page" id="p-plant"></section>
 </main>
 <nav class="bn" aria-label="Pages" style="grid-template-columns:repeat(4,1fr)">
   <button data-p="dash"><span><svg class="ic" viewBox="0 0 24 24"><path d="M4 13a8 8 0 1 1 16 0M12 13l4-5M4 19h16"/></svg></span>Results</button>
@@ -47,7 +63,6 @@
 <div class="sheetbg" id="sheetBg"></div>
 <div class="sheet" id="sheet" role="dialog" aria-label="Menu"></div>
 <input type="file" id="file" accept=".xlsx,.xlsm,.xls,.csv,.txt,.pdf,application/pdf" hidden>
-<script>window.IM_SINTER_URL = 'ironmakingapk://sinter';</script>
 <script src="lib/xlsx.full.min.js"></script>
 <script src="engine.js"></script>
 <script src="carbon-engine.js"></script>

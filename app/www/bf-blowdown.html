@@ -27,6 +27,7 @@
     <button data-p="timeline">Timeline</button>
     <button data-p="tapping">Tapping</button>
     <button data-p="checklist">Checklist</button>
+    <button data-p="live" class="live"><i class="ldot"></i>Live prediction</button>
     <button data-p="blowin">Blow-in</button>
     <button data-p="emergency" class="hot">Abnormal &amp; emergency</button>
     <button data-p="safety" class="safe">Safety</button>
@@ -201,43 +202,186 @@
     <div class="btnrow"><button class="btn" type="button" id="clrChk">Clear all ticks</button><span class="val ok" id="chkCount">—</span></div>
   </section>
 
-  <!-- ================= BLOW-IN ================= -->
+  <!-- ================= BLOW-IN (full planner, bi-app.js) ================= -->
+  <section class="ph" data-ph="live"><div id="bdLive"></div></section>
+
   <section class="ph" data-ph="blowin">
     <div class="box">
-      <h3>Blow-in — after the repair outage</h3>
-      <p class="lead">Blow-in is the mirror of blow-down: starting the furnace from the empty, cold condition back to full production. Uses the Inputs tab.</p>
+      <h3>Blow-in planner · from cold or banked furnace to full production</h3>
+      <p class="lead">Built the same way as the blow-down: pick the start type, check the suggested recipe, change anything by hand, and read the predicted result with advice. It uses the furnace, geometry and raw-material values from the <b>Inputs</b> tab. Saved on this phone.</p>
+      <nav class="bitabs" id="biTabs" aria-label="Blow-in pages">
+        <button data-b="type" class="on">1 · Start type</button>
+        <button data-b="inputs">2 · Blow-in inputs</button>
+        <button data-b="recipe">3 · Recipe &amp; filling</button>
+        <button data-b="dist">4 · Distribution</button>
+        <button data-b="timeline">5 · Timeline</button>
+        <button data-b="tapping">6 · Tapping</button>
+        <button data-b="predict" class="hot">7 · Prediction &amp; advice</button>
+        <button data-b="check">8 · Checklist</button>
+        <button data-b="live" class="live"><i class="ldot"></i>9 · Live prediction</button>
+      </nav>
+      <div class="sumrow" id="biChips"></div>
     </div>
-    <div class="box">
-      <h3>Day −3 to Day −1 · readiness</h3>
-      <ul class="ul">
-        <li>Refractory dried per the drying curve; brick temperature on target at every zone.</li>
-        <li>Blast system, cooling water, N₂, instruments and gas analysers proved; bleeders stroked; GCP ready.</li>
-        <li>Start-up burden staged: blow-in coke (+20–30% on dumps 1–3), light ore layers in the top charges only.</li>
-        <li>Cast house dry run — ladles, runners, slag bay, drill &amp; mud gun tested. Tapholes pre-heated / oxygen-lanced open path ready.</li>
-      </ul>
+
+    <!-- 1 start type -->
+    <div class="bip on" data-bp="type">
+      <div class="box">
+        <h3>What is the furnace starting from?</h3>
+        <label style="max-width:460px">Blow-in type
+          <select id="bi_type">
+            <option value="auto">Follow the stoppage chosen in Strategy</option>
+            <option value="reline">After reline (new lining, empty furnace)</option>
+            <option value="deep">After deep blowdown (stockline at tuyeres)</option>
+            <option value="partial">After partial blowdown (stockline at belly)</option>
+            <option value="bank">After banking / long stoppage (furnace full)</option>
+          </select>
+        </label>
+        <div class="opts" id="biTypeHelp"></div>
+      </div>
+      <div class="box sel" id="biTypeSel"></div>
     </div>
-    <div class="box">
-      <h3>Light-up &amp; first blast (hours 0 to 12)</h3>
-      <div id="biRows"></div>
-      <p class="lead" style="margin-top:10px">Start cold blast at about <b>30%</b> of normal, increase in 10% steps every 2 h while the top temperature stays under the <b>GCP limit minus 60 °C</b>. Keep H₂ in top gas below <b>6%</b> on day 1 (water burn-off). O₂ below <b>0.5%</b> always. Gas to bleeder until CO is steady and O₂ is nil, then to GCP.</p>
+
+    <!-- 2 inputs -->
+    <div class="bip" data-bp="inputs">
+      <div class="box">
+        <h3>Light-up &amp; blast build-up</h3>
+        <p class="lead">Empty box = suggested value for your blow-in type (grey). Type a number to use your own. <b>Your SOP governs.</b></p>
+        <div class="grid" id="biGridOp"></div>
+      </div>
+      <div class="box">
+        <h3>Raw materials &amp; slag targets</h3>
+        <p class="lead">Typical Indian sinter/pellet/lump mix and coke. Replace with your latest analysis — the flux and slag check depend on it.</p>
+        <div class="grid" id="biGridChem"></div>
+      </div>
+      <div class="box">
+        <h3>Learn from your last blow-in (optional)</h3>
+        <p class="lead">If you know when the first cast came at your last blow-in of the same type, enter it. The prediction is then scaled to your furnace.</p>
+        <div class="grid" id="biGridCal"></div>
+        <div class="btnrow"><button class="btn" type="button" id="biReset">Reset blow-in inputs to suggested</button></div>
+      </div>
     </div>
-    <div class="box">
-      <h3>Build-up curve</h3>
-      <div class="tw"><table>
-        <thead><tr><th>Day</th><th class="n">Cold blast</th><th class="n">Nm³/min</th><th>Milestone</th></tr></thead>
-        <tbody id="biBody"></tbody>
-      </table></div>
+
+    <!-- 3 recipe -->
+    <div class="bip" data-bp="recipe">
+      <div class="box">
+        <h3>Filling the furnace · zone by zone</h3>
+        <p class="lead">Suggested ore/coke (O/C, t/t) for each zone. <b>Type your own O/C in the box to change the recipe</b> — every total, flux and prediction follows. 0 = coke only (coke blank).</p>
+        <div id="biHearthOpt"></div>
+        <div class="tw"><table>
+          <thead><tr><th>Zone (bottom → top)</th><th class="n">Volume m³</th><th class="n">O/C suggested</th><th class="n">O/C used</th><th class="n">Coke t</th><th class="n">Ore t</th><th class="n">Limestone t</th><th class="n">Dolomite t</th><th class="n">Quartzite t</th><th class="n">Charges</th><th class="n">Coke rate kg/tHM</th><th class="n">HM t</th></tr></thead>
+          <tbody id="biFillBody"></tbody>
+        </table></div>
+        <div class="sumrow" id="biFillTot" style="margin-top:10px"></div>
+        <div class="btnrow"><button class="btn" type="button" id="biRecipeAuto">Use suggested O/C everywhere</button></div>
+      </div>
+      <div class="box">
+        <h3>One charge of each zone (what the stock house weighs)</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Zone</th><th class="n">Coke dump t</th><th class="n">Ore t</th><th class="n">Limestone kg</th><th class="n">Dolomite kg</th><th class="n">Quartzite kg</th><th class="n">No. of charges</th></tr></thead>
+          <tbody id="biDumpBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Slag check for each zone</h3>
+        <p class="lead">Expected slag after silicon goes into the hot metal. Indian high-alumina burden: keep <b>Al₂O₃ ≤ 18%</b> and <b>MgO 8–10%</b> for a fluid slag in a cold hearth.</p>
+        <div class="tw"><table>
+          <thead><tr><th>Zone</th><th class="n">Slag kg/tHM</th><th class="n">CaO/SiO₂</th><th class="n">Al₂O₃ %</th><th class="n">MgO %</th><th class="n">HM Si % expected</th><th>Check</th></tr></thead>
+          <tbody id="biSlagBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Top-charge programme after the fill (coke-up taper)</h3>
+        <p class="lead">Charges put on top while the furnace burns down. Coke-up halves each block until normal. PCI and O₂ come in on the days set in Blow-in inputs; until PCI is on, its coal is replaced by coke (0.9 kg coke per kg coal).</p>
+        <div class="tw"><table>
+          <thead><tr><th>From → to (h after light-up)</th><th class="n">Coke-up</th><th class="n">Coke kg/tHM</th><th class="n">PCI kg/tHM</th><th class="n">O/C t/t</th><th class="n">Ore per charge t</th><th class="n">Charges</th><th class="n">Basicity</th></tr></thead>
+          <tbody id="biProgBody"></tbody>
+        </table></div>
+      </div>
     </div>
-    <div class="box">
-      <h3>Blow-in burden (first 3 days)</h3>
-      <ul class="ul">
-        <li><b>Coke-up:</b> +25–30% on dumps 1–3, tapering to +15% by dump 6, +5% by dump 10, normal by day 3.</li>
-        <li><b>Basicity:</b> start at 1.20–1.25 (lime-rich, fluid hot slag) for the first casts; return to normal after 48 h of stable operation.</li>
-        <li><b>Ore/coke</b> starts near 2.5–2.8, rises to normal by day 3.</li>
-        <li><b>PCI:</b> off for the first 48 h, then ramp gradually; normal by day 5–7.</li>
-      </ul>
+
+    <!-- 4 distribution -->
+    <div class="bip" data-bp="dist">
+      <div class="box">
+        <h3>Burden distribution during the blow-in</h3>
+        <p class="lead" id="biDistLead"></p>
+        <div class="seg" id="biDistSeg"><button data-k="A">Fill + first 24 h</button><button data-k="B">Day 2 – 3</button><button data-k="N">Normal (target)</button></div>
+        <p class="lead">Turns per ring, ring 1 = wall, ring 6 = centre. <b>Type your own turns</b>; the totals and the gas-flow pattern update.</p>
+        <div class="tw"><table class="bimx">
+          <thead><tr><th>Ring</th><th class="n">Coke turns</th><th class="n">Ore turns</th><th class="n">Local O/C</th><th class="n">Gas flow</th></tr></thead>
+          <tbody id="biMxBody"></tbody>
+        </table></div>
+        <div class="btnrow"><button class="btn" type="button" id="biMxAuto">Use suggested matrix</button></div>
+      </div>
+      <div class="box">
+        <h3>Radial pattern</h3>
+        <figure class="prof" style="margin:0"><svg id="biDistSvg" viewBox="0 0 340 190" role="img" aria-label="Ore to coke ratio and gas flow from wall to centre"></svg><figcaption>Bars: local O/C (ore-rich = less gas). Line: relative gas flow. Wall left, centre right.</figcaption></figure>
+        <div id="biDistRows" style="margin-top:8px"></div>
+      </div>
+      <div class="box"><h3>Advice for this matrix</h3><ul class="ul" id="biDistAdv"></ul></div>
     </div>
-    <p class="caution"><b>Reline blow-in</b> is a 5–10 day operation and very plant-specific. Follow the refractory drying curve and your SOP. See <b>Abnormal &amp; emergency</b> for blow-in problems.</p>
+
+    <!-- 5 timeline -->
+    <div class="bip" data-bp="timeline">
+      <div class="box">
+        <h3>Hour by hour from light-up</h3>
+        <p class="lead">Simulated from your blast plan, coke burn at the tuyeres and the recipe column. Every hour for the first 36 h, then every 3 h, then every 12 h to full production.</p>
+        <div class="sumrow" id="biTlSum"></div>
+        <div class="tw"><table class="tl">
+          <thead><tr><th>h</th><th class="n">Blast</th><th class="n">Nm³/min</th><th class="n">Tuyeres open</th><th class="n">Tuyere velocity m/s</th><th class="n">Coke burnt t/h</th><th>Melting from</th><th class="n">Top charges</th><th class="n">HM made t</th><th class="n">Liquid in hearth t</th><th>Gas</th><th>Event / action</th></tr></thead>
+          <tbody id="biTlBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 6 tapping -->
+    <div class="bip" data-bp="tapping">
+      <div class="box"><h3>First cast &amp; tapholes</h3><div id="biTapRows"></div></div>
+      <div class="box">
+        <h3>Predicted casts · first 72 h</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Cast</th><th class="n">At h</th><th class="n">HM t</th><th class="n">Slag t</th><th class="n">Si % expected</th><th class="n">HM temp °C</th><th>Note</th></tr></thead>
+          <tbody id="biCastBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Cast house through the blow-in</h3>
+        <ul class="ul" id="biTapNotes"></ul>
+      </div>
+    </div>
+
+    <!-- 7 prediction -->
+    <div class="bip" data-bp="predict">
+      <div class="box">
+        <h3>Predicted result</h3>
+        <div class="sumrow" id="biPredChips"></div>
+        <figure class="prof" style="margin:8px 0 0"><svg id="biTrendSvg" viewBox="0 0 340 200" role="img" aria-label="Predicted hot metal per day, silicon and temperature"></svg><figcaption>Bars: hot metal per day · orange line: HM Si % · blue line: HM temperature</figcaption></figure>
+      </div>
+      <div class="box">
+        <h3>Day by day</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Day</th><th class="n">Avg blast</th><th class="n">HM t</th><th class="n">% of normal</th><th class="n">Coke burnt t</th><th class="n">Coke rate kg/tHM</th><th class="n">Si %</th><th class="n">HM °C</th><th class="n">Casts</th><th>Milestone</th></tr></thead>
+          <tbody id="biDayBody"></tbody>
+        </table></div>
+      </div>
+      <div class="box">
+        <h3>Suggestions for your plan</h3>
+        <p class="lead">Checks on everything you entered. <b class="val bad">Red</b> = change before blow-in, <b class="val warn">amber</b> = check, <b class="val ok">green</b> = fine.</p>
+        <div id="biAdvice"></div>
+      </div>
+      <p class="caution"><b>How good is the prediction?</b> Planning grade: coke burn and hot-metal make come from the blast oxygen balance (calibrated to your normal operation); heat-up delay, silicon and temperature are typical values for the blow-in type. Enter your last blow-in in step 2 to tune it. Real time comes from your furnace: tuyere colour, top gas, first slag.</p>
+    </div>
+
+    <!-- 8 checklist -->
+    <div class="bip" data-bp="check">
+      <div class="box"><h3>A. Readiness · day −3 to light-up</h3><div id="biChkA"></div></div>
+      <div class="box"><h3>B. Filling &amp; light-up</h3><div id="biChkB"></div></div>
+      <div class="box"><h3>C. First 72 hours</h3><div id="biChkC"></div></div>
+      <div class="btnrow"><button class="btn" type="button" id="biClrChk">Clear all ticks</button><span class="val ok" id="biChkCount">—</span></div>
+      <p class="caution">Problems during the blow-in (dark tuyeres, cold first cast, CO leak) play in 3D under <b>Abnormal &amp; emergency</b>.</p>
+    </div>
+
+    <!-- 9 live log -->
+    <div class="bip" data-bp="live"><div id="biLive"></div></div>
   </section>
 
   <!-- ================= ABNORMAL & EMERGENCY ================= -->
@@ -308,6 +452,16 @@
 <script src="importer.js"></script>
 <script src="bd-data.js"></script>
 <script src="bd-app.js"></script>
+<script src="bi-app.js"></script>
+<script src="live-log.js"></script>
+<script>
+(function () {
+  function bd() { try { var S = BDPlanner.compute(), v = S.v, d = S.d; return { vw: v.vu, hw: d && d.d4 ? Math.round(d.d4 * 10) / 10 : null, rc: v.coked, ro: v.bd, q: v.blast, o2: v.o2, cr: v.coke, pci: v.pci && v.hm ? Math.round(v.pci * v.hm / 24 / 100) / 10 : 0 }; } catch (e) { return {}; } }
+  IMLive.mount(document.getElementById('biLive'), { key: 'im.live2.blowin', mode: 'blowin', file: 'BF-blowin-live',
+    prefill: function () { var p = bd(); try { var C = BIPlanner.state; if (C && C.tot) p.coke0 = Math.round(C.tot.coke); p.pci = 0; p.o2 = 0; } catch (e) { } return p; } });
+  IMLive.mount(document.getElementById('bdLive'), { key: 'im.live2.blowdown', mode: 'blowdown', file: 'BF-blowdown-live', prefill: bd });
+})();
+</script>
 <script src="nk-logo.js" data-img="img/nk-logo.png" defer></script>
 </body>
 </html>

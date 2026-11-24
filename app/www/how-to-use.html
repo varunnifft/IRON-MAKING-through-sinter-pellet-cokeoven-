@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>How to use the app · Iron Making</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root { --n950:#040c17; --n900:#071426; --line:#1d3553; --ink:#eef3f8; --ink-2:#c3d0dd; --muted:#93a6ba;
+  --molten:linear-gradient(90deg,#ff3d00 0%,#ff7a1a 45%,#ffc23d 100%); --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --f-body:"IBM Plex Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace; color-scheme:dark }
+* { box-sizing:border-box } html,body { margin:0; height:100%; background:var(--n950); color:var(--ink); font:15px/1.5 var(--f-body) }
+.bar { position:fixed; top:0; left:0; right:0; z-index:5; display:flex; align-items:center; gap:10px; padding:max(10px,env(safe-area-inset-top)) 12px 10px; background:linear-gradient(180deg,rgba(4,12,23,.92),rgba(4,12,23,0)) }
+.bk { width:40px; height:40px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.08); color:#fff; font:700 22px/1 var(--f-display); cursor:pointer }
+.tt small { display:block; font:600 10.5px/1.2 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:#9fe6e3 } .tt b { font:700 20px/1.1 var(--f-display); letter-spacing:.06em; text-transform:uppercase }
+.voice { margin-left:auto; display:flex; border:1px solid var(--line); border-radius:10px; overflow:hidden } .voice button { padding:7px 10px; border:0; background:rgba(4,12,23,.6); color:var(--ink-2); font:600 12px var(--f-body); cursor:pointer } .voice button.on { background:var(--molten); color:#2a1200 }
+#stage { position:fixed; inset:0; } #stage canvas { display:block; width:100%; height:100% }
+.panel { position:fixed; left:0; right:0; bottom:0; z-index:4; padding:14px 14px max(14px,env(safe-area-inset-bottom)); background:linear-gradient(0deg,rgba(4,12,23,.97) 70%,rgba(4,12,23,0)) }
+.card { max-width:720px; margin:0 auto }
+.stepn { font:600 11px/1 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:#ffb547 }
+.card h1 { margin:6px 0 4px; font:700 26px/1.05 var(--f-display); letter-spacing:.05em; text-transform:uppercase }
+.say { margin:0; max-height:32vh; overflow:auto; color:var(--ink-2); font-size:14.5px; line-height:1.55 }
+.say .w.on { color:#fff; background:rgba(255,122,26,.25); border-radius:3px }
+.prog { height:4px; border-radius:4px; background:rgba(255,255,255,.08); margin:10px 0 0; overflow:hidden } .prog i { display:block; height:100%; width:0; background:var(--molten); transition:width .25s linear }
+.ctl { display:flex; align-items:center; gap:8px; margin-top:10px }
+.ctl button, .ctl a { min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:rgba(4,12,23,.6); color:var(--ink); font:600 14px var(--f-body); cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center }
+.ctl .play { background:var(--molten); color:#2a1200; border:0; min-width:96px }
+.ctl .cta { margin-left:auto; border-color:rgba(143,211,255,.5); color:#cfeaff }
+.dots { display:flex; gap:5px; justify-content:center; margin-top:10px } .dots span { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.18); cursor:pointer } .dots span.on { background:#ff7a1a } .dots span.done { background:rgba(255,181,71,.55) }
+.start { position:fixed; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:24px; background:radial-gradient(70% 50% at 50% 45%,rgba(11,31,56,.55),rgba(4,12,23,.92)) }
+.start b { font:700 34px/1 var(--f-display); letter-spacing:.06em; text-transform:uppercase } .start p { margin:0; max-width:420px; color:var(--ink-2) }
+.start button { width:92px; height:92px; border-radius:50%; border:0; background:var(--molten); box-shadow:0 0 0 10px rgba(255,122,26,.15),0 0 40px rgba(255,122,26,.6); cursor:pointer } .start button svg { width:40px; height:40px; fill:#2a1200; margin-left:6px }
+.start small { color:var(--muted); font:500 12px var(--f-mono) }
+#im-back { display:none !important } .ctl a[hidden] { display:none }
+@media (max-aspect-ratio: 4/5) { #stage { bottom: 42vh } .say { max-height: 22vh } }
+.load { position:fixed; top:50%; left:0; right:0; text-align:center; color:var(--muted); font:500 13px var(--f-mono); z-index:1 }
+</style>
+</head>
+<body>
+<div id="stage"><div class="load" id="load">Loading 3D…</div></div>
+<header class="bar">
+  <button class="bk" id="back" aria-label="Back">‹</button>
+  <div class="tt"><small>Iron Making · guided tour</small><b>How to use the app</b></div>
+  <div class="voice" id="voice" role="group" aria-label="Narrator voice"><button data-v="f" class="on">Female voice</button><button data-v="m">Male voice</button></div>
+</header>
+<section class="panel"><div class="card">
+  <div class="stepn" id="stepn">Step 1 of 10</div>
+  <h1 id="ttl">—</h1>
+  <p class="say" id="say"></p>
+  <div class="prog"><i id="prog"></i></div>
+  <div class="ctl">
+    <button type="button" id="prev" aria-label="Previous step">‹</button>
+    <button type="button" class="play" id="play">Pause</button>
+    <button type="button" id="next" aria-label="Next step">›</button>
+    <a class="cta" id="cta" href="#" hidden>Open ›</a>
+  </div>
+  <div class="dots" id="dots"></div>
+</div></section>
+<div class="start" id="start">
+  <b>How to use Iron Making</b>
+  <p>A 3-minute 3D tour with Indian English narration. Turn up the volume. You can pause, skip steps, or open any section from the tour.</p>
+  <button type="button" id="go" aria-label="Start the tour"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+  <small>Drag the 3D view to turn it · pinch to zoom</small>
+</div>
+<audio id="aud" preload="auto"></audio>
+<script>window.HOWTO_STEPS = [{"id": "welcome", "title": "Namaste! Welcome to Iron Making", "href": "", "cta": "", "say": "Namaste, and welcome to Iron Making. This app covers the whole iron making route, from the raw material yard to sinter, pellet and coke, and finally liquid hot metal from the blast furnace. In the next few minutes, I will show you how to use it, step by step.", "df": 17.13, "dm": 18.16}, {"id": "login", "title": "Sign in once, your work is saved", "href": "", "cta": "", "say": "First, sign in with your login I D. You need to do this only once on each phone. Everything you type is saved on your phone automatically, and a backup copy goes to the online storage. So if you change your phone, your work is safe.", "df": 15.04, "dm": 16.07}, {"id": "sections", "title": "Learning module & Go in Detail", "href": "index.html#pickh", "cta": "Show the sections", "say": "On the first page, below carbon footprint, tap Learning module for training, practice and exams on every plant. Then, under Go in Detail, you will find the blast furnace, the sinter plant, the coke oven and the pellet plant. Each section opens its own set of tools, with simple tabs at the top of the page.", "df": 19.52, "dm": 20.38}, {"id": "inputs", "title": "Enter your inputs, or import a file", "href": "know-inputs.html", "cta": "Know your inputs", "say": "To enter data, simply type your values in the boxes. A box left empty uses the value shown in grey, which is a typical starting value. You can also import an Excel, P D F or Word file, and the app fills the boxes for you. If any input is not clear, open Know your inputs, which explains every input in plain words.", "df": 21.93, "dm": 22.72}, {"id": "results", "title": "Results, reports and sharing", "href": "", "cta": "", "say": "Results update as soon as you change an input. Green means fine, amber means please check, and red means action is needed. Use Share, Download or Print to send a report to your team on WhatsApp or email. A copy is also kept in your online storage.", "df": 17.09, "dm": 18.03}, {"id": "bf", "title": "Blast furnace tools", "href": "section.html#bf", "cta": "Open blast furnace", "say": "In the blast furnace section, you get burden chemistry, charging and three D distribution, a three D view of the furnace inside, the hearth liquid prediction, tuyere watch, the taphole check, and the critical situation action plan. Drag with one finger to turn the three D furnace, and pinch to zoom.", "df": 19.16, "dm": 19.99}, {"id": "planner", "title": "Blow-down and the new blow-in planner", "href": "bf-blowdown.html#blowin", "cta": "Open the blow-in planner", "say": "The blow in and blow down planner takes you through a stoppage, start to finish. Enter your furnace on the Inputs tab. For blow down, follow the strategy, burden, timeline and tapping tabs. The new blow in tab has eight steps: start type, inputs, recipe and filling, burden distribution, an hour by hour timeline, tapping, prediction with advice, and a checklist. You can change any recipe value by hand, and the prediction and suggestions update immediately.", "df": 27.63, "dm": 28.33}, {"id": "complex", "title": "Iron complex project and repair", "href": "iron-complex.html", "cta": "Open Iron complex", "say": "Iron complex project and repair helps you plan a complete plant. Choose the state and district first. Then you get capacity, facilities, land and layout, budget, manpower and the project schedule, with three D views of every facility. Each unit also has a repair, rebuild and revamp planner.", "df": 19.82, "dm": 20.74}, {"id": "carbon", "title": "Carbon footprint and CBAM", "href": "carbon.html", "cta": "Open carbon footprint", "say": "The carbon footprint card on the first page shows tonnes of C O 2 per tonne of product, for each plant and for the full route. It uses your own inputs, so it is useful for CBAM reporting and for finding where emissions can come down.", "df": 15.73, "dm": 16.26}, {"id": "more", "title": "Computer version, updates and help", "href": "store.html", "cta": "App for computer", "say": "To use Iron Making on a Windows or Mac computer, open App for computer, and tap Request access. The admin will allow you, and you will get an email. Keep the app updated from the Updates card. And please send us your feedback and suggestions from any page. Thank you, and happy iron making!", "df": 19.33, "dm": 20.21}];</script>
+<script src="lib/three.min.js"></script>
+<script src="lib/orbit-controls.js"></script>
+<script src="howto-3d.js"></script>
+</body>
+</html>

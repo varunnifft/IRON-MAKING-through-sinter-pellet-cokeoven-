@@ -55,7 +55,7 @@ h3.sub { margin: 16px 0 8px; font: 700 16px/1.1 var(--f-display); letter-spacing
 fieldset.ver { margin: 0; padding: 10px 12px 12px; border: 1px solid var(--line); border-radius: 12px; display: grid; gap: 8px; min-width: 0 }
 fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-spacing: .04em; color: #ffd9a8 }
 </style>
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="pwa.js" defer></script></head>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Iron Making"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="pwa.js" defer></script></head>
 <body>
 <div class="wrap">
   <div class="ah"><h1>Online storage</h1><a class="back" href="index.html">‹ Home</a></div>
@@ -82,13 +82,21 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
 
     <section class="box" id="gBox">
       <h2>Sign in with Google</h2>
-      <p class="url" style="margin:0 0 10px">Lets users sign in by picking a Google account on their phone. Paste your <b>OAuth Client ID</b> (Google Cloud → APIs &amp; Services → Credentials → Web application) and the link of <b>google-login.html</b> on your GitHub Pages. Leave both empty to switch it off. "Continue with email" (6-digit code to any address) works without this.</p>
+      <p class="url" style="margin:0 0 10px"><b>Phone app (6.3.9):</b> "Continue with Google" opens Google's own sign-in sheet (Android 14+; older phones get the account list). It needs the <b>Web OAuth Client ID</b> below, plus an Android OAuth client in the same Google Cloud project (package com.bfburdenmodel.ironmaking + Play app-signing SHA-1). The Android client ID box is optional extra safety. <b>Computer / browser:</b> Paste your <b>OAuth Client ID</b> (Google Cloud → APIs &amp; Services → Credentials → Web application) and the link of <b>google-login.html</b> on your GitHub Pages. Leave both empty to switch it off. "Continue with email" (6-digit code to any address) works without this.</p>
       <div style="display:grid;gap:8px">
         <input id="gCid" placeholder="1234567890-abc123.apps.googleusercontent.com" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
         <input id="gPage" placeholder="https://yourname.github.io/your-repo/google-login.html" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
+        <input id="gAnd" placeholder="Android client ID (optional, phone one-tap): 1234-xyz.apps.googleusercontent.com" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn main" type="button" id="gSave">Save Google sign-in</button></div>
         <div class="url" id="gNow" style="margin:0">Loading…</div>
       </div>
+    </section>
+
+    <section class="box" id="fbBox">
+      <h2>&#9993; User queries &amp; feedback <span id="fbN" style="font:700 13px var(--f-mono);color:#ff8a7a"></span></h2>
+      <p class="url" style="margin:0 0 10px">From the app's <b>Query / feedback</b> page. Each one is also saved in the <b>Feedback</b> sheet of your register and emailed to varunnifft@gmail.com (tap Reply in Gmail to answer by email).</p>
+      <div id="fbList" class="url" style="margin:0">Loading…</div>
+      <a class="url" id="fbSheet" data-ext hidden style="margin:8px 0 0;display:inline-block">Open the Feedback sheet ›</a>
     </section>
 
     <section class="box" id="updBox">
@@ -195,6 +203,31 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
   }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; tab = b.getAttribute('data-t'); Array.prototype.forEach.call($('tabs').children, function (x) { x.classList.toggle('on', x === b); }); table(); });
 
+  /* 6.3.9: user queries */
+  function fbRender(r) {
+    var rows = r.rows || [], open = +r.open || 0, el = $('fbList');
+    $('fbN').textContent = open ? '· ' + open + ' new' : '';
+    if (r.sheet) { $('fbSheet').href = r.sheet; $('fbSheet').hidden = false; }
+    if (!rows.length) { el.innerHTML = 'No queries yet.'; return; }
+    el.innerHTML = rows.slice(0, 60).map(function (x) {
+      var ref = x[1], ph = String(x[5] || '').replace(/^'/, ''), em = x[6], st = x[10] || 'New', wa = ph.replace(/\D/g, '').replace(/^(\d{10})$/, '91$1');
+      var subj = encodeURIComponent('Re: Iron Making ' + (x[7] || 'query') + ' ' + ref), body = encodeURIComponent('Hello ' + (x[3] || '') + ',\n\n\n\n---\nYour message (' + ref + '):\n' + x[8]);
+      return '<div style="padding:12px;margin:0 0 10px;border-radius:12px;border:1px solid ' + (st === 'New' ? 'rgba(255,106,90,.6)' : 'var(--line)') + ';background:rgba(4,12,23,.5)">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="color:#fff">' + esc(x[3] || x[2]) + (x[4] ? ' · ' + esc(x[4]) : '') + '</b><span style="font:600 11.5px var(--f-mono);color:' + (st === 'New' ? '#ff8a7a' : '#7fe0b8') + '">' + esc(st) + ' · ' + esc(x[0]) + '</span></div>' +
+        '<div style="font:600 11.5px var(--f-mono);color:#ffd27a;margin:2px 0 6px">' + esc(ref) + ' · ' + esc(x[7]) + '</div>' +
+        '<div style="white-space:pre-wrap;color:var(--ink);font-size:14px;line-height:1.45">' + esc(x[8]) + '</div>' +
+        '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' +
+        (em ? '<a class="btn" data-ext href="mailto:' + esc(em) + '?subject=' + subj + '&body=' + body + '">&#9993; Reply by email</a>' : '') +
+        (ph ? '<a class="btn" data-ext href="https://wa.me/' + esc(wa) + '?text=' + encodeURIComponent('Hello ' + (x[3] || '') + ', about your Iron Making ' + (x[7] || 'query') + ' ' + ref + ': ') + '">WhatsApp</a><a class="btn" data-ext href="tel:' + esc(ph) + '">Call ' + esc(ph) + '</a>' : '') +
+        (st === 'New' ? '<button class="btn main" type="button" data-fb="' + esc(ref) + '" data-st="Replied">Mark replied</button>' : '<button class="btn" type="button" data-fb="' + esc(ref) + '" data-st="New">Mark new</button>') +
+        '</div><div style="margin-top:4px;font-size:11.5px;color:var(--muted)">' + esc([em, ph, x[2], x[9]].filter(Boolean).join(' · ')) + '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('[data-fb]'), function (b) { b.onclick = function () {
+      b.disabled = true; IMCloud.adminCall('adminFeedback', { ref: b.getAttribute('data-fb'), status: b.getAttribute('data-st') }).then(fbRender, function (e) { b.disabled = false; say(e.message); });
+    }; });
+  }
+  function loadFb() { IMCloud.adminCall('adminFeedback').then(fbRender, function (e) { $('fbList').textContent = /Unknown action/i.test(e.message) ? 'Update the server to Code 6.3.9 to see queries here.' : e.message; }); }
+
   function render(r) {
     data = r; var L = r.links || {}, S = r.storage || {}, N = r.counts || {};
     $('links').innerHTML = [['Main folder (all data)', L.folder], ['User register (sheet)', L.book], ['User uploads', L.uploads], ['Saved inputs (backups)', L.backups], ['Admin uploads', L.admin]]
@@ -206,7 +239,7 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       .map(function (x) { return '<div class="stat"><small>' + x[0] + '</small><b>' + esc(x[1] == null ? '0' : x[1]) + '</b></div>'; }).join('');
     var af = r.adminFiles || [];
     $('adminFiles').innerHTML = af.length ? af.map(function (f) { return '<tr><td>' + link(f[3], f[0]) + '</td><td>' + esc(f[1]) + ' KB</td><td>' + esc(f[2]) + '</td></tr>'; }).join('') : '<tr><td colspan="3">No admin files yet.</td></tr>';
-    table(); renderShop(r); renderLic(r); renderPending(r); renderDesk(r); renderUpd(r); renderG(r);
+    table(); renderShop(r); renderLic(r); renderPending(r); renderDesk(r); renderUpd(r); renderG(r); loadFb();
   }
   // ---- computer versions: download links only (payment is switched off in the script)
   function renderShop(r) {
@@ -300,12 +333,12 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
     var g = r.google;
     if (!g) { $('gNow').textContent = 'Your Google Apps Script has old code: paste the 6.3.7 code and deploy a New version to use this.'; $('gSave').disabled = true; return; }
     $('gSave').disabled = false;
-    if (!$('gCid').value) $('gCid').value = g.clientId || ''; if (!$('gPage').value) $('gPage').value = g.page || '';
+    if (!$('gCid').value) $('gCid').value = g.clientId || ''; if (!$('gPage').value) $('gPage').value = g.page || ''; if (!$('gAnd').value) $('gAnd').value = g.android || '';
     $('gNow').innerHTML = g.clientId && g.page ? '<b style="color:#72c784">On.</b> Users see "Continue with Google" on the sign-in page.' : '<b>Off.</b> Users see "Continue with email" and the login ID options.';
   }
   $('gSave').addEventListener('click', function () {
     var b = this; b.disabled = true;
-    IMCloud.adminCall('adminSetGoogle', { clientId: $('gCid').value.trim(), page: $('gPage').value.trim() })
+    IMCloud.adminCall('adminSetGoogle', { clientId: $('gCid').value.trim(), page: $('gPage').value.trim(), android: $('gAnd').value.trim() })
       .then(function (r) { return load().then(function () { say(r.google.clientId && r.google.page ? 'Google sign-in is on.' : 'Google sign-in is off.', true); }); }, function (e) { say(e.message); b.disabled = false; });
   });
 
@@ -375,7 +408,7 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
   var OLDCODE = 'Your Google Apps Script still has old code (needs 6.3.6), so the lock and the download links cannot be saved yet. On a computer: script.google.com > Iron Making Cloud > paste the new code > Save > Deploy > Manage deployments > pencil > Version: New version > Deploy.';
   function load() {
     say(''); $('refresh').disabled = true; $('refresh').textContent = 'Loading…';
-    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = ['6.3.6', '6.3.7'].indexOf(r.codeVersion) >= 0; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); renderDesk({ deskLock: undefined }); renderUpd({}); renderG({}); } catch (x) { } })
+    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = ['6.3.6', '6.3.7', '6.3.8', '6.3.9'].indexOf(r.codeVersion) >= 0; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); renderDesk({ deskLock: undefined }); renderUpd({}); renderG({}); } catch (x) { } })
       .then(function () { $('refresh').disabled = false; $('refresh').textContent = 'Refresh'; });
   }
   $('refresh').addEventListener('click', load);

@@ -1,9 +1,14 @@
 *.jks
 *.keystore
 *.p12
+*.p8
 *.pem
 *.aab
-!downloads/*.apk
+!downloads/*.aab
+*.mobileprovision
 keys/
 work/
 dist/
+build/
+apple/IronMaking.xcodeproj/
+apple/Generated/

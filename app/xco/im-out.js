@@ -163,7 +163,7 @@
   var isHome = inWww && (file === 'index.html' || file === '');
   var noBack = inWww && /^(auth|licence)\.html$/.test(file);
   function homeUrl() {
-    if (/^file:\/\/\/android_asset\//.test(location.href) || /appassets\.androidplatform\.net/.test(location.host)) return 'ironmaking://home';
+    if (/^file:\/\/\/android_asset\//.test(location.href) || /appassets\.androidplatform\.net/.test(location.host)) return 'ironmakingapk://home';
     return wbase + 'index.html';
   }
   // the screen a page opens on (some pages set their own starting #tab) counts as the page itself
@@ -217,3 +217,5 @@
 
   window.IMOut = { toast: toast, save: save, share: function (t, x) { if (window.Android && window.Android.share) window.Android.share(t, x); else sheet(t, x, shareText(t, x)); }, open: openLink, back: goBack };
 })();
+/* 6.3.9: Download report button on every page */
+(function () { try { var me = document.currentScript && document.currentScript.src, base = me ? me.replace(/[^/]*$/, '') : ''; var s = document.createElement('script'); s.src = base + '../www/im-report.js'; s.defer = true; document.head.appendChild(s); } catch (e) { } })();

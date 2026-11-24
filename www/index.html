@@ -13,6 +13,25 @@
 .ihero { position: relative; overflow: hidden }
 .ihero::after { content: ""; position: absolute; inset: auto -20% -60% -20%; height: 70%; background: radial-gradient(60% 60% at 50% 0%, rgba(255,122,26,.28), transparent 70%); pointer-events: none; animation: emb 6s ease-in-out infinite alternate }
 @keyframes emb { from { opacity: .55; transform: translateY(6px) } to { opacity: 1; transform: translateY(-4px) } }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 14px 0 0 }
+.tile { position: relative; display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 10px; border-radius: 16px; text-decoration: none; color: var(--ink); overflow: hidden; border: 1px solid var(--line); box-shadow: 0 10px 22px -16px #000 }
+.tile b { font: 700 13.5px/1.05 var(--f-display); letter-spacing: .05em; text-transform: uppercase; color: #fff }
+.tile .tv { font: 600 10.5px/1.2 var(--f-mono); color: var(--ink-2) } .tile .tv em { font-style: normal; color: #fff; font-size: 13px }
+.tile .ti { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font: 700 12px var(--f-display); color: #fff; flex: none } .tile .ti svg { width: 24px; height: 24px }
+.t-how { grid-column: span 2; flex-direction: row; align-items: center; gap: 10px; border-color: rgba(255,122,26,.5); background: radial-gradient(120% 140% at 0% 0%, rgba(255,90,20,.32), transparent 60%), linear-gradient(135deg, #1b2235, #0c1526) }
+.t-how .howto-play { width: 42px; height: 42px } .t-how .howto-play svg { width: 20px; height: 20px }
+.t-how .tt { display: flex; flex-direction: column; gap: 3px; min-width: 0 } .t-how small { font: 600 10px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: #ffd27a } .t-how b { font-size: 16px }
+.t-co2 { border-color: rgba(60,207,142,.45); background: linear-gradient(160deg, rgba(60,207,142,.18), #0c1526 70%) } .t-co2 .ti { background: linear-gradient(135deg, #2e9e5b, #19b3b1) }
+.t-learn { border-color: rgba(160,140,255,.45); background: linear-gradient(160deg, rgba(124,92,255,.24), #0c1526 70%) } .t-learn .ti { background: linear-gradient(150deg, #8f7bff, #4b3bd1) }
+.tile:active { transform: scale(.97) }
+.pick .card.plan img { height: 96px; object-position: center 40% }
+.mini2 { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; min-height: 168px }
+.mini { position: relative; display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 14px; text-decoration: none; border: 1px solid var(--line); border-left: 4px solid var(--c); background: rgba(11,31,56,.85) }
+.mini b { font: 700 13px/1.1 var(--f-display); letter-spacing: .05em; text-transform: uppercase; color: #fff }
+.mini .mi { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 22%, transparent) }
+.mini .mi svg { width: 18px; height: 18px; fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
+.mini .qn { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: #ff4d3d; color: #fff; font: 700 11px/20px var(--f-mono); font-style: normal; text-align: center; box-shadow: 0 0 0 2px #071426 }
+@media (min-width: 700px) { .tile { min-height: 110px } .tile b { font-size: 16px } }
 .howto { position: relative; display: flex; align-items: center; gap: 14px; margin: 14px 0 0; padding: 14px 16px; border-radius: 18px; text-decoration: none; color: var(--ink); overflow: hidden;
   background: linear-gradient(120deg, rgba(25,179,177,.22), rgba(31,143,179,.14) 40%, rgba(255,122,26,.18)); border: 1px solid rgba(143,211,255,.45); box-shadow: 0 18px 40px -26px #19b3b1 }
 .howto::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.10) 45%, transparent 60%); transform: translateX(-100%); animation: shine 4.5s ease-in-out infinite }
@@ -25,6 +44,17 @@
 .howto-t b { font: 700 24px/1.05 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #fff }
 .howto-t span { font-size: 12.5px; color: var(--ink-2) }
 .howto-go { margin-left: auto; font: 700 28px/1 var(--f-display); color: #ffd9a8 }
+.learn { position: relative; display: flex; align-items: center; gap: 14px; margin: 12px 0 0; padding: 14px 16px; border-radius: 18px; text-decoration: none; color: var(--ink); overflow: hidden;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(124,92,255,.30), transparent 55%), linear-gradient(135deg, #16223a, #0c1526); border: 1px solid rgba(160,140,255,.35); box-shadow: 0 10px 28px rgba(0,0,0,.35) }
+.learn-i { flex: none; width: 54px; height: 54px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(150deg, #8f7bff, #4b3bd1); box-shadow: 0 0 0 5px rgba(143,123,255,.16) }
+.learn-i svg { width: 32px; height: 32px }
+.learn-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1 }
+.learn-t small { font: 600 11px/1.2 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: #c9bfff }
+.learn-t b { font: 700 22px/1.05 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #fff }
+.learn-t span { font-size: 12.5px; color: var(--ink-2) }
+.learn-c { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px }
+.learn-c i { font: 600 10.5px/1 var(--f-mono); font-style: normal; padding: 4px 7px; border-radius: 99px; background: rgba(143,123,255,.16); color: #e1dbff; border: 1px solid rgba(143,123,255,.3) }
+.learn-go { flex: none; font: 700 28px/1 var(--f-display); color: #d6ceff }
 .co2s { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; padding: 9px 12px; border-radius: 14px; text-decoration: none; color: var(--ink);
   background: linear-gradient(120deg, rgba(25,179,177,.12), rgba(11,31,56,.7)); border: 1px solid rgba(25,179,177,.35) }
 .co2s-i { flex: none; width: 36px; height: 30px; white-space: nowrap; border-radius: 9px; display: flex; align-items: center; justify-content: center; font: 700 11px/1 var(--f-mono); color: #04201f; background: linear-gradient(135deg, #19b3b1, #72c784) }
@@ -53,7 +83,7 @@
 @media (min-width: 700px) { .pick .card.wide img { height: 170px } .pick .card.big img { height: 240px } }
 @media (prefers-reduced-motion: reduce) { .ihero::after, .howto::before, .howto-play { animation: none } }
 </style>
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="pwa.js" defer></script></head>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Iron Making"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="pwa.js" defer></script></head>
 <body>
 <div class="wrap">
   <div class="top">
@@ -75,21 +105,26 @@
     </section>
   </header>
 
-  <a class="howto" href="how-to-use.html" aria-labelledby="howh">
-    <span class="howto-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>
-    <span class="howto-t"><small>New · 3D guided tour with voice</small><b id="howh">How to use the app</b><span>10 short steps · Indian English narration · about 3 minutes</span></span>
-    <span class="howto-go" aria-hidden="true">›</span>
-  </a>
-
-  <a class="co2s" href="carbon.html" aria-labelledby="co2h">
-    <span class="co2s-i" aria-hidden="true">CO<sub>2</sub></span>
-    <span class="co2s-t"><b id="co2h">Carbon footprint · CBAM</b><small id="co2s">Mass balance, per tonne of product</small>
-      <span class="co2s-m"><i style="--c:var(--bf)">BF <em id="co2-bf">—</em></i><i style="--c:var(--coke)">Coke <em id="co2-coke">—</em></i><i style="--c:var(--sin)">Sinter <em id="co2-sinter">—</em></i><i style="--c:var(--pel)">Pellet <em id="co2-pellet">—</em></i></span></span>
-    <span class="co2s-v"><b id="co2-pig">—</b><small>tCO<sub>2</sub>/t pig iron</small></span>
-  </a>
+  <nav class="tiles" aria-label="Quick start">
+    <a class="tile t-how" href="how-to-use.html" aria-labelledby="howh">
+      <span class="howto-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+      <span class="tt"><small>3D tour · voice</small><b id="howh">How to use the app</b></span>
+    </a>
+    <a class="tile t-co2" href="carbon.html" aria-labelledby="co2h">
+      <span class="ti" aria-hidden="true">CO<sub>2</sub></span>
+      <b id="co2h">Carbon footprint</b>
+      <span class="tv"><em id="co2-pig">—</em> t/t</span>
+      <span id="co2s" hidden></span>
+    </a>
+    <a class="tile t-learn" href="learning.html" aria-labelledby="learnh">
+      <span class="ti" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M4 11l12-5 12 5-12 5z" fill="#fff"/><path d="M9 13.5V19c0 2 3.2 3.6 7 3.6s7-1.6 7-3.6v-5.5L16 16.5z" fill="#e1dbff"/><path d="M27 12v7" stroke="#ffc23d" stroke-width="2" stroke-linecap="round"/></svg></span>
+      <b id="learnh">Learning module</b>
+      <span class="tv">6 plants · exams</span>
+    </a>
+  </nav>
 
   <section aria-labelledby="pickh">
-    <div class="sec"><h2 id="pickh">Choose a section</h2><em>Tap to open</em></div>
+    <div class="sec"><h2 id="pickh">Go in Detail</h2><em>Tap to open</em></div>
     <nav class="pick">
       <a class="card" style="--c:var(--bf)" href="section.html#bf">
         <img src="img/process/bf.webp" alt="" loading="lazy">
@@ -108,11 +143,15 @@
         <img src="img/process/pellet.webp" alt="" loading="lazy">
         <span class="t"><b>Pellet plant</b><span>Section being prepared</span><span class="go">Open ›</span></span>
       </a>
-      <a class="card wide" style="--c:#ff7a1a" href="bf-blowdown.html">
+      <a class="card plan" style="--c:#ff7a1a" href="bf-blowdown.html">
         <span class="badge new">New · Blow-in</span>
         <img src="img/process/planner.webp" alt="" loading="lazy">
-        <span class="t"><b>BF Blow-in / Blow-down planner</b><span>Blow-down strategy, burden, timeline &amp; tapping, plus the full blow-in plan: recipe, distribution, hour-by-hour timeline, prediction &amp; advice, live 3D emergencies</span><span class="go">Open ›</span></span>
+        <span class="t"><b>BF Blow-in / Blow-down planner</b><span>Blow-in &amp; blow-down: recipe, timeline, tapping, advice</span><span class="go">Open ›</span></span>
       </a>
+      <div class="mini2">
+        <a class="mini" href="know-inputs.html" style="--c:#19b3b1"><span class="mi" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><b>Know your inputs</b></a>
+        <a class="mini" href="query.html" id="qTile" style="--c:#ffb547"><span class="mi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></span><b>Query / feedback</b><em class="qn" id="qNew" hidden></em></a>
+      </div>
       <a class="card big" style="--c:#8fd3ff" href="iron-complex.html">
         <span class="badge new">New</span>
         <img src="img/process/complex.webp" alt="" loading="lazy">
@@ -121,19 +160,6 @@
     </nav>
   </section>
 
-  <section aria-labelledby="toolh">
-    <div class="sec"><h2 id="toolh">Plant tools</h2><em>All plants</em></div>
-  <section class="kyi" aria-labelledby="kyih">
-    <div class="kyi-h"><span class="kyi-i" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><div><h2 id="kyih">Know your inputs · all plants</h2><p>Every input of every module in plain words: meaning, unit, where to get it, typical value.</p></div></div>
-    <nav class="kyi-p">
-      <a href="know-inputs.html#bf" style="--c:var(--bf)"><i></i>Blast furnace</a>
-      <a href="know-inputs.html#sinter" style="--c:var(--sin)"><i></i>Sinter plant</a>
-      <a href="know-inputs.html#coke" style="--c:var(--coke)"><i></i>Coke oven</a>
-      <a href="know-inputs.html#pellet" style="--c:var(--pel)"><i></i>Pellet plant</a>
-    </nav>
-  </section>
-
-  </section>
 
   <a class="kyi" id="getApp" href="store.html" style="display:block;text-decoration:none;border-color:rgba(25,179,177,.55);background:linear-gradient(160deg,rgba(25,179,177,.16),rgba(11,31,56,.85) 55%)">
     <div class="kyi-h"><span class="kyi-i" aria-hidden="true" style="background:var(--horizon)"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span><div><h2>App for win/mac/pc/laptop user</h2><p>Iron Making for Windows, Mac and office PC or laptop. <b style="color:#ffd9a8">&#128274; Locked:</b> opens only for users the admin allows. Tap to request access or download.</p></div></div>
@@ -155,7 +181,7 @@
     <img src="img/nk-logo.png" alt="" width="56" height="56">
     <small>Designed &amp; developed by</small>
     <span class="sig-n">Niteen Kumar</span>
-    <div class="foot"><span>Iron Making 6.3.7</span><span>Your work is backed up online</span><button type="button" id="logout">Log out</button></div>
+    <div class="foot"><span>Iron Making 6.3.9</span><span>Your work is backed up online</span><button type="button" id="logout">Log out</button></div>
   </footer>
 </div>
 <script src="engine.js"></script>
@@ -206,6 +232,17 @@
     });
   })();
   if (u && u.cloudAdmin) { var ac = document.getElementById('adminCard'); ac.hidden = false; ac.style.display = "block"; }
+  /* 6.3.9: new user queries → badge for the admin (first page and Admin card) */
+  if (u && u.cloudAdmin) setTimeout(function () {
+    if (!window.IMCloud || !IMCloud.admin || !IMCloud.admin()) return;
+    IMCloud.adminCall('adminFbCount').then(function (r) {
+      var n = +r.open || 0, q = document.getElementById('qNew'), ac = document.querySelector('#adminCard h2');
+      if (!n) return;
+      if (q) { q.hidden = false; q.textContent = n; }
+      if (ac && !ac.querySelector('.qn')) ac.insertAdjacentHTML('beforeend', ' <em class="qn" style="position:static;display:inline-block;margin-left:6px;padding:0 7px;border-radius:10px;background:#ff4d3d;color:#fff;font:700 12px/20px var(--f-mono);font-style:normal">' + n + ' new ' + (n > 1 ? 'queries' : 'query') + '</em>');
+      document.getElementById('qTile').href = 'admin.html#fbBox';
+    }, function () { });
+  }, 1500);
   out.addEventListener('click', function () {
     if (u && !confirm('Log out of Iron Making on this device? Your saved inputs stay; you need internet to log in again.')) return;
     BFAuth.signOut(); location.replace('auth.html');

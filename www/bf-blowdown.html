@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="iz.css">
 <link rel="stylesheet" href="bd.css">
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><script src="pwa.js" defer></script></head>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Iron Making"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><script src="pwa.js" defer></script></head>
 <body>
 <header class="bar">
   <button class="bk" id="back" aria-label="Back"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -27,6 +27,7 @@
     <button data-p="timeline">Timeline</button>
     <button data-p="tapping">Tapping</button>
     <button data-p="checklist">Checklist</button>
+    <button data-p="live" class="live"><i class="ldot"></i>Live prediction</button>
     <button data-p="blowin">Blow-in</button>
     <button data-p="emergency" class="hot">Abnormal &amp; emergency</button>
     <button data-p="safety" class="safe">Safety</button>
@@ -202,6 +203,8 @@
   </section>
 
   <!-- ================= BLOW-IN (full planner, bi-app.js) ================= -->
+  <section class="ph" data-ph="live"><div id="bdLive"></div></section>
+
   <section class="ph" data-ph="blowin">
     <div class="box">
       <h3>Blow-in planner · from cold or banked furnace to full production</h3>
@@ -215,6 +218,7 @@
         <button data-b="tapping">6 · Tapping</button>
         <button data-b="predict" class="hot">7 · Prediction &amp; advice</button>
         <button data-b="check">8 · Checklist</button>
+        <button data-b="live" class="live"><i class="ldot"></i>9 · Live prediction</button>
       </nav>
       <div class="sumrow" id="biChips"></div>
     </div>
@@ -375,6 +379,9 @@
       <div class="btnrow"><button class="btn" type="button" id="biClrChk">Clear all ticks</button><span class="val ok" id="biChkCount">—</span></div>
       <p class="caution">Problems during the blow-in (dark tuyeres, cold first cast, CO leak) play in 3D under <b>Abnormal &amp; emergency</b>.</p>
     </div>
+
+    <!-- 9 live log -->
+    <div class="bip" data-bp="live"><div id="biLive"></div></div>
   </section>
 
   <!-- ================= ABNORMAL & EMERGENCY ================= -->
@@ -446,6 +453,15 @@
 <script src="bd-data.js"></script>
 <script src="bd-app.js"></script>
 <script src="bi-app.js"></script>
+<script src="live-log.js"></script>
+<script>
+(function () {
+  function bd() { try { var S = BDPlanner.compute(), v = S.v, d = S.d; return { vw: v.vu, hw: d && d.d4 ? Math.round(d.d4 * 10) / 10 : null, rc: v.coked, ro: v.bd, q: v.blast, o2: v.o2, cr: v.coke, pci: v.pci && v.hm ? Math.round(v.pci * v.hm / 24 / 100) / 10 : 0 }; } catch (e) { return {}; } }
+  IMLive.mount(document.getElementById('biLive'), { key: 'im.live2.blowin', mode: 'blowin', file: 'BF-blowin-live',
+    prefill: function () { var p = bd(); try { var C = BIPlanner.state; if (C && C.tot) p.coke0 = Math.round(C.tot.coke); p.pci = 0; p.o2 = 0; } catch (e) { } return p; } });
+  IMLive.mount(document.getElementById('bdLive'), { key: 'im.live2.blowdown', mode: 'blowdown', file: 'BF-blowdown-live', prefill: bd });
+})();
+</script>
 <script src="nk-logo.js" data-img="img/nk-logo.png" defer></script>
 </body>
 </html>

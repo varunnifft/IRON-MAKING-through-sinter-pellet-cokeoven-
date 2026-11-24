@@ -52,6 +52,10 @@ p { margin: 0; color: var(--ink-2) }
         try { localStorage.setItem('im.lic', JSON.stringify({ id: u.loginId, platform: P.id, device: P.device(), exp: r.exp, checked: Date.now(), slot: r.slot, order: r.order, update: r.update || null })); } catch (e) { }
         show('Activated', 'Iron Making for ' + r.version + ' is activated on this computer (' + r.slot + ' of ' + r.maxDevices + ').', 'ok', 'Opening the app…');
         setTimeout(function () { location.replace('index.html'); }, 1200);
+      } else if (r.locked) {
+        show('Locked by the admin', 'Iron Making for ' + r.version + ' opens only for users the admin allows. Your login ' + u.loginId + (r.denied ? ' is not allowed.' : ' is not allowed yet.'), 'err',
+          r.denied ? 'Contact the admin.' : 'Tap "Request access", wait for the admin to allow you, then tap Try again.');
+        $('buy').textContent = 'Request access'; $('buy').hidden = !!r.denied; $('retry').hidden = false;
       } else if (r.reason === 'unpaid') {
         show('Not activated', 'This copy of Iron Making for ' + r.version + ' could not be activated for your login ' + u.loginId + '.', 'err',
           'Ask the admin to check it, then tap Try again.');

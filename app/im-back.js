@@ -1,9 +1,9 @@
 /* Iron Making: way back from the Sinter and Coke modules to the Iron Making pages.
-   Android: Sinter and Coke run as their own screens; ironmaking://home closes them and returns to Iron Making.
+   Android: Sinter and Coke run as their own screens; ironmakingapk://home closes them and returns to Iron Making.
    Desktop / browser: open the section page. */
 (function () {
   'use strict';
-  var HOME = 'ironmaking://home', coke = /\/xco\//.test(location.pathname) || location.host === 'appassets.androidplatform.net';
+  var HOME = 'ironmakingapk://home', coke = /\/xco\//.test(location.pathname) || location.host === 'appassets.androidplatform.net';
   function leave() {
     if (window.AndroidBridge && AndroidBridge.openLink) { try { AndroidBridge.openLink(HOME); return; } catch (e) { } }
     if (location.host === 'appassets.androidplatform.net') { location.href = HOME; return; }

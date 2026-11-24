@@ -7,5 +7,5 @@
   if (!u || !u.loginId) { location.replace('auth.html'); return; }
   var me = document.currentScript, base = me && me.src ? me.src.replace(/gate\.js(\?.*)?$/, '') : '';
   if (document.readyState === 'loading') document.write('<script src="' + base + 'licence-gate.js"><\/script>');   // paid copies: licence check before the page shows
-  ['cloud-config.js', 'im-cloud.js', 'im-out.js', 'upd-notify.js'].forEach(function (f) { var s = document.createElement('script'); s.src = base + f; s.async = false; document.head.appendChild(s); });
+  ['cloud-config.js', 'im-cloud.js', 'im-out.js', 'upd-notify.js', 'im-report.js'].forEach(function (f) { var s = document.createElement('script'); s.src = base + f; s.async = false; document.head.appendChild(s); });
 })();

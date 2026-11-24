@@ -274,13 +274,13 @@
     ]);
 
     // ----- blow-in
-    $('biRows').innerHTML = rows([
+    if ($('biRows')) $('biRows').innerHTML = rows([
       ['Start cold blast at', '30% of normal', fmt(v.blast * 0.3, 0) + ' Nm³/min'],
       ['Top T limit during build-up', 'GCP limit − 60 °C', fmt((v.dry ? Math.min(v.bag, v.maxT) : v.maxT) - 60, 0) + ' °C'],
       ['First cast', '', '~20–30 h after blast on, or when liquid forms'],
       ['Oxygen enrichment', '', 'Off until production is stable (day 3+)']
     ]);
-    $('biBody').innerHTML = [[1, 0.35, 'Light-up, first blast; gas on bleeder; H₂ below 6%'], [2, 0.5, 'First casts; basicity 1.20–1.25; no PCI, no O₂'], [3, 0.65, 'Gas to GCP once O₂ nil; PCI starts low; coke-up tapering'],
+    if ($('biBody')) $('biBody').innerHTML = [[1, 0.35, 'Light-up, first blast; gas on bleeder; H₂ below 6%'], [2, 0.5, 'First casts; basicity 1.20–1.25; no PCI, no O₂'], [3, 0.65, 'Gas to GCP once O₂ nil; PCI starts low; coke-up tapering'],
       [5, 0.85, 'PCI towards normal; O₂ enrichment starts low'], [7, 1, 'Full production; basicity back to ' + fmt(v.bas, 2)]]
       .map(function (r) { return '<tr><td>Day ' + r[0] + '</td><td class="n">' + Math.round(r[1] * 100) + '%</td><td class="n">' + fmt(v.blast * r[1], 0) + '</td><td>' + r[2] + '</td></tr>'; }).join('');
     if (window.BD3D && window.BD3D.ready) window.BD3D.setGeo(S);

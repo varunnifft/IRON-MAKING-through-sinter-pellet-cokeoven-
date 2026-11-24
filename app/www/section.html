@@ -28,6 +28,14 @@
 .tl .ar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 @media (max-width:420px){.tl .tx b{font-size:17px}.tl .tic{width:46px;height:46px}}
 @media (prefers-reduced-motion: reduce){.tl{transition:none}.tl:hover{transform:none}}
+.wipm{margin-top:12px;border-radius:10px;border:1px dashed rgba(255,181,71,.45);background:rgba(255,181,71,.05)}
+.wipm summary{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;list-style:none;font-size:12px;color:var(--muted)}
+.wipm summary::-webkit-details-marker{display:none}
+.wipm-d{width:7px;height:7px;border-radius:50%;background:#ffb547;box-shadow:0 0 8px #ffb547}
+.wipm summary b{font:700 12px/1 var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:#ffd9a8}
+.wipm-n{font:500 11px/1 var(--f-mono)}
+.wipm-c{margin-left:auto;transition:transform .2s}.wipm[open] .wipm-c{transform:rotate(90deg)}
+.wipm p{margin:0;padding:0 10px;font-size:12.5px;color:var(--ink-2)}.wipm .soon{margin:8px 10px 10px;gap:6px}.wipm .soon li{padding:6px 10px;font-size:12px}
 </style>
 </head>
 <body>
@@ -36,13 +44,12 @@
   <header class="hero"><img id="img" src="img/process/bf.webp" alt="" width="1200" height="640"><div class="cap"><div class="eb" id="eb"></div><h1 id="ttl"></h1></div></header>
   <p class="lead" id="lead"></p>
   <div id="tool"></div>
-  <section class="wip" aria-labelledby="wiph">
-    <div class="row"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span><h2 id="wiph">Under progress</h2></div>
+  <details class="wipm" aria-labelledby="wiph">
+    <summary><span class="wipm-d" aria-hidden="true"></span><b id="wiph">Under progress</b><span class="wipm-n" id="wipN"></span><span class="wipm-c" aria-hidden="true">›</span></summary>
     <p id="wipText"></p>
-    <div class="bar" aria-hidden="true"><i></i></div>
     <ul class="soon" id="soon"></ul>
-  </section>
-  <div class="foot"><span>Iron Making 6.1</span><span id="sname"></span></div>
+  </details>
+  <div class="foot"><span>Iron Making 6.3.9</span><span id="sname"></span></div>
 </div>
 <script>
 (function () {
@@ -56,14 +63,14 @@
       tool4: { href: '../sinter-improve.html', b: 'Improvement plan · 3D', s: '10 sinter plant improvement projects: benefit in Rs Cr/yr, capex, payback, priority ranking, 48-month roadmap and BF sinter quality check (TI, RDI, RI), with each project located on the plant in 3D.', ic: 'trend', c: '#27d07c', tag: 'New' },
       tool3: { href: '../how-sinter.html', b: 'How sinter is made · 3D animation', s: 'Ore fines to blast-furnace sinter, step by step: proportioning, mixing, ignition, strand, cooling and screening.', ic: 'play', c: '#19b3b1' },
       tool2: { href: '../sinter-critical.html', b: 'Sinter critical decisions · 3D', s: '64 critical situations in 12 plant areas: severity (A minutes, B shift, C days), why it matters and what to do, with the affected part of the plant lit up in 3D.', ic: 'warn', c: '#ff5a4a' },
-      tool: { href: 'ironmaking://sinter', b: 'Sinter quality prediction', s: 'Predict sinter chemistry and quality from the blend and machine settings, compare with lab results and export the report.', ic: 'gauge', c: '#ff7a1a' },
+      tool: { href: 'ironmakingapk://sinter', b: 'Sinter quality prediction', s: 'Predict sinter chemistry and quality from the blend and machine settings, compare with lab results and export the report.', ic: 'gauge', c: '#ff7a1a' },
       soon: ['Process overview: proportioning, mixing, ignition, strand, cooler and screening', 'Sinter quality KPIs: TI, RDI, RI, FeO, basicity and yield', 'Shift checklists'] },
     coke: { img: 'coke', eb: 'Section 04', t: 'Coke oven',
       lead: 'A blend of coking coals is carbonised in the oven battery, pushed and quenched to give the strong, porous coke that carries the blast furnace burden and supplies its heat.',
       tool4: { href: '../xco/improve.html', b: 'Improvement plan · 3D', s: '10 coke making improvement projects: benefit in Rs Cr/yr, capex, payback, priority ranking, 48-month roadmap and BF coke quality check, with each project located on the battery in 3D.', ic: 'trend', c: '#27d07c', tag: 'New' },
       tool3: { href: '../xco/how-coke.html', b: 'How coke is made · 3D animation', s: 'Coal yard to blast-furnace coke, step by step: crushing, charging, carbonisation, pushing and quenching.', ic: 'play', c: '#19b3b1' },
       tool2: { href: '../xco/coke-critical.html', b: 'Coke oven critical decisions · 3D', s: '56 critical situations in 12 battery areas: severity (A minutes, B shift, C days), why it matters and what to do, with the affected part of the battery lit up in 3D.', ic: 'warn', c: '#3cc8d2' },
-      tool: { href: 'ironmaking://coke', b: 'Coke quality prediction', s: 'Coke quality (CSR, CRI, M40, M10), yield, mass & heat balance and corrective actions. Upload the Excel or enter values by hand; missing values can be taken from the reference data. Works offline.', ic: 'gauge', c: '#ff7a1a' },
+      tool: { href: 'ironmakingapk://coke', b: 'Coke quality prediction', s: 'Coke quality (CSR, CRI, M40, M10), yield, mass & heat balance and corrective actions. Upload the Excel or enter values by hand; missing values can be taken from the reference data. Works offline.', ic: 'gauge', c: '#ff7a1a' },
       soon: ['Process overview: coal handling, charging, carbonisation, pushing and quenching', 'Coke quality KPIs: CSR, CRI, M40, M10, ash and moisture', 'Shift checklists'] },
     pellet: { img: 'pellet', eb: 'Section 03', t: 'Pellet plant',
       lead: 'Fine iron ore concentrate is ground, mixed with binder and balled into green pellets, then dried, preheated and fired in the grate-kiln before cooling.',
@@ -99,6 +106,7 @@
       ? 'More information for the ' + s.t.toLowerCase() + ' section is being prepared and will be added in a future update. The ' + s.tool.b + ' tool above is ready to use now.'
       : 'This section is being prepared. Information and tools for the pellet plant will be added in a future update.';
     document.getElementById('soon').innerHTML = s.soon.map(function (x) { return '<li><b>Coming:</b> ' + x + '</li>'; }).join('');
+    document.getElementById('wipN').textContent = s.soon.length + ' more coming';
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', show); show();

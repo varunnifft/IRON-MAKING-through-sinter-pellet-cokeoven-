@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   var K = 'im.upd', HOUR = 3600000, CHECK_EVERY = 10 * 60000;
-  var A = window.Android, BUILT = '6.3.7', mine = BUILT;   // BUILT = version of this app build (keep in step with auth-config.js)
+  var A = window.Android, BUILT = '6.3.9', mine = BUILT;   // BUILT = version of this app build (keep in step with auth-config.js)
   function get() { try { return JSON.parse(localStorage.getItem(K) || '{}') || {}; } catch (e) { return {}; } }
   function put(o) { try { localStorage.setItem(K, JSON.stringify(o)); } catch (e) { } }
   function newer(a, b) { a = String(a || '').split('.'); b = String(b || '').split('.'); for (var i = 0; i < Math.max(a.length, b.length); i++) { var x = +a[i] || 0, y = +b[i] || 0; if (x !== y) return x > y; } return false; }

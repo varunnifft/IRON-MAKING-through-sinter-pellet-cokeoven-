@@ -84,6 +84,26 @@ input.otp { font: 600 28px var(--f-mono); letter-spacing: .45em; text-align: cen
 </style>
 
 <link rel="stylesheet" href="auth-premium.css">
+<style>
+.howlog{margin:4px 0 16px;padding:14px 14px 12px;border-radius:16px;border:1px solid rgba(255,181,71,.4);background:linear-gradient(160deg,rgba(255,140,40,.10),rgba(4,12,23,.4))}
+.howlog h3{margin:0 0 10px;font:700 15px/1.2 var(--f-display,inherit);letter-spacing:.06em;text-transform:uppercase;color:#ffd9a8}
+.howlog ol{margin:0;padding:0;list-style:none;counter-reset:hl}.howlog li{position:relative;padding:0 0 10px 40px;counter-increment:hl}
+.howlog li::before{content:counter(hl);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 14px/1 var(--f-mono,monospace);color:#2a1200;background:linear-gradient(135deg,#ff9a3d,#ffc23d)}
+.howlog li b{display:block;color:#fff;font-size:15px}.howlog li span{display:block;font-size:13.5px;line-height:1.45;color:var(--ink-2,#b9c9da)}
+.howlog p{margin:4px 0 0;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-size:13.5px;line-height:1.45;color:var(--ink-2,#b9c9da)}.howlog p b{color:#fff}.howlog i{font-style:normal;color:#ffd27a}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;background:#fff!important;color:#1f1f1f!important;border:1px solid #dadce0!important;font-weight:600}
+.gbtn svg{width:22px;height:22px;flex:none}
+#gdiag{margin:8px 0 10px;padding:10px 12px;border-radius:12px;background:rgba(4,12,23,.7);border:1px dashed rgba(255,255,255,.25);font:12.5px/1.45 var(--f-body,system-ui);color:#cfe3f5}#gdiag b{display:block;margin-bottom:4px;color:#ffb35c}#gdiag[hidden]{display:none}#gOther[hidden]{display:none}
+.gbtn.busy{opacity:.75;pointer-events:none}.gbtn.busy svg{animation:gspin 1s linear infinite}@keyframes gspin{to{transform:rotate(360deg)}}
+.ebtn{display:flex;align-items:center;justify-content:center;gap:12px}.ebtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}
+.gor2{display:flex;align-items:center;gap:10px;margin:12px 0 4px;color:#93a6ba;font-size:12.5px}.gor2::before,.gor2::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.14)}
+.gor{display:flex;align-items:center;gap:10px;margin:10px 0;color:#93a6ba;font-size:13px}.gor::before,.gor::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.14)}
+.gpme{display:flex;align-items:center;gap:12px;margin-bottom:6px;padding:10px 12px;border-radius:12px;background:rgba(114,199,132,.10);border:1px solid rgba(114,199,132,.45)}.gpme img{width:40px;height:40px;border-radius:50%}.gpme b{display:block;font-size:15px;word-break:break-all}.gpme small{color:#72c784;font-size:12.5px}
+#gWait{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,8,16,.72)}
+#gWait .gw{width:100%;max-width:420px;padding:22px 18px;border-radius:18px;background:linear-gradient(160deg,#123a5c,#0b1f38 60%);border:1px solid rgba(143,211,255,.45);color:#eef3f8;text-align:center;display:flex;flex-direction:column;gap:10px}
+#gWait .gw>b{font-size:20px}#gWait p{margin:0;color:#c3d0dd;font-size:14.5px;line-height:1.5}
+.gspin{width:42px;height:42px;margin:0 auto 4px;border-radius:50%;border:4px solid rgba(255,255,255,.15);border-top-color:#ff7a1a;animation:gsp 1s linear infinite}@keyframes gsp{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -101,11 +121,48 @@ input.otp { font: 600 28px var(--f-mono); letter-spacing: .45em; text-align: cen
   <!-- welcome -->
   <section class="panel" data-pane="welcome">
     <h2>Welcome</h2>
-    <p class="lead">Register once to use Iron Making. You will need internet for this step only; after that the app works offline.</p>
+    <p class="lead">Log in with your own login ID and password. Internet is needed for this step only; after that the app works offline.</p>
+    <div class="howlog">
+      <h3>New user? Get started in 3 steps</h3>
+      <ol>
+        <li><b>Create an account</b><span>Tap the orange button below and fill in your name, mobile number, email and company.</span></li>
+        <li><b>Verify your email</b><span>We send a 6-digit OTP to your email. Type it in the app. Not in the inbox? Check the Spam folder.</span></li>
+        <li><b>Choose a login ID and password</b><span>The app opens. You stay logged in on this phone until you log out.</span></li>
+      </ol>
+      <p><b>Already registered?</b> Tap <i>I already have a login</i> and enter your login ID (or email) and password. Forgot it? Tap <i>Forgot password?</i> to reset it with an OTP.</p>
+    </div>
     <button class="btn" type="button" data-go="signup">Create an account</button>
     <button class="btn alt" type="button" data-go="login">I already have a login</button>
     <p class="lead" style="font-size:13px;margin-top:10px">An account is needed to use the app.</p>
   </section>
+
+  <!-- first Google sign-in: only name and company -->
+  <form class="panel" data-pane="gprofile" hidden novalidate id="gpForm">
+    <div class="gpme"><img id="gpPic" alt="" hidden><div><b id="gpMail"></b><small>Google account verified ✓</small></div></div>
+    <h2>One last step</h2>
+    <p class="lead">Only the first time: tell us your name and company.</p>
+    <label>Your name<input name="name" autocomplete="name" maxlength="80" required></label>
+    <label>Company / plant<input name="company" autocomplete="organization" maxlength="120" required></label>
+    <button class="btn" type="submit">Start using Iron Making</button>
+  </form>
+
+  <!-- direct sign-in with any email: 6-digit code -->
+  <form class="panel" data-pane="ecode" hidden novalidate id="eForm">
+    <h2>Continue with email</h2>
+    <p class="lead">Any email works — Gmail, Outlook, Yahoo or your company mail. We send a 6-digit code; no password needed.</p>
+    <div id="eStep1">
+      <label>Your email<input name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="60" required></label>
+      <label>Your name <small>(optional)</small><input name="name" autocomplete="name" maxlength="80"></label>
+      <button class="btn" type="submit" id="eSend">Send code</button>
+    </div>
+    <div id="eStep2" hidden>
+      <p class="lead" id="eSent"></p>
+      <label>6-digit code<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*"></label>
+      <button class="btn" type="button" id="eVerify">Sign in</button>
+      <button class="btn alt" type="button" id="eResend">Send a new code</button>
+    </div>
+    <button class="btn alt" type="button" data-go="welcome">Back</button>
+  </form>
 
   <!-- 1. details -->
   <form class="panel" data-pane="signup" hidden novalidate>
@@ -149,7 +206,7 @@ input.otp { font: 600 28px var(--f-mono); letter-spacing: .45em; text-align: cen
   <!-- login -->
   <form class="panel" data-pane="login" hidden novalidate>
     <h2>Log in</h2>
-    <p class="lead">Log in once on this device. You stay logged in until you log out.</p>
+    <p class="lead">Enter the login ID (or email) and password you chose when you created your account. You stay logged in until you log out.</p>
     <label>Login ID or email<input name="loginId" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="120" required></label>
     <label class="pw">Password<input name="password" type="password" autocomplete="current-password" maxlength="128" required><button type="button" data-show>Show</button></label>
     <button class="btn" type="submit">Log in</button>
@@ -188,13 +245,14 @@ input.otp { font: 600 28px var(--f-mono); letter-spacing: .45em; text-align: cen
   </form>
 
   <p class="note">Your name, mobile, email and company are saved by the Iron Making app owner to manage access. Your password is stored only as a secure hash. Files you upload in the app, your saved inputs and suggestions are backed up online to the app owner's Google Drive.</p>
-  <div class="foot"><span>IRON MAKING 6.0</span><button class="link" type="button" data-go="server">Server link</button></div>
+  <div class="foot"><span>IRON MAKING 6.3.9</span><button class="link" type="button" data-go="server">Server link</button></div>
 </div>
 <script src="auth-config.js"></script>
 <script src="auth-api.js"></script>
 <script src="cloud-config.js"></script>
 <script src="im-cloud.js"></script>
 <script src="auth.js"></script>
+<script src="google-signin.js"></script>
 <script>window.PM_CFG = window.PM_CFG || { app: 'BF Model' };</script>
 <script src="premium.js"></script>
 <script src="nk-logo.js" data-img="img/nk-logo.png" defer></script>

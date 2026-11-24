@@ -1,0 +1,100 @@
+# Iron Making for Apple: iPhone / iPad app + Mac app (App Store, one "universal purchase").
+# The Xcode project is generated from this file:  brew install xcodegen && cd apple && xcodegen generate
+# The pages are NOT copied here: both apps bundle the repo's ../app folder (the same pages as the Android app).
+name: IronMaking
+options:
+  bundleIdPrefix: com.bfburdenmodel
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "15.0"
+    macOS: "13.0"
+
+settings:
+  base:
+    MARKETING_VERSION: "6.3.9"          # shown in the App Store (same as Android versionName)
+    CURRENT_PROJECT_VERSION: "184"      # build number; the workflow raises it on every upload
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""                # the workflow passes your Apple Team ID
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    GENERATE_INFOPLIST_FILE: NO
+
+targetTemplates:
+  IronMakingApp:
+    type: application
+    settings:
+      base:
+        PRODUCT_NAME: "Iron Making"
+        PRODUCT_BUNDLE_IDENTIFIER: com.bfburdenmodel.ironmaking
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    sources:
+      - path: Sources
+      - path: Resources/Assets.xcassets
+      - path: Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
+      - path: ../app                    # all pages, 3D, xlsx templates, fonts (same as the APK assets)
+        type: folder
+        buildPhase: resources
+
+targets:
+  IronMaking-iOS:
+    templates: [IronMakingApp]
+    platform: iOS
+    deploymentTarget: "15.0"
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1,2"   # iPhone + iPad
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO   # the Mac gets its own real Mac app below
+        INFOPLIST_FILE: Generated/Info-iOS.plist
+    info:
+      path: Generated/Info-iOS.plist
+      properties:
+        CFBundleDisplayName: Iron Making
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        UIViewControllerBasedStatusBarAppearance: false
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        NSCameraUsageDescription: Iron Making uses the camera only when you choose "Take Photo" to attach a picture to a report or feedback.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.bfburdenmodel.ironmaking
+            CFBundleURLSchemes: [ironmaking]
+
+  IronMaking-macOS:
+    templates: [IronMakingApp]
+    platform: macOS
+    deploymentTarget: "13.0"
+    settings:
+      base:
+        ENABLE_HARDENED_RUNTIME: YES
+        INFOPLIST_FILE: Generated/Info-macOS.plist
+        CODE_SIGN_ENTITLEMENTS: Generated/IronMaking-macOS.entitlements
+    entitlements:
+      path: Generated/IronMaking-macOS.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.files.user-selected.read-write: true
+        com.apple.security.files.downloads.read-write: true
+        com.apple.security.print: true
+    info:
+      path: Generated/Info-macOS.plist
+      properties:
+        CFBundleDisplayName: Iron Making
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        LSApplicationCategoryType: public.app-category.education
+        NSHumanReadableCopyright: © Niteen Kumar. All rights reserved.
+        ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: com.bfburdenmodel.ironmaking
+            CFBundleURLSchemes: [ironmaking]

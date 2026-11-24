@@ -1,4 +1,4 @@
-/* Direct sign-in (6.3.7) on the sign-in page: Continue with Google, or Continue with email (6-digit code to any address).
+/* Direct sign-in (6.3.9: Google sign-in sheet on Android 14+; 6.3.7 browser flow elsewhere) on the sign-in page: Continue with Google, or Continue with email (6-digit code to any address).
    Google:
    1. Asks Iron Making Cloud whether Google sign-in is switched on (googleCfg) and shows the button.
    2. Makes a one-time code and opens the Google login page in the phone's browser (Google does not allow its sign-in
@@ -11,7 +11,7 @@
   var K = 'im.gsign', CFG = 'im.gcfg', WAIT_MS = 10 * 60000;
   var $ = function (id) { return document.getElementById(id); };
   function ls(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
-  function say(t) { var m = $('msg'); if (m) m.textContent = t || ''; }
+  function say(t) { var m = $('msg'); if (!m) return; m.textContent = t || ''; m.className = t ? 'msg on err' : 'msg'; if (t) try { m.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { } }
   function nonce() { var a = new Uint8Array(24); (window.crypto || window.msCrypto).getRandomValues(a); return Array.prototype.map.call(a, function (b) { return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'[b & 63]; }).join(''); }
   function buttons() { return Array.prototype.slice.call(document.querySelectorAll('.gbtn')); }
   function showButtons(on) { buttons().forEach(function (b) { b.hidden = !on; var d = b.nextElementSibling; if (d && d.classList.contains('gor')) d.hidden = !on; }); }
@@ -35,6 +35,7 @@
       $('gCancel').onclick = function () { ls(K, null); stop(); sheet(false); say(''); };
     }
     $('gWaitT').innerHTML = text;
+    var ag = $('gAgain'); if (ag) ag.hidden = !ls(K);
   }
 
   /* ---------- polling */
@@ -56,16 +57,116 @@
   function watch() { stop(); poll(); timer = setInterval(poll, 2500); }
   document.addEventListener('visibilitychange', function () { if (!document.hidden && ls(K)) { sheet(true, 'Checking your Google account…'); poll(); } });
 
+  function native() { try { return !!(window.IMAccount && IMAccount.available()); } catch (e) { return false; } }
+
+  /* ---------- one-tap Google on the Android phone (6.3.8): the phone's own account sheet, verified by Google */
+  /* 6.3.9 b176: show each step from the phone, a time limit, and another way in */
+  var gTimer = null, gLog = [];
+  function diag(t) {
+    var d = $('gdiag');
+    if (!d) { var m = $('msg'); if (!m) return; d = document.createElement('div'); d.id = 'gdiag'; m.parentNode.insertBefore(d, m.nextSibling); }
+    if (t === null) { gLog = []; d.innerHTML = ''; d.hidden = true; return; }
+    gLog.push(t); if (gLog.length > 8) gLog.shift();
+    d.hidden = false; d.innerHTML = '<b>Google sign-in steps</b>' + gLog.map(function (x) { return '<div>• ' + String(x).replace(/[<>&]/g, '') + '</div>'; }).join('');
+  }
+  window.__imAcctLog = function (t) { diag(t); arm(); };
+  function arm() { clearTimeout(gTimer); gTimer = setTimeout(noAnswer, 45000); }
+  function disarm() { clearTimeout(gTimer); gTimer = null; }
+  function noAnswer() {
+    sheet(false);
+    say('Google did not answer. Take a screenshot of the steps below for the app owner, or tap "Try another way".');
+    other(true);
+  }
+  function other(on) {
+    var c = ls(CFG), b = $('gOther');
+    if (!on || !(c && c.enabled)) { if (b) b.hidden = true; return; }
+    if (!b) {
+      b = document.createElement('button'); b.id = 'gOther'; b.type = 'button'; b.className = 'btn alt';
+      b.textContent = 'Try another way (Google in the browser)';
+      b.onclick = function () { b.hidden = true; browserStart(); };
+      var d = $('gdiag') || $('msg'); d.parentNode.insertBefore(b, d.nextSibling);
+    }
+    b.hidden = false;
+  }
+
+  window.__imAcct = function (status, email, tok, kind, gname) {
+    disarm();
+    if (status === 'cancel') { sheet(false); return; }
+    if (status === 'fallback') {            // the Google sheet could not open on this phone: use the phone's account list
+      try { console.log('Google sheet unavailable: ' + tok); } catch (e) { }
+      sheet(true, 'Choose one of the Google accounts on this phone…');
+      try { IMAccount.pick(); arm(); } catch (e) { sheet(false); say('Could not open the account list.'); }
+      return;
+    }
+    if (status !== 'ok') {
+      sheet(false); other(true);
+      var m = String(tok || '');
+      say(/UNREGISTERED|INVALID|Unknown|NetworkError|BadAuth|AuthenticatorException/i.test(m)
+        ? 'Google sign-in is not ready for this app yet (' + m.split(':')[0] + '). Please use your login ID for now.'
+        : 'Google sign-in did not finish: ' + m);
+      return;
+    }
+    sheet(true, 'Signing in as <b>' + String(email || gname || '').replace(/[<>&]/g, '') + '</b>…');
+    var call = kind === 'id'
+      ? IMCloud.call('googleIdToken', { idToken: tok })
+      : IMCloud.call('googleToken', { accessToken: tok, email: email });
+    call.then(function (r) {
+      if (kind !== 'id') { try { IMAccount.forget(tok); } catch (e) { } }
+      if (r.needProfile) { sheet(false); askProfile(r); } else finish(r, 'google');
+    }, function (e) { if (kind !== 'id') { try { IMAccount.forget(tok); } catch (x) { } } sheet(false); diag('Server: ' + e.message); say(e.message); other(true); });
+  };
+  function askProfile(r) {
+    var u = r.user || {}, f = $('gpForm');
+    $('gpMail').textContent = u.email || '';
+    if (u.picture) { $('gpPic').src = u.picture; $('gpPic').hidden = false; }
+    f.elements.name.value = u.name || ''; f.elements.company.value = u.company || '';
+    document.querySelectorAll('.panel').forEach(function (p) { p.hidden = p !== f; });
+    window.scrollTo(0, 0);
+    f.onsubmit = function (e) {
+      e.preventDefault();
+      var n = f.elements.name.value.trim(), c = f.elements.company.value.trim();
+      if (n.length < 2) { say('Please type your name.'); return; }
+      if (c.length < 2) { say('Please type your company or plant.'); return; }
+      u.name = n; u.company = c; finish(r, 'google');
+    };
+  }
+
   function finish(r, provider) {
     var u = r.user || {};
     sheet(true, 'Signed in as <b>' + String(u.email || '').replace(/[<>&]/g, '') + '</b>. Opening Iron Making…');
-    BFAuth.signIn({ loginId: u.loginId, name: u.name, email: u.email, company: '', mobile: '', token: '', provider: provider || 'google', picture: u.picture || '' });
+    BFAuth.signIn({ loginId: u.loginId, name: u.name, email: u.email, company: u.company || '', mobile: '', token: '', provider: provider || 'google', picture: u.picture || '' });
     try { localStorage.setItem('im.cloud.tok', JSON.stringify({ id: u.loginId, tok: r.token })); } catch (e) { }
     var done = false, go = function () { if (!done) { done = true; location.replace('index.html'); } };
     if (window.IMCloud && IMCloud.seen) { IMCloud.seen('signup').then(go, go); setTimeout(go, 2500); } else go();
   }
 
+  /* 6.3.9: Google's own "Sign in to Iron Making — Continue as …" sheet (Android 14+), else the phone's account list */
+  function clientId() {
+    var c = ls(CFG);
+    if (c && c.clientId) return Promise.resolve(c.clientId);
+    if (!window.IMCloud || !IMCloud.configured || !IMCloud.configured()) return Promise.resolve('');
+    return IMCloud.call('googleCfg', {}).then(function (r) {
+      ls(CFG, { enabled: !!r.enabled, page: r.page || '', clientId: r.clientId || '', at: Date.now() }); return r.clientId || '';
+    }, function () { return ''; });
+  }
+  function nativeStart() {
+    var sheetOk = false; try { sheetOk = !!(IMAccount.pickId && IMAccount.sheetAvailable()); } catch (e) { }
+    diag(null); other(false); arm();
+    if (!sheetOk) { diag('This phone uses the account list'); try { IMAccount.pick(); } catch (e) { say('Could not open the account list.'); } return; }
+    buttons().forEach(function (b) { b.classList.add('busy'); });
+    clientId().then(function (cid) {
+      if (!cid) diag('Server has no Google Client ID yet (Admin → Sign in with Google)');
+      buttons().forEach(function (b) { b.classList.remove('busy'); });
+      try { IMAccount.pickId(cid || '', nonce()); } catch (e) { disarm(); say('Could not open Google sign-in.'); other(true); }
+    });
+  }
+
   function start() {
+    say('');
+    if (native()) { nativeStart(); return; }
+    browserStart();
+  }
+  function browserStart() {
     say('');
     var cfg = ls(CFG);
     if (!cfg || !cfg.enabled) { say('Google sign-in is not switched on yet. Please use Create an account / Log in.'); return; }
@@ -110,9 +211,9 @@
       ef.elements.code.addEventListener('input', function () { if (this.value.replace(/\D/g, '').length === 6) verify(); });
     }
     buttons().forEach(function (b) { b.addEventListener('click', start); });
-    var c = ls(CFG); showButtons(!!(c && c.enabled));
+    var c = ls(CFG); showButtons(native() || !!(c && c.enabled));
     if (window.IMCloud && IMCloud.configured && IMCloud.configured()) {
-      IMCloud.call('googleCfg', {}).then(function (r) { ls(CFG, { enabled: !!r.enabled, page: r.page || '', at: Date.now() }); showButtons(!!r.enabled); }, function () { });
+      IMCloud.call('googleCfg', {}).then(function (r) { ls(CFG, { enabled: !!r.enabled, page: r.page || '', clientId: r.clientId || '', at: Date.now() }); showButtons(native() || !!r.enabled); }, function () { });
     }
     var p = ls(K);
     if (p && Date.now() - p.t < WAIT_MS) { sheet(true, 'Checking your Google account…'); watch(); }

@@ -2,5 +2,5 @@
    All user logins, uploaded files, saved inputs and suggestions are copied there automatically.
    If this is left empty, the app reads the link from cloud-url.txt in the app's GitHub repository (see im-cloud.js),
    so phones that already have 5.9 start syncing as soon as the admin publishes the link there. */
-window.BF_CLOUD_URL = 'https://script.google.com/macros/s/AKfycbzHULNJaU7bge54tcwokSBIEAwXuLgBhi0emVCVoQp0Ym6PA9P1THkFTrc3xRrA_p9w4g/exec';
+window.BF_CLOUD_URL = 'https://script.google.com/macros/s/AKfycby0N5Z1MqNm4nJGF7yH9AEEBVbr2FGw_qLhox0v5A1DsyjZr9jVqpiyW-YMsyFWg--JSg/exec';
 window.BF_CLOUD_ADMIN_ID = 'nitikyash';

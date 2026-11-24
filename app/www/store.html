@@ -38,7 +38,7 @@
 <body>
 <div class="wrap">
   <div class="ah"><h1>App for Win / Mac / PC / Laptop</h1><a class="back" href="index.html">‹ Home</a></div>
-  <p class="lead" id="storeLead">Iron Making for your computer: Windows, Mac and office PC or laptop. <b class="free">Free for every user.</b> Choose your version below and download it.</p>
+  <p class="lead" id="storeLead">Iron Making for your computer: Windows, Mac and office PC or laptop. Checking your access…</p>
   <p class="msg" id="msg" role="alert"></p>
 
   <section class="box">
@@ -79,26 +79,40 @@
   function renderItems() {
     var list = info.items || [];
     if (!list.length) { $('items').innerHTML = '<p class="mono">No versions yet. Please check again later.</p>'; return; }
-    if (info.needsApproval) {
-      // Show the versions but no Download button — add the Request access button at the bottom.
-      $('storeLead').innerHTML = 'Iron Making for your computer: Windows, Mac and office PC or laptop. <b class="free">Free for every user.</b> The admin checks each request before giving the download link.';
-      var btn = info.requested
+    if (info.needsApproval || info.denied) {
+      // Locked by the admin: show the versions with a lock, no Download button, and the Request access button at the bottom.
+      var LOCK = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+      $('storeLead').innerHTML = '<b style="color:#ffd9a8">Locked by the admin.</b> Iron Making for Windows, Mac and office PC or laptop opens only for users the admin allows. ' +
+        (info.denied ? 'The admin has not allowed it for your login.' : 'Ask the admin for access below.');
+      var btn = info.denied
+        ? '<button class="btn" id="reqBtn" type="button" disabled style="width:100%;margin-top:10px">Not allowed by the admin · contact the admin</button>'
+        : info.requested
         ? '<button class="btn main" id="reqBtn" type="button" disabled style="width:100%;margin-top:10px">Waiting for admin · you will be notified by email</button>'
-        : '<button class="btn main" id="reqBtn" type="button" style="width:100%;margin-top:10px">Request download access from admin</button>';
+        : '<button class="btn main" id="reqBtn" type="button" style="width:100%;margin-top:10px">Request access from admin</button>';
       $('items').innerHTML = list.map(function (i) {
-        return '<div class="row"><div><b>' + esc(i.name) + '</b><small>' + (info.requested ? 'Waiting for the admin to approve' : 'Admin approval needed') + '</small></div></div>';
+        return '<div class="row"><div><b>' + esc(i.name) + '</b><small>' + (info.denied ? 'Not allowed by the admin' : info.requested ? 'Waiting for the admin to allow' : 'Locked · admin permission needed') + '</small></div><span style="color:#ffd9a8">' + LOCK + '</span></div>';
       }).join('') + btn + (info.note ? '<p class="mono" style="margin-top:10px">' + esc(info.note) + '</p>' : '');
       var rb = $('reqBtn'); if (rb && !rb.disabled) rb.addEventListener('click', requestAccess);
       return;
     }
-    $('storeLead').innerHTML = 'Iron Making for your computer: Windows, Mac and office PC or laptop. <b class="free">Free for every user.</b> Choose your version below and download it.';
-    $('items').innerHTML = list.map(function (i) {
-      if (i.link) {
-        return '<div class="row"><div><b>' + esc(i.name) + '</b><small class="free">Free download</small></div>' +
-          '<a class="btn main pick" data-ext href="' + esc(i.link) + '">Download</a></div>';
+    $('storeLead').innerHTML = 'Iron Making for your computer: Windows, Mac and office PC or laptop. <b class="free">Free for every user.</b> The admin has allowed it for your login. Choose your version below and download it.';
+    // 6.3.7: installable desktop app on GitHub Pages; used when the admin has not set a link for a version
+    var SITE = 'https://varunnifft.github.io/IRON-MAKING-through-sinter-pellet-cokeoven-/';
+    var DEF = { win: SITE + 'www/install.html', 'mac-arm': SITE + 'www/install.html', 'mac-intel': SITE + 'www/install.html', office: SITE + 'downloads/IronMaking-Windows-Mac-OfficePC.zip' };
+    var card = '<div class="row" style="border:1px solid rgba(255,181,71,.55);border-radius:14px;padding:14px;margin-bottom:10px;background:rgba(255,122,26,.08)"><div><b>Install on Windows or Mac</b>' +
+      '<small>Open this link on your computer and click “Install now”: Iron Making gets its own icon in the Start menu / Dock and works offline.</small></div>' +
+      '<a class="btn main pick" data-ext href="' + DEF.win + '">Install</a></div>' +
+      '<p class="mono" style="margin:0 0 12px;word-break:break-all">' + esc(DEF.win) + ' <button class="btn" type="button" id="cpInst" style="margin-left:6px;padding:4px 10px;min-height:0">Copy link</button></p>';
+    $('items').innerHTML = card + list.map(function (i) {
+      var link = i.link || DEF[i.id] || '', inst = /install\.html/.test(link);
+      if (link) {
+        return '<div class="row"><div><b>' + esc(i.name) + '</b><small class="free">' + (inst ? 'Free · install from the browser' : 'Free download') + '</small></div>' +
+          '<a class="btn main pick" data-ext href="' + esc(link) + '">' + (inst ? 'Install' : 'Download') + '</a></div>';
       }
       return '<div class="row"><div><b>' + esc(i.name) + '</b><small>Not uploaded yet. Please check again later.</small></div></div>';
     }).join('') + (info.note ? '<p class="mono" style="margin-top:10px">' + esc(info.note) + '</p>' : '');
+    var cp = document.getElementById('cpInst');
+    if (cp) cp.onclick = function () { var t = DEF.win; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { cp.textContent = 'Copied'; }, function () { prompt('Copy this link:', t); }); };
   }
   function requestAccess() {
     var b = $('reqBtn'); if (b) { b.disabled = true; b.textContent = 'Sending request…'; }
@@ -106,7 +120,7 @@
       // Update state locally so the button flips to "Waiting for admin" without losing the success message.
       if (info) info.requested = true;
       renderItems();
-      say('Request sent. The admin has been notified by email. You will see Download buttons here once approved; please check back later.', true);
+      say('Request sent. The admin has been notified by email. You will see Download buttons here once the admin allows it; please check back later.', true);
     }, function (e) { say(e.message); if (b) { b.disabled = false; b.textContent = 'Request download access from admin'; } });
   }
   function load() {

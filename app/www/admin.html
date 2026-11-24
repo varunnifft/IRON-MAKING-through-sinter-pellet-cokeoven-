@@ -80,9 +80,57 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       <div class="stats" id="stats"></div>
     </section>
 
+    <section class="box" id="gBox">
+      <h2>Sign in with Google</h2>
+      <p class="url" style="margin:0 0 10px"><b>Phone app (6.3.9):</b> "Continue with Google" opens Google's own sign-in sheet (Android 14+; older phones get the account list). It needs the <b>Web OAuth Client ID</b> below, plus an Android OAuth client in the same Google Cloud project (package com.bfburdenmodel.ironmaking + Play app-signing SHA-1). The Android client ID box is optional extra safety. <b>Computer / browser:</b> Paste your <b>OAuth Client ID</b> (Google Cloud → APIs &amp; Services → Credentials → Web application) and the link of <b>google-login.html</b> on your GitHub Pages. Leave both empty to switch it off. "Continue with email" (6-digit code to any address) works without this.</p>
+      <div style="display:grid;gap:8px">
+        <input id="gCid" placeholder="1234567890-abc123.apps.googleusercontent.com" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
+        <input id="gPage" placeholder="https://yourname.github.io/your-repo/google-login.html" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
+        <input id="gAnd" placeholder="Android client ID (optional, phone one-tap): 1234-xyz.apps.googleusercontent.com" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn main" type="button" id="gSave">Save Google sign-in</button></div>
+        <div class="url" id="gNow" style="margin:0">Loading…</div>
+      </div>
+    </section>
+
+    <section class="box" id="fbBox">
+      <h2>&#9993; User queries &amp; feedback <span id="fbN" style="font:700 13px var(--f-mono);color:#ff8a7a"></span></h2>
+      <p class="url" style="margin:0 0 10px">From the app's <b>Query / feedback</b> page. Each one is also saved in the <b>Feedback</b> sheet of your register and emailed to varunnifft@gmail.com (tap Reply in Gmail to answer by email).</p>
+      <div id="fbList" class="url" style="margin:0">Loading…</div>
+      <a class="url" id="fbSheet" data-ext hidden style="margin:8px 0 0;display:inline-block">Open the Feedback sheet ›</a>
+    </section>
+
+    <section class="box" id="updBox">
+      <h2>&#128276; Phone app update notice</h2>
+      <p class="url" style="margin:0 0 10px">After the new version is <b>live on Google Play</b>, type its number here and tap Publish. Every phone with an older version gets an <b>Update available</b> box at once and every hour until it updates, plus an Android notification about every hour (works from app 6.3.6 onwards, if the user allows notifications). Clear it to stop the reminders.</p>
+      <div style="display:grid;gap:8px">
+        <input id="updVer" placeholder="New version, e.g. 6.3.7" inputmode="decimal" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
+        <input id="updNote" placeholder="Message (optional), e.g. New blow-in planner and fixes" maxlength="200" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink)">
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn main" type="button" id="updPub">Publish update notice</button><button class="btn" type="button" id="updClr">Clear notice</button></div>
+        <div class="url" id="updNow" style="margin:0">Loading…</div>
+      </div>
+    </section>
+
+    <section class="box" id="deskBox">
+      <h2>&#128274; Lock · App for Win / Mac / PC / Laptop</h2>
+      <p class="url" style="margin:0 0 10px">You choose who may download and open the Windows, Mac and Office PC copies. <b>Allow</b> gives one user access; <b>Deny</b> stops only the computer version (they can still log in to the phone app); <b>Reset</b> removes your decision so the lock switch decides. Computer copies already in use stop at their next daily check.</p>
+      <div class="rzp" id="lockState" style="display:grid;gap:8px">
+        <div id="lockText">Loading…</div>
+        <button class="btn main" type="button" id="lockBtn" disabled>…</button>
+      </div>
+      <input id="deskFind" placeholder="Search login ID, name, email or company" autocomplete="off" style="font:16px var(--f-body);padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,12,23,.75);color:var(--ink);width:100%;margin-bottom:8px">
+      <div class="tabs" id="deskTabs">
+        <button type="button" data-f="all" class="on">All users</button>
+        <button type="button" data-f="allowed">Allowed</button>
+        <button type="button" data-f="locked">Locked</button>
+        <button type="button" data-f="denied">Denied</button>
+        <button type="button" data-f="pc">Using a computer copy</button>
+      </div>
+      <div id="deskList"></div>
+    </section>
+
     <section class="box" id="pendBox" hidden>
       <h2>Download access requests <span id="pendNum" style="color:#ffd9a8"></span></h2>
-      <p class="url" style="margin:0 0 10px">Users who opened <b>App for Win / Mac / PC / Laptop</b> and asked for access. You also get an email for each request. <b>Approve</b> lets them see the Download buttons; <b>Block</b> keeps the row but denies log-in; <b>Reject</b> deletes the row. Already-approved users do not show here.</p>
+      <p class="url" style="margin:0 0 10px">Users who opened <b>App for Win / Mac / PC / Laptop</b> and asked for access. You also get an email for each request. <b>Allow</b> lets them download and open the computer version; <b>Deny</b> refuses the computer version only; <b>Block</b> denies log-in to the whole app; <b>Reject</b> deletes the row. Already-allowed users do not show here.</p>
       <div id="pendList"></div>
     </section>
 
@@ -155,6 +203,31 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
   }
   $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; tab = b.getAttribute('data-t'); Array.prototype.forEach.call($('tabs').children, function (x) { x.classList.toggle('on', x === b); }); table(); });
 
+  /* 6.3.9: user queries */
+  function fbRender(r) {
+    var rows = r.rows || [], open = +r.open || 0, el = $('fbList');
+    $('fbN').textContent = open ? '· ' + open + ' new' : '';
+    if (r.sheet) { $('fbSheet').href = r.sheet; $('fbSheet').hidden = false; }
+    if (!rows.length) { el.innerHTML = 'No queries yet.'; return; }
+    el.innerHTML = rows.slice(0, 60).map(function (x) {
+      var ref = x[1], ph = String(x[5] || '').replace(/^'/, ''), em = x[6], st = x[10] || 'New', wa = ph.replace(/\D/g, '').replace(/^(\d{10})$/, '91$1');
+      var subj = encodeURIComponent('Re: Iron Making ' + (x[7] || 'query') + ' ' + ref), body = encodeURIComponent('Hello ' + (x[3] || '') + ',\n\n\n\n---\nYour message (' + ref + '):\n' + x[8]);
+      return '<div style="padding:12px;margin:0 0 10px;border-radius:12px;border:1px solid ' + (st === 'New' ? 'rgba(255,106,90,.6)' : 'var(--line)') + ';background:rgba(4,12,23,.5)">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="color:#fff">' + esc(x[3] || x[2]) + (x[4] ? ' · ' + esc(x[4]) : '') + '</b><span style="font:600 11.5px var(--f-mono);color:' + (st === 'New' ? '#ff8a7a' : '#7fe0b8') + '">' + esc(st) + ' · ' + esc(x[0]) + '</span></div>' +
+        '<div style="font:600 11.5px var(--f-mono);color:#ffd27a;margin:2px 0 6px">' + esc(ref) + ' · ' + esc(x[7]) + '</div>' +
+        '<div style="white-space:pre-wrap;color:var(--ink);font-size:14px;line-height:1.45">' + esc(x[8]) + '</div>' +
+        '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' +
+        (em ? '<a class="btn" data-ext href="mailto:' + esc(em) + '?subject=' + subj + '&body=' + body + '">&#9993; Reply by email</a>' : '') +
+        (ph ? '<a class="btn" data-ext href="https://wa.me/' + esc(wa) + '?text=' + encodeURIComponent('Hello ' + (x[3] || '') + ', about your Iron Making ' + (x[7] || 'query') + ' ' + ref + ': ') + '">WhatsApp</a><a class="btn" data-ext href="tel:' + esc(ph) + '">Call ' + esc(ph) + '</a>' : '') +
+        (st === 'New' ? '<button class="btn main" type="button" data-fb="' + esc(ref) + '" data-st="Replied">Mark replied</button>' : '<button class="btn" type="button" data-fb="' + esc(ref) + '" data-st="New">Mark new</button>') +
+        '</div><div style="margin-top:4px;font-size:11.5px;color:var(--muted)">' + esc([em, ph, x[2], x[9]].filter(Boolean).join(' · ')) + '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('[data-fb]'), function (b) { b.onclick = function () {
+      b.disabled = true; IMCloud.adminCall('adminFeedback', { ref: b.getAttribute('data-fb'), status: b.getAttribute('data-st') }).then(fbRender, function (e) { b.disabled = false; say(e.message); });
+    }; });
+  }
+  function loadFb() { IMCloud.adminCall('adminFeedback').then(fbRender, function (e) { $('fbList').textContent = /Unknown action/i.test(e.message) ? 'Update the server to Code 6.3.9 to see queries here.' : e.message; }); }
+
   function render(r) {
     data = r; var L = r.links || {}, S = r.storage || {}, N = r.counts || {};
     $('links').innerHTML = [['Main folder (all data)', L.folder], ['User register (sheet)', L.book], ['User uploads', L.uploads], ['Saved inputs (backups)', L.backups], ['Admin uploads', L.admin]]
@@ -166,7 +239,7 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       .map(function (x) { return '<div class="stat"><small>' + x[0] + '</small><b>' + esc(x[1] == null ? '0' : x[1]) + '</b></div>'; }).join('');
     var af = r.adminFiles || [];
     $('adminFiles').innerHTML = af.length ? af.map(function (f) { return '<tr><td>' + link(f[3], f[0]) + '</td><td>' + esc(f[1]) + ' KB</td><td>' + esc(f[2]) + '</td></tr>'; }).join('') : '<tr><td colspan="3">No admin files yet.</td></tr>';
-    table(); renderShop(r); renderLic(r); renderPending(r);
+    table(); renderShop(r); renderLic(r); renderPending(r); renderDesk(r); renderUpd(r); renderG(r); loadFb();
   }
   // ---- computer versions: download links only (payment is switched off in the script)
   function renderShop(r) {
@@ -193,11 +266,102 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       var id = esc(u[0]), name = esc(u[1] || '-'), email = esc(u[2] || '-'), company = esc(u[3] || '-'), mobile = esc(u[4] || '-'), app = esc(u[5] || '-'), first = esc(u[6] || '-');
       return '<div class="pay"><div><b>' + id + '</b> · ' + name + ' <span class="pill Pending">requested</span></div>' +
         '<div class="url" style="margin:0">Email ' + email + ' · ' + company + ' · ' + mobile + ' · App ' + app + ' · Signed up ' + first + '</div>' +
-        '<div class="acts"><button class="btn main" type="button" data-user="approve" data-id="' + id + '">Approve</button>' +
-        '<button class="btn" type="button" data-user="block" data-id="' + id + '">Block</button>' +
+        '<div class="acts"><button class="btn main" type="button" data-desk="allow" data-id="' + id + '">Allow</button>' +
+        '<button class="btn" type="button" data-desk="deny" data-id="' + id + '">Deny</button>' +
+        '<button class="btn" type="button" data-user="block" data-id="' + id + '">Block log-in</button>' +
         '<button class="btn no2" type="button" data-user="reject" data-id="' + id + '">Reject (delete)</button></div></div>';
     }).join('');
   }
+  // ---- lock for the computer version: switch + Allow / Deny per user
+  var deskFilter = 'all';
+  function deskState(st, lock) {
+    st = String(st || '').trim();
+    if (st === 'Blocked') return { k: 'blocked', t: 'Log-in blocked', c: 'Rejected' };
+    if (st === 'DownloadDenied') return { k: 'denied', t: 'Denied', c: 'Rejected' };
+    if (st === 'Approved' || st === 'DownloadApproved') return { k: 'allowed', t: 'Allowed', c: 'Approved' };
+    if (st === 'Requested' || st === 'Pending') return lock ? { k: 'locked', t: 'Requested · locked', c: 'Pending' } : { k: 'allowed', t: 'Open (lock is off)', c: 'Approved' };
+    return lock ? { k: 'locked', t: 'Locked', c: 'Pending' } : { k: 'allowed', t: 'Open (lock is off)', c: 'Approved' };
+  }
+  function renderDesk(r) {
+    var lock = r.deskLock !== false, oldCode = r.deskLock === undefined;
+    $('lockText').innerHTML = oldCode
+      ? 'Your Google Apps Script has old code, so the lock cannot be set yet. Paste the 6.3.5 code and deploy a New version.'
+      : lock ? '<b style="color:#ffd9a8">Lock is ON.</b> Only users you allow can download and open the computer version. Everyone else sees "Request access".'
+             : '<b style="color:#72c784">Lock is OFF.</b> Every logged-in user can download and open the computer version, except users you deny.';
+    var lb = $('lockBtn'); lb.disabled = oldCode; lb.textContent = lock ? 'Unlock for all users' : 'Lock (only users I allow)'; lb.setAttribute('data-lock', lock ? '0' : '1');
+    var pc = {}; (r.licences || []).forEach(function (l) { if (l[4] || l[7]) pc[String(l[0]).toLowerCase()] = (pc[String(l[0]).toLowerCase()] ? pc[String(l[0]).toLowerCase()] + ', ' : '') + l[2]; });
+    var q = ($('deskFind').value || '').trim().toLowerCase();
+    var list = (r.users || []).filter(function (u) {
+      var s = deskState(u[12], lock), id = String(u[0]).toLowerCase();
+      if (deskFilter === 'pc' ? !pc[id] : deskFilter !== 'all' && s.k !== deskFilter) return false;
+      return !q || [u[0], u[1], u[2], u[3]].join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+    $('deskList').innerHTML = list.length ? list.slice(0, 300).map(function (u) {
+      var s = deskState(u[12], lock), id = esc(u[0]), raw = String(u[12] || '').trim(), on = pc[String(u[0]).toLowerCase()];
+      var acts = s.k === 'blocked' ? '<span class="url" style="margin:0">Unblock in the register sheet (Status column) to change this.</span>'
+        : (s.k !== 'allowed' || raw === '' || raw === 'Requested' ? '<button class="btn main" type="button" data-desk="allow" data-id="' + id + '">Allow</button>' : '') +
+          (s.k !== 'denied' ? '<button class="btn no2" type="button" data-desk="deny" data-id="' + id + '">Deny</button>' : '') +
+          (raw === 'Approved' || raw === 'DownloadApproved' || raw === 'DownloadDenied' ? '<button class="btn" type="button" data-desk="clear" data-id="' + id + '">Reset</button>' : '');
+      return '<div class="pay"><div><b>' + id + '</b> · ' + esc(u[1] || '-') + ' <span class="pill ' + s.c + '">' + esc(s.t) + '</span></div>' +
+        '<div class="url" style="margin:0">' + esc(u[2] || '-') + ' · ' + esc(u[3] || '-') + ' · App ' + esc(u[5] || '-') + ' · last seen ' + esc(u[7] || '-') + (on ? ' · <b style="color:#ffd9a8">computer copy: ' + esc(on) + '</b>' : '') + '</div>' +
+        '<div class="acts">' + acts + '</div></div>';
+    }).join('') + (list.length > 300 ? '<p class="url">Showing 300 of ' + list.length + '. Use search to find a user.</p>' : '') : '<p class="url">No users here.</p>';
+  }
+  $('deskFind').addEventListener('input', function () { if (data) renderDesk(data); });
+  $('deskTabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; deskFilter = b.getAttribute('data-f'); Array.prototype.forEach.call($('deskTabs').children, function (x) { x.classList.toggle('on', x === b); }); if (data) renderDesk(data); });
+  var lockAt = 0;
+  $('lockBtn').addEventListener('click', function () {
+    var b = this, lock = b.getAttribute('data-lock') === '1';
+    if (!lock && Date.now() - lockAt > 6000) { lockAt = Date.now(); b.textContent = 'Tap again: every user will be able to download'; return; }
+    b.disabled = true;
+    IMCloud.adminCall('adminDeskLock', { lock: lock }).then(function () { return load().then(function () { say(lock ? 'Locked. Only users you allow can download and open the computer version.' : 'Unlocked. Every user can download now, except users you denied.', true); }); },
+      function (er) { say(er.message); b.disabled = false; });
+  });
+  var deskAt = {};
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-desk]'); if (!b) return;
+    var op = b.getAttribute('data-desk'), id = b.getAttribute('data-id'), key = op + '|' + id;
+    if (op === 'deny' && (!deskAt[key] || Date.now() - deskAt[key] > 6000)) { deskAt[key] = Date.now(); b.textContent = 'Tap again to deny'; return; }
+    b.disabled = true;
+    IMCloud.adminCall('adminDeskAccess', { loginId: id, decision: op })
+      .then(function () { return load().then(function () { say(op === 'allow' ? id + ' is allowed. They can download and open the computer version now (and get an email if they entered one).' : op === 'deny' ? id + ' is denied the computer version. They can still use the phone app.' : id + ': decision removed. The lock switch decides now.', true); }); },
+            function (er) { say(er.message); b.disabled = false; });
+  });
+
+  // ---- Sign in with Google
+  function renderG(r) {
+    var g = r.google;
+    if (!g) { $('gNow').textContent = 'Your Google Apps Script has old code: paste the 6.3.7 code and deploy a New version to use this.'; $('gSave').disabled = true; return; }
+    $('gSave').disabled = false;
+    if (!$('gCid').value) $('gCid').value = g.clientId || ''; if (!$('gPage').value) $('gPage').value = g.page || ''; if (!$('gAnd').value) $('gAnd').value = g.android || '';
+    $('gNow').innerHTML = g.clientId && g.page ? '<b style="color:#72c784">On.</b> Users see "Continue with Google" on the sign-in page.' : '<b>Off.</b> Users see "Continue with email" and the login ID options.';
+  }
+  $('gSave').addEventListener('click', function () {
+    var b = this; b.disabled = true;
+    IMCloud.adminCall('adminSetGoogle', { clientId: $('gCid').value.trim(), page: $('gPage').value.trim(), android: $('gAnd').value.trim() })
+      .then(function (r) { return load().then(function () { say(r.google.clientId && r.google.page ? 'Google sign-in is on.' : 'Google sign-in is off.', true); }); }, function (e) { say(e.message); b.disabled = false; });
+  });
+
+  // ---- phone app update notice
+  function renderUpd(r) {
+    var u = r.appUpdate;
+    if (!u) { $('updNow').textContent = 'Your Google Apps Script has old code: paste the 6.3.6 code and deploy a New version to use this.'; $('updPub').disabled = $('updClr').disabled = true; return; }
+    $('updPub').disabled = $('updClr').disabled = false;
+    $('updNow').innerHTML = u.version ? 'Now published: <b>' + esc(u.version) + '</b>' + (u.note ? ' · ' + esc(u.note) : '') + ' · since ' + esc(u.at) + '. Phones older than ' + esc(u.version) + ' are being reminded.' : 'No notice published. This app is ' + esc(window.BF_APP_VERSION || '') + '.';
+    if (!$('updVer').value && u.version) $('updVer').value = u.version;
+  }
+  function pubUpd(clear) {
+    var v = clear ? '' : $('updVer').value.trim();
+    if (!clear && !/^\d+(\.\d+){0,3}$/.test(v)) { say('Type the version like 6.3.7'); return; }
+    if (clear && !confirm('Stop the update reminders on all phones?')) return;
+    var b = clear ? $('updClr') : $('updPub'); b.disabled = true;
+    IMCloud.adminCall('adminSetAppUpdate', { version: v, note: clear ? '' : $('updNote').value.trim() })
+      .then(function () { if (clear) $('updVer').value = ''; return load().then(function () { say(clear ? 'Update notice cleared. Reminders stop at the next check.' : 'Published. Phones older than ' + v + ' will be reminded now and every hour.', true); }); },
+            function (er) { say(er.message); b.disabled = false; });
+  }
+  $('updPub').addEventListener('click', function () { pubUpd(false); });
+  $('updClr').addEventListener('click', function () { pubUpd(true); });
+
   var userActAt = {};
   $('pendList').addEventListener('click', function (e) {
     var b = e.target.closest('[data-user]'); if (!b) return;
@@ -241,10 +405,10 @@ fieldset.ver legend { padding: 0 6px; font: 700 15px var(--f-display); letter-sp
       .then(function () { $('sSave').disabled = false; });
   });
   var codeOk = true;
-  var OLDCODE = 'Your Google Apps Script still has old code (needs 6.3.2), so the download links cannot be saved yet. On a computer: script.google.com > Iron Making Cloud > paste the new code > Save > Deploy > Manage deployments > pencil > Version: New version > Deploy.';
+  var OLDCODE = 'Your Google Apps Script still has old code (needs 6.3.6), so the lock and the download links cannot be saved yet. On a computer: script.google.com > Iron Making Cloud > paste the new code > Save > Deploy > Manage deployments > pencil > Version: New version > Deploy.';
   function load() {
     say(''); $('refresh').disabled = true; $('refresh').textContent = 'Loading…';
-    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = r.codeVersion === '6.3.2' || r.codeVersion === '6.3.1' || r.codeVersion === '6.3'; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); } catch (x) { } })
+    return IMCloud.adminCall('adminSummary').then(function (r) { render(r); codeOk = ['6.3.6', '6.3.7', '6.3.8', '6.3.9'].indexOf(r.codeVersion) >= 0; if (!codeOk) say(OLDCODE); }, function (e) { say(e.message); try { renderShop({}); renderLic({}); renderDesk({ deskLock: undefined }); renderUpd({}); renderG({}); } catch (x) { } })
       .then(function () { $('refresh').disabled = false; $('refresh').textContent = 'Refresh'; });
   }
   $('refresh').addEventListener('click', load);

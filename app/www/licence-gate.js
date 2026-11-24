@@ -6,7 +6,9 @@
   function platform() {
     if (/^file:\/\/\/android_asset\//.test(href) || /appassets\.androidplatform\.net/.test(location.host) || window.Android) return 'android';
     if (/IronMakingDesktop/.test(ua)) return /Mac/.test(navigator.platform || ua) ? 'mac' : 'win';
-    if (location.protocol === 'file:') return 'office';
+    if (location.protocol === 'file:') { try { if (localStorage.getItem('im.desk') === 'win') return 'win'; } catch (e) { } return 'office'; }   // im.desk: set by the Windows installer's start page
+    // installed / hosted web app on a computer (GitHub Pages, https): treated as the Windows or Mac version
+    if (location.protocol === 'https:' && !/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return /Mac/.test(navigator.platform || ua) ? 'mac' : 'win';
     return 'web';
   }
   var P = platform();
@@ -28,7 +30,7 @@
   };
   var page = (location.pathname.split('/').pop() || '').toLowerCase();
   var inWww = /\/www\/[^\/]*$/.test(location.pathname);
-  if (inWww && /^(auth|licence|store)\.html$/.test(page)) return;   // these pages handle login and buying
+  if (inWww && /^(auth|licence|store|install)\.html$/.test(page)) return;   // these pages handle login and buying
   var u = ls('bf-user');
   if (!u || !u.loginId || u.guest) { location.replace(base + 'auth.html'); return; }
   if (u.cloudAdmin) return;                                         // the admin can use every copy

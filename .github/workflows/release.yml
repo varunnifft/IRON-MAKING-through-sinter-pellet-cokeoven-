@@ -1,22 +1,30 @@
 name: Publish Iron Making
 
-# Publishes everything as a GitHub release:
-#   - Android phone APK (from downloads/)
-#   - Browser (no-install) zip (from downloads/)
-#   - Windows x64 zip and Mac zips (Apple Silicon + Intel), built here from app/ + desktop/
-# All free since 6.3.
+# Publishes a GitHub release that anyone can install, safely:
+#   - Android phone APK, signed with the Iron Making release key (kept in encrypted GitHub Secrets, never in the repo).
+#     The workflow REFUSES to publish an APK signed with any other key, so phones can always update over the old version.
+#   - Windows Setup.exe and Windows / Mac (Apple Silicon + Intel) zips, built here from app/ + desktop/
+#   - Office PC (no install) zip
+#   - SHA256SUMS.txt and a GitHub build-provenance attestation: proof that each file came from this repository.
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version, for example 6.3'
+        description: 'Version, for example 6.3.9'
         required: true
-        default: '6.3.4'
+        default: '6.3.9'
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
+
+env:
+  # SHA-256 of the Iron Making release certificate (CN=Iron Making, O=Iron Making App), same as 6.3.4 and earlier
+  RELEASE_CERT_SHA256: ed4eeab2b31927d7e9c017b9f0768bbc825bf8cf9124218b54ef3d1f63d9d1cd
+  BUNDLETOOL: '1.18.3'
 
 jobs:
   release:
@@ -31,27 +39,60 @@ jobs:
           echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "tag=v$V" >> "$GITHUB_OUTPUT"
 
-      - name: Install Pillow (for peicon.py — writes the Windows icon into the exe)
+      - name: Android phone APK (signed with the Iron Making release key)
+        env:
+          V: ${{ steps.v.outputs.version }}
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KS_B64" ] || [ -z "$KS_PASS" ] || [ -z "$KEY_ALIAS" ]; then
+            echo "::error::Release key secrets are missing (README → Publishing a release). The phone APK is never published with a test key."
+            exit 1
+          fi
+          AAB=$(ls downloads/*.aab | sort -V | tail -1)
+          VC=$(basename "$AAB" | grep -oE 'v[0-9]+' | tail -1)
+          KS="$RUNNER_TEMP/release.jks"; echo "$KS_B64" | base64 -d > "$KS"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/bundletool.jar" \
+            "https://github.com/google/bundletool/releases/download/$BUNDLETOOL/bundletool-all-$BUNDLETOOL.jar"
+          java -jar "$RUNNER_TEMP/bundletool.jar" build-apks --bundle "$AAB" --mode=universal \
+            --output "$RUNNER_TEMP/u.apks" --ks "$KS" --ks-pass "pass:$KS_PASS" \
+            --ks-key-alias "$KEY_ALIAS" --key-pass "pass:${KEY_PASS:-$KS_PASS}"
+          rm -f "$KS"
+          unzip -o -q "$RUNNER_TEMP/u.apks" universal.apk -d "$RUNNER_TEMP"
+          mkdir -p dist; OUT="dist/IronMaking-$V-$VC-PHONE-INSTALL.apk"; cp "$RUNNER_TEMP/universal.apk" "$OUT"
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs "$OUT" | tee "$RUNNER_TEMP/certs.txt"
+          if ! grep -qi "SHA-256 digest: $RELEASE_CERT_SHA256" "$RUNNER_TEMP/certs.txt"; then
+            echo "::error::This APK is NOT signed with the Iron Making release certificate. Nothing was published."
+            exit 1
+          fi
+
+      - name: Install Pillow (for peicon.py, which writes the Windows icon into the exe)
         run: pip install --quiet Pillow
 
       - name: Build Windows and Mac desktop packages
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
-          # package_desktop.sh downloads Electron + rcodesign and packages the Windows/Mac zips into dist/
           bash tools/package_desktop.sh
           ls -lh dist/
 
-      - name: Collect release assets
+      - name: Collect release files and checksums
         env:
           V: ${{ steps.v.outputs.version }}
         run: |
-          # Everything that goes to the release lands in dist/
-          mkdir -p dist
-          cp downloads/*.apk dist/
-          # Browser zip comes prebuilt in downloads/ (small, under 10 MB)
-          cp downloads/IronMaking-*-Browser-NoInstall.zip dist/ 2>/dev/null || true
-          ls -lh dist/
+          cp downloads/IronMaking-Windows-Setup.exe "dist/IronMaking-$V-Windows-Setup.exe"
+          cp downloads/IronMaking-Windows-Mac-OfficePC.zip "dist/IronMaking-$V-Browser-NoInstall.zip"
+          cp LICENSE dist/LICENSE.txt
+          (cd dist && sha256sum IronMaking-* LICENSE.txt > SHA256SUMS.txt && cat SHA256SUMS.txt)
+
+      - name: Build-provenance attestation (proves the files came from this repository)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/IronMaking-*'
 
       - name: Publish release
         env:
@@ -61,13 +102,9 @@ jobs:
         run: |
           sed "s/{V}/$V/g" .github/release-notes.md > notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
-            # Drop any asset that is NOT one of the files we are about to upload: clears orphan APKs/zips from older runs.
             KEEP=$(cd dist && printf '|%s' * | cut -c2-)
             for a in $(gh release view "$TAG" --json assets --jq '.assets[].name'); do
-              if ! echo "$a" | grep -Eq "^($KEEP)$"; then
-                echo "removing orphan $a"
-                gh release delete-asset "$TAG" "$a" --yes
-              fi
+              if ! echo "$a" | grep -Eq "^($KEEP)$"; then gh release delete-asset "$TAG" "$a" --yes; fi
             done
             gh release upload "$TAG" dist/* --clobber
             gh release edit "$TAG" --title "Iron Making $V" --notes-file notes.md --latest

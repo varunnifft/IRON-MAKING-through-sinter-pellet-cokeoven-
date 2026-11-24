@@ -59,8 +59,8 @@
   }
 
   /* ---------- The page's number boxes ---------- */
-  function fields(card) {
-    return Array.from(document.querySelectorAll('input[type=number]')).filter(el => el.id && !card.contains(el)).map(el => {
+  function fields(card, scope) {
+    return Array.from((scope || document).querySelectorAll('input[type=number]')).filter(el => el.id && !card.contains(el) && !el.disabled).map(el => {
       let lab = el.getAttribute('aria-label');
       if (!lab) { const l = el.closest('label'); if (l) lab = Array.from(l.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join(' '); }
       lab = (lab || el.id).replace(/\s+/g, ' ').trim().replace(/ (moist|mps|d|rho|mu|rep)$/, (_, c) => ' ' + PRETTY[c]);
@@ -319,7 +319,7 @@
         let r = k === 'pdf' ? await pdfRows(b) : k === 'docx' ? await docxRows(b) : k === 'doc' ? docRows(b) : k === 'text' ? textRows(b) : await sheetRows(b, k === 'csv');
         let found = pairs(r);
         if (k === 'sheet' && !found.length && b[0] === 0xd0) found = pairs(docRows(b));   // a .doc saved with another extension
-        const flds = fields(card), m = match(found, flds);
+        const flds = fields(card, opts.scope && document.getElementById(opts.scope)), m = match(found, flds);
         q('.impname').textContent = fl.name;
         if (!found.length) return fail('No label and value pairs were found in this file. Scanned PDFs (pictures of pages) cannot be read; use the original Excel or Word file, or type the values in.');
         if (!m.res.length) return fail(`Found ${found.length} values, but none matched an input on this page. Use the same names as the inputs, for example "Top pressure" or "Ring 3 coke angle".`);

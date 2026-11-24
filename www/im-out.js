@@ -132,6 +132,15 @@
     if (name == null || !/^(blob:|data:)/.test(href) || a.__imDone) return origClick.apply(a, arguments);
     name = clean(name || 'Iron Making file').replace(/_?$/, '');
     var mime = (href.match(/^data:([^;,]+)/) || [])[1] || '';
+    if (window.Android && window.AndroidBridge && window.AndroidBridge.saveFile) {
+      // 6.3.9: the main phone screen saves straight to Downloads
+      blobBytes(href).then(function (u8) {
+        var bin = '', ch = 0x8000; for (var i = 0; i < u8.length; i += ch) bin += String.fromCharCode.apply(null, u8.subarray(i, i + ch));
+        var r = String(window.AndroidBridge.saveFile(name, btoa(bin), mime || 'application/octet-stream') || '');
+        if (/^ERROR/.test(r)) toast(r.replace(/^ERROR\s*/, 'Not saved: '), null, null, 7000); else toast('Saved to Downloads: ' + name);
+      }, function (e) { toast('Could not save "' + name + '": ' + e.message); });
+      return;
+    }
     if (inAndroidBF) {
       // this phone screen cannot save files itself: keep it in Google Drive and open it from there
       blobBytes(href).then(function (u8) { return save(name, mime, u8, 'Download', true); })
@@ -217,3 +226,19 @@
 
   window.IMOut = { toast: toast, save: save, share: function (t, x) { if (window.Android && window.Android.share) window.Android.share(t, x); else sheet(t, x, shareText(t, x)); }, open: openLink, back: goBack };
 })();
+/* 6.3.9: Download report button on every page */
+(function () { try { var me = document.currentScript && document.currentScript.src, base = me ? me.replace(/[^/]*$/, '') : ''; var s = document.createElement('script'); s.src = base + 'im-report.js'; s.defer = true; document.head.appendChild(s); } catch (e) { } })();
+/* 6.3.9: on a PC / Mac / website there is no Android app link: open the Sinter and Coke apps directly */
+(function () {
+  if (window.Android || window.AndroidBridge) return;
+  var web = /^https?:$/.test(location.protocol), inW = /\/www\/[^/]*$/.test(location.pathname), inX = /\/xco\/[^/]*$/.test(location.pathname);
+  var up = inW || inX ? '../' : '';
+  var base = web && inW && !/\/app\/www\/[^/]*$/.test(location.pathname) ? '../app/' : up;  /* website: the Sinter and Coke apps live in app/ */
+  var MAP = { sinter: base + 'index.html', coke: base + 'xco/index.html', home: up + 'www/index.html' };
+  function fix(a) { var h = a.getAttribute('href') || '', m = h.match(/^ironmakingapk:\/\/(\w+)/); if (m && MAP[m[1]]) a.setAttribute('href', MAP[m[1]]); }
+  function all() { Array.prototype.forEach.call(document.querySelectorAll('a[href^="ironmakingapk://"]'), fix); }
+  document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('a[href^="ironmakingapk://"]'); if (a) fix(a); }, true);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', all); else all();
+  setTimeout(all, 1500);
+})();
+
